@@ -1,0 +1,22 @@
+<div class="card">
+  <h2>Programmes :</h2>
+  <ul>
+    <li *ngFor="let prog of programmes">
+      <label>
+        <input type="checkbox" [(ngModel)]="prog.checked" />
+        {{ prog.name }}
+      </label>
+    </li>
+  </ul>
+  <button (click)="extraireDonnees()">Extraire données</button>
+</div>
+
+<div class="card">
+  <h2>Extractions :</h2>
+  <ul>
+    <li *ngFor="let e of extractions">
+      {{ e }}
+    </li>
+  </ul>
+  <p *ngIf="message">{{ message }}</p> <!-- Affiche le message du backend -->
+</div>
