@@ -1,9 +1,9 @@
-<div>
-  <h2>Programmes disponibles</h2>
+<div class="card">
+  <h3>Programmes disponibles</h3>
   <form>
     <div *ngFor="let prog of programmes">
       <label>
-        <input type="checkbox" [(ngModel)]="prog.checked" name="{{prog.name}}" />
+        <input type="checkbox" [(ngModel)]="prog.checked" name="{{ prog.name }}" />
         {{ prog.name }}
       </label>
     </div>
@@ -11,7 +11,7 @@
 
   <button (click)="extraireDonnees()">Extraire</button>
   <p>{{ message }}</p>
-
-  <!-- Ici, on délègue l'affichage à ExtractedLinks -->
-  <app-extracted-links [files]="extractedFiles"></app-extracted-links>
 </div>
+
+<!-- Card affichage des fichiers extraits -->
+<app-extracted-links [files]="extractedFiles"></app-extracted-links>
