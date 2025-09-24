@@ -1,5 +1,11 @@
-<ul>
-  <li *ngFor="let f of files">
-    {{ f.programme }}: <a [href]="f.url" target="_blank">{{ f.url }}</a>
-  </li>
-</ul>
+<div class="card">
+  <h2>Extractions :</h2>
+  <ul>
+    <li *ngFor="let e of files">
+      {{ e }}
+    </li>
+  </ul>
+  <p *ngIf="message">{{ message }}</p> <!-- Affiche le message du backend -->
+</div>
+
+

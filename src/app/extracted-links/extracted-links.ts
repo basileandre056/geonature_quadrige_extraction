@@ -1,11 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FichierExtrait } from '../models/fichiers-extraits';
 
 @Component({
   selector: 'app-extracted-links',
-  imports: [],
+  standalone: true,
+  imports: [CommonModule],
   templateUrl: './extracted-links.html',
-  styleUrl: './extracted-links.scss'
+  styleUrls: ['./extracted-links.scss']
+
+
 })
 export class ExtractedLinks {
-
+  @Input() files: FichierExtrait[] = [];
 }

@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Programme } from '../models/programmes';
 import { FichierExtrait } from '../models/fichiers-extraits';
-import { ExtractedLinks } from '../extracted-links/extracted-links.component';
+import { ExtractedLinks } from '../extracted-links/extracted-links';
 
 @Component({
   selector: 'app-programmes',
