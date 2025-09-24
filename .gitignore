@@ -1,22 +1,5 @@
-# ===================================
-# Node / Angular
-# ===================================
-node_modules/
-dist/
-tmp/
-temp/
-.angular/
-.angular/cache/
-*.log
-
-# IDEs
-.vscode/
-.idea/
-*.swp
-
-# ===================================
-# Python / Flask
-# ===================================
+# ---- Python ----
+venv/
 __pycache__/
 *.pyc
 *.pyo
@@ -24,19 +7,22 @@ __pycache__/
 *.db
 *.sqlite3
 
-# Virtual environments
-venv/
-ENV/
-env/
-.venv/
+# ---- Flask outputs ----
+outputs/
+instance/
+*.log
 
-# ===================================
-# OS files
-# ===================================
+# ---- Angular ----
+node_modules/
+dist/
+.angular/
+*.log
+
+# ---- IDE / OS ----
+.vscode/
+.idea/
 .DS_Store
 Thumbs.db
 
-# ===================================
-# Outputs téléchargés
-# ===================================
-outputs/
+# ---- Environment files ----
+.env

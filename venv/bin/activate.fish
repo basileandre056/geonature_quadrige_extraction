@@ -33,7 +33,7 @@ end
 # Unset irrelevant variables.
 deactivate nondestructive
 
-set -gx VIRTUAL_ENV /mnt/c/Users/basile.andre/Documents/Basile/projet_quadrige/angular_v1/test_geo/venv
+set -gx VIRTUAL_ENV /mnt/c/Users/basile.andre/Documents/Basile/projet_quadrige/angular_v1/geonature_quadrige_extraction/venv
 
 set -gx _OLD_VIRTUAL_PATH $PATH
 set -gx PATH "$VIRTUAL_ENV/"bin $PATH

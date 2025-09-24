@@ -57,3 +57,72 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+
+
+
+# 🌊 GeoNature Quadrige Extraction
+
+Projet combinant un **frontend Angular** et un **backend Flask** pour extraire et télécharger des données (au format `.zip`) depuis Quadrige (Ifremer).
+
+---
+
+## 🚀 Installation
+
+### 1. Cloner le projet
+```bash
+git clone https://github.com/<ton-utilisateur>/<ton-repo>.git
+cd geonature_quadrige_extraction
+
+
+
+Créer un environnement virtuel et installer les dépendances :
+
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+
+Lancer le backend :
+
+python backend/backend.py
+
+
+
+3. Frontend (Angular)
+
+Installer Node.js et Angular CLI (si pas déjà installés) :
+
+
+sudo apt install nodejs npm -y
+npm install -g @angular/cli
+
+
+Installer les dépendances Angular du projet :
+
+
+cd frontend   # aller dans le dossier Angular
+npm install
+
+
+Lancer le frontend :
+ng serve
+
+👉 Le frontend est disponible sur : http://localhost:4200
+
+📂 Structure du projet
+
+geonature_quadrige_extraction/
+│── backend/             # Backend Flask
+│   ├── backend.py
+│   ├── extractProgm_p.py
+│── frontend/            # Frontend Angular
+│   ├── src/
+│   ├── angular.json
+│   ├── package.json
+│── outputs/             # Fichiers .zip téléchargés (ignorés par git)
+│── venv/                # Virtualenv Python (ignoré par git)
+│── requirements.txt     # Dépendances Python
+│── .gitignore
+│── README.md
+
