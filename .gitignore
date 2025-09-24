@@ -26,3 +26,7 @@ Thumbs.db
 
 # ---- Environment files ----
 .env
+
+
+# ---- personal files ----
+mdp git.txt
