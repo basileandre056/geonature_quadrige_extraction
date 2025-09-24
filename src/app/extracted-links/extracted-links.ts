@@ -8,8 +8,6 @@ import { FichierExtrait } from '../models/fichiers-extraits';
   imports: [CommonModule],
   templateUrl: './extracted-links.html',
   styleUrls: ['./extracted-links.scss']
-
-
 })
 export class ExtractedLinks {
   @Input() files: FichierExtrait[] = [];

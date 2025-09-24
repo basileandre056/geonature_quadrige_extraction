@@ -39,10 +39,7 @@ export class Programmes {
       .subscribe({
         next: (res: any) => {
           this.message = `Backend a reçu : ${res.programmes_recus.join(', ')}`;
-          this.extractedFiles = res.links_fichiers_zip.map((url: string, i: number) => ({
-            programme: res.programmes_recus[i],
-            url
-          }));
+          this.extractedFiles = res.fichiers_zip; // clé cohérente avec backend
         },
         error: err => {
           console.error(err);
