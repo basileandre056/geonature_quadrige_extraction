@@ -13,18 +13,18 @@ def recevoir_extractions():
     print("Programmes reçus :", programmes)
 
     # Appel de ta fonction avec la liste de programmes reçue
-    fichiers_zip = extract_ifremer_data(programmes)
+    download_links = extract_ifremer_data(programmes)
 
     print("\nTous les fichiers téléchargés :")
-    for f in fichiers_zip:
-        print(" -", f)
+    for l in download_links:
+        print(" -", l)
 
     # Renvoie un JSON de confirmation à Angular
     return jsonify({
-        "status": "ok",
-        "programmes_recus": programmes,
-        "fichiers_zip": fichiers_zip
-    }), 200
+    "status": "ok",
+    "programmes_recus": programmes,
+    "fichiers_zip": [{"name": os.path.basename(url), "url": url} for url in download_links]
+}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)

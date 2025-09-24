@@ -1,0 +1,14 @@
+Depuis un autre pc :
+
+
+
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+basile.andre056@gmail.com
+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
+
+
+graphql_url="https://quadrige-core.ifremer.fr/graphql/public"
+access_token="2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:CA8375B7CF45E83F3B637FE97F8DA0F6263120AA9D58C6888A32111C766B054C:1|D6YumLYYbW2wWLoiFkGx++l1psS6BxzHCB5zm2mJRivNlAppnQOVWOZOX+y1C66pkFOxzvADjh7JT9yy2PwsAg=="

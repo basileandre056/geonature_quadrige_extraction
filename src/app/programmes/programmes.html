@@ -20,3 +20,14 @@
   </ul>
   <p *ngIf="message">{{ message }}</p> <!-- Affiche le message du backend -->
 </div>
+
+
+<div class="card">
+  <h2>liens des fichiers a telecharger :</h2>
+  <ul>
+    <li *ngFor="let e of extractions">
+      {{ e }}
+    </li>
+  </ul>
+  <p *ngIf="message">{{ message }}</p> <!-- Affiche le message du backend -->
+</div>

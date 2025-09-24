@@ -3,11 +3,13 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 import { Programme } from '../models/programmes';
+import { FichierExtrait } from '../models/fichiers-extraits';
+import { ExtractedLinks } from '../extracted-links/extracted-links.component';
 
 @Component({
   selector: 'app-programmes',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, ExtractedLinks],
   templateUrl: './programmes.html',
   styleUrls: ['./programmes.scss']
 })
@@ -18,27 +20,32 @@ export class Programmes {
     { name: 'UTOPIAN_RUN_COR-SEARAM_PA_POISSONS', checked: false }
   ];
 
-  extractions: string[] = [];
-
-  message: string = '';  // message de confirmation depuis le backend
+  extractedFiles: FichierExtrait[] = [];
+  message: string = '';
 
   constructor(private http: HttpClient) {}
 
   extraireDonnees() {
-    // On récupère uniquement les noms cochés
-    this.extractions = this.programmes
+    const selections = this.programmes
       .filter(p => p.checked)
       .map(p => p.name);
 
-    // Envoi au backend
-    this.http.post('http://localhost:5000/extractions', { programmes: this.extractions })
+    if (selections.length === 0) {
+      this.message = 'Veuillez sélectionner au moins un programme.';
+      return;
+    }
+
+    this.http.post('http://localhost:5000/extractions', { programmes: selections })
       .subscribe({
         next: (res: any) => {
-          console.log('Programmes envoyés au backend', res);
           this.message = `Backend a reçu : ${res.programmes_recus.join(', ')}`;
+          this.extractedFiles = res.links_fichiers_zip.map((url: string, i: number) => ({
+            programme: res.programmes_recus[i],
+            url
+          }));
         },
         error: err => {
-          console.error('Erreur lors de l’envoi', err);
+          console.error(err);
           this.message = 'Erreur lors de l’envoi au backend';
         }
       });
