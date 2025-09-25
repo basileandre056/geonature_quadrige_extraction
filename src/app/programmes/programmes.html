@@ -1,18 +1,38 @@
 <div class="card">
   <h3>Programmes disponibles</h3>
 
+  <input
+    type="text"
+    [(ngModel)]="searchText"
+    placeholder="Rechercher un programme..."
+    class="form-control search-bar"
+  />
+
+  <!-- Le bouton est désactivé seulement quand isLoading est true -->
+  <button (click)="extraireDonnees()" [disabled]="isLoading" class="extract-btn">
+    {{ isLoading ? 'Extraction en cours...' : 'Extraire' }}
+  </button>
+</div>
+
   <table class="programmes-table">
     <thead>
-      <tr>
-        <th>Sélection</th>
-        <th>Nom du programme</th>
-        <th>Date début</th>
-        <th>Date fin</th>
-        <th>Acteur</th>
-      </tr>
-    </thead>
+  <tr>
+    <th>
+      <input
+        type="checkbox"
+        [(ngModel)]="allSelected"
+        (change)="toggleAll()"
+      />
+    Tout selectionner
+    </th>
+    <th>Nom du programme</th>
+    <th>Date début</th>
+    <th>Date fin</th>
+    <th>Acteur</th>
+  </tr>
+</thead>
     <tbody>
-      <tr *ngFor="let prog of programmes">
+      <tr *ngFor="let prog of filteredProgrammes">
         <td><input type="checkbox" [(ngModel)]="prog.checked" name="{{ prog.name }}" /></td>
         <td>{{ prog.name }}</td>
         <td>{{ prog.startDate || '' }}</td>
@@ -22,10 +42,6 @@
     </tbody>
   </table>
 
-<!-- Le bouton est désactivé seulement quand isLoading est true -->
-<button (click)="extraireDonnees()" [disabled]="isLoading">
-  {{ isLoading ? 'Extraction en cours...' : 'Extraire' }}
-</button>
 
 <p>{{ message }}</p>
 

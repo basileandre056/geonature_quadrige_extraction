@@ -42,7 +42,24 @@ export class Programmes {
   message: string = '';
   isLoading: boolean = false; //  variable pour gérer l'état du bouton extraire
 
+  allSelected = false; // Variable pour gérer la sélection de tous les programmes
+
+  searchText: string = ''; // le texte tapé dans la barre
+
   constructor(private http: HttpClient) {}
+
+  get filteredProgrammes() {
+  if (!this.searchText) {
+    return this.programmes;
+  }
+  return this.programmes.filter(p =>
+    p.name.toLowerCase().includes(this.searchText.toLowerCase())
+  );
+}
+
+  toggleAll() {
+  this.programmes.forEach(p => p.checked = this.allSelected);
+}
 
 extraireDonnees() {
   // Récupère les noms des programmes cochés

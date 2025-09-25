@@ -7,28 +7,15 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.programmes-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1rem;
+/* Barre de recherche */
+.search-bar {
+  display: block;
+  width: 400px;        /* largeur fixe */
+  max-width: 100%;     /* responsive */
+  margin-bottom: 2rem; /* espace avec le bouton */
 }
 
-.programmes-table th,
-.programmes-table td {
-  border: 1px solid #ddd;
-  padding: 0.75rem;
-  text-align: left;
-}
-
-.programmes-table th {
-  background-color: #f5f5f5;
-  font-weight: bold;
-}
-
-.programmes-table tr:nth-child(even) {
-  background-color: #fafafa;
-}
-
+/* Boutons */
 button {
   margin-top: 1rem;
   padding: 0.5rem 1rem;
@@ -41,4 +28,52 @@ button {
 
 button:hover {
   background-color: #0056b3;
+}
+
+/* Tableau programmes */
+.programmes-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+/* Titres centrés et uniformisés */
+.programmes-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+  text-align: center;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+}
+
+/* Cellules */
+.programmes-table td {
+  border: 1px solid #ddd;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+/* Première colonne (checkbox) étroite et centrée */
+.programmes-table th:first-child,
+.programmes-table td:first-child {
+  width: 10%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+/* Deuxième colonne (Nom du programme) */
+.programmes-table th:nth-child(2),
+.programmes-table td:nth-child(2) {
+  width: 25%;
+}
+
+/* Dernière colonne (Acteur) */
+.programmes-table th:nth-child(5),
+.programmes-table td:nth-child(5) {
+  width: 30%;
+}
+
+/* Lignes alternées grises */
+.programmes-table tr:nth-child(even) {
+  background-color: #fafafa;
 }
