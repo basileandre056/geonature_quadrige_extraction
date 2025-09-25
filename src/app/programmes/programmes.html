@@ -22,9 +22,13 @@
     </tbody>
   </table>
 
-  <button (click)="extraireDonnees()">Extraire</button>
-  <p>{{ message }}</p>
-</div>
+<!-- Le bouton est désactivé seulement quand isLoading est true -->
+<button (click)="extraireDonnees()" [disabled]="isLoading">
+  {{ isLoading ? 'Extraction en cours...' : 'Extraire' }}
+</button>
+
+<p>{{ message }}</p>
 
 <!-- Affichage des fichiers extraits -->
 <app-extracted-links [files]="extractedFiles"></app-extracted-links>
+

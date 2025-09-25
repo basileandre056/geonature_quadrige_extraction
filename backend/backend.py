@@ -16,10 +16,16 @@ def recevoir_extractions():
     if not programmes:
         return jsonify({
             "status": "warning",
-            "message": ""
+            "message": "Aucun programme reçu par le backend"
         }), 200  # code 200 pour que le frontend le traite comme une réponse normale
 
     download_links = extract_ifremer_data(programmes)
+
+    if not download_links:
+        return jsonify({
+            "status": "warning",
+            "message": "les programmes séléctionnées ne correspondent pas aux critères du filtre"
+        }), 200  # code 200 pour que le frontend le traite comme une réponse normale
 
     print("\nTous les fichiers téléchargés :")
     for l in download_links:
