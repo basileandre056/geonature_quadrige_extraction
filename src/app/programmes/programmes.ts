@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';// Service Angular pour faire 
 import { Programme } from '../models/programmes'; // Modèle TypeScript décrivant la structure d’un "Programme"
 import { ExtractedLink } from '../models/extractedLinks'; // Modèle pour représenter un fichier extrait
 import { ExtractedLinks } from '../extracted-links/extracted-links'; // Un autre composant que tu réutilises ici
+import { ExtractionResponse } from '../models/extraction-response';
 
 // Décorateur qui définit un composant Angular
 @Component({
@@ -39,45 +40,53 @@ export class Programmes {
   //initialisation des variables :
   extractedFiles: ExtractedLink[] = [];
   message: string = '';
-  isLoading: boolean = false; // ✅ nouvelle variable pour gérer l'état du bouton
+  isLoading: boolean = false; //  variable pour gérer l'état du bouton extraire
 
   constructor(private http: HttpClient) {}
 
-  extraireDonnees() {
-    const selections = this.programmes
-      .filter(p => p.checked)
-      .map(p => p.name);
+extraireDonnees() {
+  // Récupère les noms des programmes cochés
+  const selections = this.programmes
+    .filter(p => p.checked)
+    .map(p => p.name);
 
-    if (selections.length === 0) {
-      this.message = 'Veuillez sélectionner au moins un programme.';
-      return;
-    }
+  //si aucuns programme selectionnes
+  if (selections.length === 0) {
+    this.message = 'Veuillez sélectionner au moins un programme.';
+    return;
+  }
+  // Mise à jour de l’état pour indiquer que le traitement est en cours
+  this.isLoading = true;
+  this.message = `Processing... L’extraction peut prendre une minute ou deux`;
 
 
-    //début du chargement
-    this.isLoading = true;
-    this.message = `Processing... L’extraction peut prendre une minute ou deux`;
-
-    this.http.post('http://localhost:5000/extractions', { programmes: selections })
-      .subscribe({
-        next: (res: any) => {
-          if (res.status === "warning") {
-            this.message = res.message;
-            this.extractedFiles = [];
-          } else if (res.status === "ok") {
-            this.message = `Backend a reçu : ${res.programmes_recus.join(', ')}`;
-            this.extractedFiles = res.fichiers_zip.map((f: any) => ({
-              programme: f.programme,
-              url: f.url
-            }));
-          }
-          this.isLoading = false; // fin du chargement
-        },
-        error: err => {
-          console.error(err);
-          this.message = 'Erreur lors de l’envoi au backend';
-          this.isLoading = false; //  même en cas d’erreur, on réactive le bouton
+  // Envoie une requête POST au backend avec les programmes sélectionnés
+  this.http.post<ExtractionResponse>('http://localhost:5000/extractions', { programmes: selections })
+    .subscribe({
+      next: (res) => {
+        // Cas normal (status=ok)
+        if (res.status === "ok") {
+          this.message = `Backend a reçu : ${res.programmes_recus?.join(', ')}`;
+          this.extractedFiles = res.fichiers_zip ?? [];
         }
-      });
+        this.isLoading = false;
+      },
+      error: (err) => {
+        // Ici Angular déclenche error car le backend renvoie 400 ou 404
+        console.error(err);
+
+        if (err.status === 400) {
+          this.message = err.error?.message ?? 'Requête invalide (400)';
+        } else if (err.status === 404) {
+          this.message = err.error?.message ?? 'Aucun fichier trouvé (404)';
+        } else {
+          this.message = 'Erreur serveur inattendue';
+        }
+        // Réinitialisation des variables
+        this.extractedFiles = [];
+        this.isLoading = false;
+      }
+    });
   }
 }
+
