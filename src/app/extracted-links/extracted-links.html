@@ -1,9 +1,14 @@
-<div *ngIf="files.length > 0" class="card">
-  <h3>Fichiers extraits :</h3>
-  <ul>
-    <li *ngFor="let f of files">
-      {{ f.programme }} →
-      <a [href]="f.url" target="_blank">{{ f.url }}</a>
+<div class="card">
+  <h3>Liens extraits</h3>
+
+  <ul *ngIf="files.length > 0; else noFiles">
+    <li *ngFor="let fichier of files">
+      <strong>{{ fichier.programme }}</strong> :
+      <a [href]="fichier.url" target="_blank">{{ fichier.url }}</a>
     </li>
   </ul>
+
+  <ng-template #noFiles>
+    <p>Aucun fichier disponible pour l’instant.</p>
+  </ng-template>
 </div>

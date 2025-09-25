@@ -1,17 +1,30 @@
 <div class="card">
   <h3>Programmes disponibles</h3>
-  <form>
-    <div *ngFor="let prog of programmes">
-      <label>
-        <input type="checkbox" [(ngModel)]="prog.checked" name="{{ prog.name }}" />
-        {{ prog.name }}
-      </label>
-    </div>
-  </form>
+
+  <table class="programmes-table">
+    <thead>
+      <tr>
+        <th>Sélection</th>
+        <th>Nom du programme</th>
+        <th>Date début</th>
+        <th>Date fin</th>
+        <th>Acteur</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let prog of programmes">
+        <td><input type="checkbox" [(ngModel)]="prog.checked" name="{{ prog.name }}" /></td>
+        <td>{{ prog.name }}</td>
+        <td>{{ prog.startDate || '' }}</td>
+        <td>{{ prog.endDate || '' }}</td>
+        <td>{{ prog.actor || '' }}</td>
+      </tr>
+    </tbody>
+  </table>
 
   <button (click)="extraireDonnees()">Extraire</button>
   <p>{{ message }}</p>
 </div>
 
-<!-- Card affichage des fichiers extraits -->
+<!-- Affichage des fichiers extraits -->
 <app-extracted-links [files]="extractedFiles"></app-extracted-links>

@@ -13,6 +13,12 @@ def recevoir_extractions():
     programmes: list[str] = data.get('programmes', [])
     print("Programmes reçus :", programmes)
 
+    if not programmes:
+        return jsonify({
+            "status": "warning",
+            "message": ""
+        }), 200  # code 200 pour que le frontend le traite comme une réponse normale
+
     download_links = extract_ifremer_data(programmes)
 
     print("\nTous les fichiers téléchargés :")
@@ -22,8 +28,11 @@ def recevoir_extractions():
     return jsonify({
         "status": "ok",
         "programmes_recus": programmes,
-        "fichiers_zip": [{"programme": p, "url": url} for p, url in zip(programmes, download_links)]
+        "fichiers_zip": [
+            {"programme": p, "url": url} for p, url in zip(programmes, download_links)
+        ]
     }), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
