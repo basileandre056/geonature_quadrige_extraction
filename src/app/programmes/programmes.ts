@@ -3,7 +3,7 @@ import { FormsModule } from '@angular/forms';     // Permet de gérer les formul
 import { CommonModule } from '@angular/common';   // Fournit les directives de base Angular (ngIf, ngFor, etc.)
 import { HttpClient } from '@angular/common/http';// Service Angular pour faire des requêtes HTTP
 import { Programme } from '../models/programmes'; // Modèle TypeScript décrivant la structure d’un "Programme"
-import { FichierExtrait } from '../models/fichiers-extraits'; // Modèle pour représenter un fichier extrait
+import { ExtractedLink } from '../models/extractedLinks'; // Modèle pour représenter un fichier extrait
 import { ExtractedLinks } from '../extracted-links/extracted-links'; // Un autre composant que tu réutilises ici
 
 // Décorateur qui définit un composant Angular
@@ -37,7 +37,7 @@ export class Programmes {
   ];
 
   //initialisation des variables :
-  extractedFiles: FichierExtrait[] = [];
+  extractedFiles: ExtractedLink[] = [];
   message: string = '';
   isLoading: boolean = false; // ✅ nouvelle variable pour gérer l'état du bouton
 

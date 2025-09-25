@@ -1,4 +1,4 @@
-export interface FichierExtrait {
+export interface ExtractedLink {
   programme: string;
   url: string;
 }
