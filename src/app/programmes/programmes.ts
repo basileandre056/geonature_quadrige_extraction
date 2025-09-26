@@ -6,12 +6,13 @@ import { Programme } from '../models/programmes'; // Modèle TypeScript décriva
 import { ExtractedLink } from '../models/extractedLinks'; // Modèle pour représenter un fichier extrait
 import { ExtractedLinks } from '../extracted-links/extracted-links'; // Un autre composant que tu réutilises ici
 import { ExtractionResponse } from '../models/extraction-response';
+import { FrontendFilterComponent } from '../frontend-filter/frontend-filter';
 
 // Décorateur qui définit un composant Angular
 @Component({
   selector: 'app-programmes',   // Balise HTML utilisée pour inclure ce composant (<app-programmes></app-programmes>)
   standalone: true,
-  imports: [CommonModule, FormsModule, ExtractedLinks], // Modules et composants utilisés dans ce composant
+  imports: [CommonModule, FormsModule, ExtractedLinks, FrontendFilterComponent], // Modules et composants utilisés dans ce composant
   templateUrl: './programmes.html',
   styleUrls: ['./programmes.scss']
 })
@@ -46,6 +47,8 @@ export class Programmes {
 
   searchText: string = ''; // le texte tapé dans la barre
 
+  showFilter = false;
+
   constructor(private http: HttpClient) {}
 
   get filteredProgrammes() {
@@ -61,7 +64,15 @@ export class Programmes {
   this.programmes.forEach(p => p.checked = this.allSelected);
 }
 
-extraireDonnees() {
+
+onFilterApplied(filterData: any) {
+    console.log('Filtre appliqué depuis FrontendFilter:', filterData);
+    this.showFilter = false;
+    // TODO: envoyer filterData au backend
+  }
+
+
+ExtraireDonnees() {
   // Récupère les noms des programmes cochés
   const selections = this.programmes
     .filter(p => p.checked)

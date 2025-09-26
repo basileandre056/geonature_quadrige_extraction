@@ -1,0 +1,22 @@
+.filter-card {
+  position: absolute;
+  right: 20px;
+  top: 100px;
+  background: #fff;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  border-radius: 8px;
+  width: 320px;
+  z-index: 1000;
+
+  h3 {
+    margin-top: 0;
+  }
+
+  .filter-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1rem;
+  }
+}

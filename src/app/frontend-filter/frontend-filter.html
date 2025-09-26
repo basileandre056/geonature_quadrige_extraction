@@ -1,0 +1,26 @@
+<div class="filter-card">
+  <h3>Filtre</h3>
+
+  <label>Name:</label>
+  <input type="text" [(ngModel)]="filter.name" />
+
+  <label>Fields:</label>
+  <input type="text" [(ngModel)]="filter.fields" />
+
+  <div>
+    <label>Périodes:</label>
+    <div *ngFor="let p of filter.periods; let i=index">
+      <input type="date" [(ngModel)]="filter.periods[i].startDate" />
+      <input type="date" [(ngModel)]="filter.periods[i].endDate" />
+    </div>
+    <button (click)="addPeriod()">+ Ajouter période</button>
+  </div>
+
+  <label>Monitoring location:</label>
+  <input type="text" [(ngModel)]="filter.monitoringLocation" />
+
+  <div class="filter-actions">
+    <button (click)="applyFilter()">Appliquer</button>
+    <button (click)="close.emit()">Fermer</button>
+  </div>
+</div>

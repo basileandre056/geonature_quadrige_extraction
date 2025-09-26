@@ -8,10 +8,21 @@
     class="form-control search-bar"
   />
 
-  <!-- Le bouton est désactivé seulement quand isLoading est true -->
-  <button (click)="extraireDonnees()" [disabled]="isLoading" class="extract-btn">
+  <div class="button-row">
+  <button (click)="ExtraireDonnees()" [disabled]="isLoading" class="extract-btn">
     {{ isLoading ? 'Extraction en cours...' : 'Extraire' }}
   </button>
+
+  <button (click)="showFilter = true" class="filter-btn">
+    Ajouter un filtre personnalisé
+  </button>
+</div>
+
+<app-frontend-filter
+  *ngIf="showFilter"
+  (apply)="onFilterApplied($event)"
+  (close)="showFilter = false">
+</app-frontend-filter>
 </div>
 
   <table class="programmes-table">
