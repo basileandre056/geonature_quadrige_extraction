@@ -1,18 +1,17 @@
-import { Component } from '@angular/core';        // Permet de déclarer un composant Angular
-import { FormsModule } from '@angular/forms';     // Permet de gérer les formulaires (ex: ngModel pour checkbox, input)
-import { CommonModule } from '@angular/common';   // Fournit les directives de base Angular (ngIf, ngFor, etc.)
-import { HttpClient } from '@angular/common/http';// Service Angular pour faire des requêtes HTTP
-import { Programme } from '../models/programmes'; // Modèle TypeScript décrivant la structure d’un "Programme"
-import { ExtractedLink } from '../models/extractedLinks'; // Modèle pour représenter un fichier extrait
-import { ExtractedLinks } from '../extracted-links/extracted-links'; // Un autre composant que tu réutilises ici
+import { Component } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { CommonModule } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { Programme } from '../models/programmes';
+import { ExtractedLink } from '../models/extractedLinks';
+import { ExtractedLinks } from '../extracted-links/extracted-links';
 import { ExtractionResponse } from '../models/extraction-response';
 import { FrontendFilterComponent } from '../frontend-filter/frontend-filter';
 
-// Décorateur qui définit un composant Angular
 @Component({
-  selector: 'app-programmes',   // Balise HTML utilisée pour inclure ce composant (<app-programmes></app-programmes>)
+  selector: 'app-programmes',
   standalone: true,
-  imports: [CommonModule, FormsModule, ExtractedLinks, FrontendFilterComponent], // Modules et composants utilisés dans ce composant
+  imports: [CommonModule, FormsModule, ExtractedLinks, FrontendFilterComponent],
   templateUrl: './programmes.html',
   styleUrls: ['./programmes.scss']
 })
@@ -38,69 +37,69 @@ export class Programmes {
     { name: 'RESEAUAMP_SBH_QUADRAT_OURSINS', checked: false }
   ];
 
-  //initialisation des variables :
   extractedFiles: ExtractedLink[] = [];
   message: string = '';
-  isLoading: boolean = false; //  variable pour gérer l'état du bouton extraire
-
-  allSelected = false; // Variable pour gérer la sélection de tous les programmes
-
-  searchText: string = ''; // le texte tapé dans la barre
-
+  isLoading: boolean = false;
+  allSelected = false;
+  searchText: string = '';
   showFilter = false;
+
+  //  Nouveau : stockage du filtre appliqué
+  activeFilter: any = null;
 
   constructor(private http: HttpClient) {}
 
   get filteredProgrammes() {
-  if (!this.searchText) {
-    return this.programmes;
+    if (!this.searchText) {
+      return this.programmes;
+    }
+    return this.programmes.filter(p =>
+      p.name.toLowerCase().includes(this.searchText.toLowerCase())
+    );
   }
-  return this.programmes.filter(p =>
-    p.name.toLowerCase().includes(this.searchText.toLowerCase())
-  );
-}
 
   toggleAll() {
-  this.programmes.forEach(p => p.checked = this.allSelected);
-}
+    this.programmes.forEach(p => (p.checked = this.allSelected));
+  }
 
-
+  // Quand on applique le filtre
   onFilterApplied(filterData: any) {
     console.log('Filtre appliqué depuis FrontendFilter:', filterData);
     this.showFilter = false;
-    // TODO: envoyer filterData au backend
+    this.activeFilter = filterData; //  sauvegarde du filtre
   }
 
-
   ExtraireDonnees() {
-  // Récupère les noms des programmes cochés
-  const selections = this.programmes
-    .filter(p => p.checked)
-    .map(p => p.name);
+    const selections = this.programmes.filter(p => p.checked).map(p => p.name);
 
-    //si aucuns programme selectionnes
     if (selections.length === 0) {
       this.message = 'Veuillez sélectionner au moins un programme.';
       return;
     }
-    // Mise à jour de l’état pour indiquer que le traitement est en cours
+
+    if (!this.activeFilter) {
+      this.message = 'Veuillez définir un filtre avant de lancer une extraction.';
+      return;
+    }
+
     this.isLoading = true;
     this.message = `Processing... L’extraction peut prendre une minute ou deux`;
 
-
-    // Envoie une requête POST au backend avec les programmes sélectionnés
-    this.http.post<ExtractionResponse>('http://localhost:5000/extractions', { programmes: selections })
+    //  Envoi programmes + filtre au backend
+    this.http
+      .post<ExtractionResponse>('http://localhost:5000/extractions', {
+        programmes: selections,
+        filter: this.activeFilter
+      })
       .subscribe({
         next: (res) => {
-          // Cas normal (status=ok)
-          if (res.status === "ok") {
+          if (res.status === 'ok') {
             this.message = `Backend a reçu : ${res.programmes_recus?.join(', ')}`;
             this.extractedFiles = res.fichiers_zip ?? [];
           }
           this.isLoading = false;
         },
         error: (err) => {
-          // Ici Angular déclenche error car le backend renvoie 400 ou 404
           console.error(err);
 
           if (err.status === 400) {
@@ -110,11 +109,10 @@ export class Programmes {
           } else {
             this.message = 'Erreur serveur inattendue';
           }
-          // Réinitialisation des variables
+
           this.extractedFiles = [];
           this.isLoading = false;
         }
-    });
+      });
   }
 }
-

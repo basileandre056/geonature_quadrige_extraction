@@ -3,18 +3,13 @@ import time
 import requests
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
+from build_query import build_extraction_query
 
 
-
-
-
-
-def extract_ifremer_data(programmes):
+def extract_ifremer_data(programmes, filter_data):
     # Connexion GraphQL
-    graphql_url="https://quadrige-core.ifremer.fr/graphql/public"
-    access_token="2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:CA8375B7CF45E83F3B637FE97F8DA0F6263120AA9D58C6888A32111C766B054C:1|D6YumLYYbW2wWLoiFkGx++l1psS6BxzHCB5zm2mJRivNlAppnQOVWOZOX+y1C66pkFOxzvADjh7JT9yy2PwsAg=="
-
-
+    graphql_url = "https://quadrige-core.ifremer.fr/graphql/public"
+    access_token = "2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:CA8375B7CF45E83F3B637FE97F8DA0F6263120AA9D58C6888A32111C766B054C:1|D6YumLYYbW2wWLoiFkGx++l1psS6BxzHCB5zm2mJRivNlAppnQOVWOZOX+y1C66pkFOxzvADjh7JT9yy2PwsAg=="
 
     transport = RequestsHTTPTransport(
         url=graphql_url,
@@ -29,43 +24,8 @@ def extract_ifremer_data(programmes):
     for p in programmes:
         print(f"Programme : {p}")
 
-        # Lancer l'extraction
-        execute_query = gql(f"""
-        query {{
-            executeResultExtraction(
-                filter: {{
-                    name: "{p.lower()}"
-                    fields: [
-                        MONITORING_LOCATION_LABEL,
-                        MONITORING_LOCATION_NAME,
-                        MONITORING_LOCATION_MIN_LATITUDE,
-                        MONITORING_LOCATION_MAX_LATITUDE,
-                        MONITORING_LOCATION_MIN_LONGITUDE,
-                        MONITORING_LOCATION_MAX_LONGITUDE,
-                        SURVEY_DATE,
-                        MEASUREMENT_TAXON_GROUP_NAME,
-                        MEASUREMENT_INPUT_TAXON_NAME,
-                        SURVEY_NB_INDIVIDUALS,
-                        MEASUREMENT_NUMERICAL_VALUE,
-                        MEASUREMENT_ANALYST_DEPARTMENT_NAME,
-                        MEASUREMENT_RECORDER_DEPARTMENT_NAME
-                    ]
-                    periods: [{{ startDate: "1980-01-01", endDate: "2025-12-01" }}]
-                    mainFilter: {{
-                        program: {{ ids: ["{p}"] }},
-                        monitoringLocation: {{ text: "126-" }}
-                    }}
-                }}
-            ) {{
-                id
-                name
-                startDate
-                status
-            }}
-        }}
-        """)
-
         try:
+            execute_query = build_extraction_query(p, filter_data)  # <--- filter_data reçu du backend
             response = client.execute(execute_query)
             task_id = response['executeResultExtraction']['id']
             print(f"   Extraction lancée (id: {task_id})")
