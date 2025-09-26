@@ -65,55 +65,55 @@ export class Programmes {
 }
 
 
-onFilterApplied(filterData: any) {
+  onFilterApplied(filterData: any) {
     console.log('Filtre appliqué depuis FrontendFilter:', filterData);
     this.showFilter = false;
     // TODO: envoyer filterData au backend
   }
 
 
-ExtraireDonnees() {
+  ExtraireDonnees() {
   // Récupère les noms des programmes cochés
   const selections = this.programmes
     .filter(p => p.checked)
     .map(p => p.name);
 
-  //si aucuns programme selectionnes
-  if (selections.length === 0) {
-    this.message = 'Veuillez sélectionner au moins un programme.';
-    return;
-  }
-  // Mise à jour de l’état pour indiquer que le traitement est en cours
-  this.isLoading = true;
-  this.message = `Processing... L’extraction peut prendre une minute ou deux`;
+    //si aucuns programme selectionnes
+    if (selections.length === 0) {
+      this.message = 'Veuillez sélectionner au moins un programme.';
+      return;
+    }
+    // Mise à jour de l’état pour indiquer que le traitement est en cours
+    this.isLoading = true;
+    this.message = `Processing... L’extraction peut prendre une minute ou deux`;
 
 
-  // Envoie une requête POST au backend avec les programmes sélectionnés
-  this.http.post<ExtractionResponse>('http://localhost:5000/extractions', { programmes: selections })
-    .subscribe({
-      next: (res) => {
-        // Cas normal (status=ok)
-        if (res.status === "ok") {
-          this.message = `Backend a reçu : ${res.programmes_recus?.join(', ')}`;
-          this.extractedFiles = res.fichiers_zip ?? [];
+    // Envoie une requête POST au backend avec les programmes sélectionnés
+    this.http.post<ExtractionResponse>('http://localhost:5000/extractions', { programmes: selections })
+      .subscribe({
+        next: (res) => {
+          // Cas normal (status=ok)
+          if (res.status === "ok") {
+            this.message = `Backend a reçu : ${res.programmes_recus?.join(', ')}`;
+            this.extractedFiles = res.fichiers_zip ?? [];
+          }
+          this.isLoading = false;
+        },
+        error: (err) => {
+          // Ici Angular déclenche error car le backend renvoie 400 ou 404
+          console.error(err);
+
+          if (err.status === 400) {
+            this.message = err.error?.message ?? 'Requête invalide (400)';
+          } else if (err.status === 404) {
+            this.message = err.error?.message ?? 'Aucun fichier trouvé (404)';
+          } else {
+            this.message = 'Erreur serveur inattendue';
+          }
+          // Réinitialisation des variables
+          this.extractedFiles = [];
+          this.isLoading = false;
         }
-        this.isLoading = false;
-      },
-      error: (err) => {
-        // Ici Angular déclenche error car le backend renvoie 400 ou 404
-        console.error(err);
-
-        if (err.status === 400) {
-          this.message = err.error?.message ?? 'Requête invalide (400)';
-        } else if (err.status === 404) {
-          this.message = err.error?.message ?? 'Aucun fichier trouvé (404)';
-        } else {
-          this.message = 'Erreur serveur inattendue';
-        }
-        // Réinitialisation des variables
-        this.extractedFiles = [];
-        this.isLoading = false;
-      }
     });
   }
 }

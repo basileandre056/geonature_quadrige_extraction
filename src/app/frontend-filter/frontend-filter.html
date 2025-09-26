@@ -1,26 +1,67 @@
 <div class="filter-card">
-  <h3>Filtre</h3>
+  <h2>Sélectionnez vos critères de filtrage</h2>
 
-  <label>Name:</label>
-  <input type="text" [(ngModel)]="filter.name" />
-
-  <label>Fields:</label>
-  <input type="text" [(ngModel)]="filter.fields" />
-
-  <div>
-    <label>Périodes:</label>
-    <div *ngFor="let p of filter.periods; let i=index">
-      <input type="date" [(ngModel)]="filter.periods[i].startDate" />
-      <input type="date" [(ngModel)]="filter.periods[i].endDate" />
-    </div>
-    <button (click)="addPeriod()">+ Ajouter période</button>
+  <!-- Name -->
+  <div class="filter-field">
+    <label>Name:</label>
+    <input type="text" [(ngModel)]="filter.name" name="name" required />
+    <small *ngIf="filter.name.trim() === ''" class="error-msg">
+      Ce champ est requis
+    </small>
   </div>
 
-  <label>Monitoring location:</label>
-  <input type="text" [(ngModel)]="filter.monitoringLocation" />
+  <!-- Fields -->
+  <div class="filter-field">
+    <label>Fields:</label>
+    <div class="fields-list">
+      <div *ngFor="let f of filter.fields; let i = index" class="field-item">
+        {{ f }}
+        <button type="button" class="remove-btn" (click)="removeField(i)">×</button>
+      </div>
+    </div>
 
+    <div class="field-input">
+      <input type="text" [(ngModel)]="newField" placeholder="Ajouter un champ..." />
+      <button type="button" (click)="addField()">Ajouter</button>
+    </div>
+
+    <small *ngIf="filter.fields.length === 0" class="error-msg">
+      Au moins un champ est requis
+    </small>
+  </div>
+
+  <!-- Période -->
+  <div class="filter-field">
+    <label>Période :</label>
+    <div class="period-row">
+      <div class="date-input">
+        <input type="date" [(ngModel)]="filter.startDate" name="startDate" required />
+        <small *ngIf="filter.startDate.trim() === ''" class="error-msg">
+          Date de début requise
+        </small>
+      </div>
+
+      <div class="date-input">
+        <input type="date" [(ngModel)]="filter.endDate" name="endDate" required />
+        <small *ngIf="filter.endDate.trim() === ''" class="error-msg">
+          Date de fin requise
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <!-- Monitoring location -->
+  <div class="filter-field">
+    <label>Monitoring location:</label>
+    <input type="text" [(ngModel)]="filter.monitoringLocation" name="monitoringLocation" required />
+    <small *ngIf="filter.monitoringLocation.trim() === ''" class="error-msg">
+      Ce champ est requis
+    </small>
+  </div>
+
+  <!-- Actions -->
   <div class="filter-actions">
-    <button (click)="applyFilter()">Appliquer</button>
+    <button [disabled]="!isFormValid()" (click)="applyFilter()">Appliquer</button>
     <button (click)="close.emit()">Fermer</button>
   </div>
 </div>

@@ -15,19 +15,42 @@
   margin-bottom: 2rem; /* espace avec le bouton */
 }
 
-/* Boutons */
-button {
+/* Conteneur des boutons */
+.button-row {
+  display: flex;
+  justify-content: center;   /* centre horizontalement */
+  align-items: center;       /* aligne verticalement */
+  gap: 1.5rem;               /* espace entre les deux boutons */
   margin-top: 1rem;
-  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+}
+
+/* Bouton Extraire */
+.extract-btn {
+  padding: 0.6rem 1.2rem;
   background-color: #007bff;
   color: white;
   border: none;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
-button:hover {
+.extract-btn:hover {
   background-color: #0056b3;
+}
+
+/* Bouton Filtre personnalisé */
+.filter-btn {
+  padding: 0.6rem 1.2rem;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.filter-btn:hover {
+  background-color: #1e7e34;
 }
 
 /* Tableau programmes */

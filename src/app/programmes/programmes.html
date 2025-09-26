@@ -9,21 +9,26 @@
   />
 
   <div class="button-row">
-  <button (click)="ExtraireDonnees()" [disabled]="isLoading" class="extract-btn">
-    {{ isLoading ? 'Extraction en cours...' : 'Extraire' }}
-  </button>
+    <button (click)="ExtraireDonnees()" [disabled]="isLoading" class="extract-btn">
+      {{ isLoading ? 'Extraction en cours...' : 'Extraire' }}
+    </button>
 
-  <button (click)="showFilter = true" class="filter-btn">
-    Ajouter un filtre personnalisé
-  </button>
+    <button (click)="showFilter = true" class="filter-btn">
+      Ajouter un filtre personnalisé
+    </button>
+  </div>
+
+  <app-frontend-filter
+    *ngIf="showFilter"
+    (apply)="onFilterApplied($event)"
+    (close)="showFilter = false">
+  </app-frontend-filter>
 </div>
 
-<app-frontend-filter
-  *ngIf="showFilter"
-  (apply)="onFilterApplied($event)"
-  (close)="showFilter = false">
-</app-frontend-filter>
-</div>
+
+<p>{{ message }}</p>
+
+
 
   <table class="programmes-table">
     <thead>
@@ -54,7 +59,6 @@
   </table>
 
 
-<p>{{ message }}</p>
 
 <!-- Affichage des fichiers extraits -->
 <app-extracted-links [files]="extractedFiles"></app-extracted-links>
