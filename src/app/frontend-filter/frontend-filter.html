@@ -4,8 +4,8 @@
   <!-- Name -->
   <div class="filter-field">
     <label>Name:</label>
-    <input type="text" [(ngModel)]="filter.name" name="name" required />
-    <small *ngIf="filter.name.trim() === ''" class="error-msg">
+    <input type="text" [(ngModel)]="extraction_filter.name" name="name" required />
+    <small *ngIf="extraction_filter.name.trim() === ''" class="error-msg">
       Ce champ est requis
     </small>
   </div>
@@ -15,13 +15,13 @@
       <label>Fields:</label>
 
       <div class="fields-list">
-        <div *ngFor="let f of filter.fields; let i = index" class="field-item">
+        <div *ngFor="let f of extraction_filter.fields; let i = index" class="field-item">
           {{ f }}
           <button type="button" class="remove-btn" (click)="removeField(i)">×</button>
         </div>
       </div>
 
-  <!-- ✅ debug éventuel : à placer ICI (en dehors de la boucle ci-dessus) -->
+
   <!-- <pre>{{ remainingFields }}</pre> -->
 
       <div class="field-input">
@@ -34,7 +34,7 @@
         <button type="button" (click)="addField()" [disabled]="!newField">Ajouter</button>
       </div>
 
-      <small *ngIf="filter.fields.length === 0" class="error-msg">
+      <small *ngIf="extraction_filter.fields.length === 0" class="error-msg">
         Au moins un champ est requis
       </small>
       <small *ngIf="remainingFields.length === 0" class="error-msg">
@@ -48,15 +48,15 @@
     <label>Période :</label>
     <div class="period-row">
       <div class="date-input">
-        <input type="date" [(ngModel)]="filter.startDate" name="startDate" required />
-        <small *ngIf="filter.startDate.trim() === ''" class="error-msg">
+        <input type="date" [(ngModel)]="extraction_filter.startDate" name="startDate" required />
+        <small *ngIf="extraction_filter.startDate.trim() === ''" class="error-msg">
           Date de début requise
         </small>
       </div>
 
       <div class="date-input">
-        <input type="date" [(ngModel)]="filter.endDate" name="endDate" required />
-        <small *ngIf="filter.endDate.trim() === ''" class="error-msg">
+        <input type="date" [(ngModel)]="extraction_filter.endDate" name="endDate" required />
+        <small *ngIf="extraction_filter.endDate.trim() === ''" class="error-msg">
           Date de fin requise
         </small>
       </div>
@@ -66,8 +66,8 @@
   <!-- Monitoring location -->
   <div class="filter-field">
     <label>Monitoring location:</label>
-    <input type="text" [(ngModel)]="filter.monitoringLocation" name="monitoringLocation" required />
-    <small *ngIf="filter.monitoringLocation.trim() === ''" class="error-msg">
+    <input type="text" [(ngModel)]="extraction_filter.monitoringLocation" name="monitoringLocation" required />
+    <small *ngIf="extraction_filter.monitoringLocation.trim() === ''" class="error-msg">
       Ce champ est requis
     </small>
   </div>

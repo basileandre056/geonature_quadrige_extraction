@@ -7,11 +7,19 @@ import { ExtractedLink } from '../models/extractedLinks';
 import { ExtractedLinks } from '../extracted-links/extracted-links';
 import { ExtractionResponse } from '../models/extraction-response';
 import { FrontendFilterComponent } from '../frontend-filter/frontend-filter';
+import { ProgramExtractionFilterComponent } from '../program-extraction-filter/program-extraction-filter';
+import { ProgramResponse } from '../models/programs_response';
 
 @Component({
   selector: 'app-programmes',
   standalone: true,
-  imports: [CommonModule, FormsModule, ExtractedLinks, FrontendFilterComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    ExtractedLinks,
+    FrontendFilterComponent,
+    ProgramExtractionFilterComponent
+  ],
   templateUrl: './programmes.html',
   styleUrls: ['./programmes.scss']
 })
@@ -43,9 +51,11 @@ export class Programmes {
   allSelected = false;
   searchText: string = '';
   showFilter = false;
+  showExtractionFilter = false;
 
-  //  Nouveau : stockage du filtre appliqué
-  activeFilter: any = null;
+  // ✅ deux filtres séparés
+  data_filter: any = null;     // filtre pour l’extraction des données
+  programs_filter: any = null; // filtre pour la mise à jour des programmes
 
   constructor(private http: HttpClient) {}
 
@@ -62,13 +72,61 @@ export class Programmes {
     this.programmes.forEach(p => (p.checked = this.allSelected));
   }
 
-  // Quand on applique le filtre
+  // Quand on applique le filtre d’extraction de données
   onFilterApplied(filterData: any) {
     console.log('Filtre appliqué depuis FrontendFilter:', filterData);
     this.showFilter = false;
-    this.activeFilter = filterData; //  sauvegarde du filtre
+    this.data_filter = filterData;
   }
 
+  // Quand on applique le filtre d’extraction de programmes
+  onExtractionFilterApplied(filterData: any) {
+    console.log('Filtre extraction appliqué:', filterData);
+    this.showExtractionFilter = false;
+    this.programs_filter = filterData;
+  }
+
+  //  Mise à jour des programmes depuis le backend
+ Extraire_programmes() {
+  if (!this.programs_filter) {
+    this.message = 'Veuillez définir un filtre d’extraction de programmes.';
+    console.warn("[FRONTEND] ❌ Aucun filtre défini pour l’extraction des programmes");
+    return;
+  }
+
+  this.isLoading = true;
+  this.message = `Mise à jour des programmes en cours...`;
+  console.log("[FRONTEND] ➡️ Envoi de la requête à /program-extraction avec :", this.programs_filter);
+
+  this.http
+    .post<ProgramResponse>('http://localhost:5000/program-extraction', {
+      filter: this.programs_filter
+    })
+    .subscribe({
+      next: (res) => {
+        console.log("[FRONTEND] ⬅️ Réponse reçue :", res);
+        if (res.status === 'ok' && res.programmes_recus) {
+          this.programmes = res.programmes_recus.map(p => ({
+            name: p.code,
+            lieu_mnemonique: p.lieu_mnemonique,
+            checked: false
+          }));
+          this.message = `Liste des programmes mise à jour (${this.programmes.length})`;
+          console.log("[FRONTEND] ✅ Programmes mis à jour :", this.programmes);
+        } else {
+          this.message = res.message ?? 'Réponse inattendue du serveur';
+          console.warn("[FRONTEND] ⚠️ Réponse inattendue :", res);
+        }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error("[FRONTEND] ❌ Erreur HTTP :", err);
+        this.message = err.error?.message ?? 'Erreur serveur inattendue';
+        this.isLoading = false;
+      }
+    });
+}
+  // ⚡️ Extraction des données depuis le backend
   ExtraireDonnees() {
     const selections = this.programmes.filter(p => p.checked).map(p => p.name);
 
@@ -77,7 +135,7 @@ export class Programmes {
       return;
     }
 
-    if (!this.activeFilter) {
+    if (!this.data_filter) {
       this.message = 'Veuillez définir un filtre avant de lancer une extraction.';
       return;
     }
@@ -85,11 +143,10 @@ export class Programmes {
     this.isLoading = true;
     this.message = `Processing... L’extraction peut prendre une minute ou deux`;
 
-    //  Envoi programmes + filtre au backend
     this.http
       .post<ExtractionResponse>('http://localhost:5000/extractions', {
         programmes: selections,
-        filter: this.activeFilter
+        filter: this.data_filter
       })
       .subscribe({
         next: (res) => {

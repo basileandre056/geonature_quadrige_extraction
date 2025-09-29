@@ -9,57 +9,67 @@
   />
 
   <div class="button-row">
+    <!-- bouton extraire donnes -->
     <button (click)="ExtraireDonnees()" [disabled]="isLoading" class="extract-btn">
       {{ isLoading ? 'Extraction en cours...' : 'Extraire' }}
     </button>
 
+    <!-- bouton ajouter filtre personalisé -->
     <button (click)="showFilter = true" class="filter-btn">
       Ajouter un filtre personnalisé
     </button>
+
+    <!-- bouton maj programmes -->
+   <button (click)="showExtractionFilter = true" [disabled]="isLoading" class="maj_prgrm-btn">
+      {{ isLoading ? 'Mise à jour...' : 'Mettre à jour la liste des programmes' }}
+    </button>
+
   </div>
 
+  <!-- Fenêtre filtre classique -->
   <app-frontend-filter
     *ngIf="showFilter"
     (apply)="onFilterApplied($event)"
     (close)="showFilter = false">
   </app-frontend-filter>
-</div>
 
+  <!-- ✅ Fenêtre extraction -->
+  <app-program-extraction-filter
+    *ngIf="showExtractionFilter"
+    (apply)="onExtractionFilterApplied($event)"
+    (close)="showExtractionFilter = false">
+  </app-program-extraction-filter>
+</div>
 
 <p>{{ message }}</p>
 
-
-
-  <table class="programmes-table">
-    <thead>
-  <tr>
-    <th>
-      <input
-        type="checkbox"
-        [(ngModel)]="allSelected"
-        (change)="toggleAll()"
-      />
-    Tout selectionner
-    </th>
-    <th>Nom du programme</th>
-    <th>Date début</th>
-    <th>Date fin</th>
-    <th>Acteur</th>
-  </tr>
-</thead>
-    <tbody>
-      <tr *ngFor="let prog of filteredProgrammes">
-        <td><input type="checkbox" [(ngModel)]="prog.checked" name="{{ prog.name }}" /></td>
-        <td>{{ prog.name }}</td>
-        <td>{{ prog.startDate || '' }}</td>
-        <td>{{ prog.endDate || '' }}</td>
-        <td>{{ prog.actor || '' }}</td>
-      </tr>
-    </tbody>
-  </table>
-
-
+<table class="programmes-table">
+  <thead>
+    <tr>
+      <th>
+        <input
+          type="checkbox"
+          [(ngModel)]="allSelected"
+          (change)="toggleAll()"
+        />
+        Tout sélectionner
+      </th>
+      <th>Nom du programme</th>
+      <th>Date début</th>
+      <th>Date fin</th>
+      <th>Acteur</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let prog of filteredProgrammes">
+      <td><input type="checkbox" [(ngModel)]="prog.checked" name="{{ prog.name }}" /></td>
+      <td>{{ prog.name }}</td>
+      <td>{{ prog.startDate || '' }}</td>
+      <td>{{ prog.endDate || '' }}</td>
+      <td>{{ prog.actor || '' }}</td>
+    </tr>
+  </tbody>
+</table>
 
 <!-- Affichage des fichiers extraits -->
 <app-extracted-links [files]="extractedFiles"></app-extracted-links>
-

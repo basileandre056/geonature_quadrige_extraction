@@ -13,7 +13,7 @@ export class FrontendFilterComponent {
   @Output() apply = new EventEmitter<any>();
   @Output() close = new EventEmitter<void>();
 
-  filter = {
+  extraction_filter = {
     name: '',
     fields: [] as string[],
     startDate: '',
@@ -22,7 +22,11 @@ export class FrontendFilterComponent {
     commentaire: ''
   };
 
-  // ✅ ta liste complète des champs
+
+
+
+
+  // ✅ liste complète des champs
   availableFields: string[] = [
     "MONITORING_LOCATION_ORDER_ITEM_TYPE_ID",
     "MONITORING_LOCATION_ORDER_ITEM_TYPE_NAME",
@@ -109,7 +113,7 @@ export class FrontendFilterComponent {
 
   // ✅ n’affiche que les champs non encore choisis
   get remainingFields(): string[] {
-    return this.availableFields.filter(f => !this.filter.fields.includes(f));
+    return this.availableFields.filter(f => !this.extraction_filter.fields.includes(f));
   }
 
   newField = '';
@@ -117,24 +121,24 @@ export class FrontendFilterComponent {
   isFormValid(): boolean {
     return ['name','fields','startDate','endDate','monitoringLocation']
       .every((k) => {
-        const v = (this.filter as any)[k];
+        const v = (this.extraction_filter as any)[k];
         return Array.isArray(v) ? v.length > 0 : v.toString().trim() !== '';
       });
   }
 
   addField() {
-    if (this.newField && !this.filter.fields.includes(this.newField)) {
-      this.filter.fields.push(this.newField);
+    if (this.newField && !this.extraction_filter.fields.includes(this.newField)) {
+      this.extraction_filter.fields.push(this.newField);
       this.newField = '';
     }
   }
 
   removeField(index: number) {
-    this.filter.fields.splice(index, 1);
+    this.extraction_filter.fields.splice(index, 1);
   }
 
   applyFilter() {
     if (!this.isFormValid()) return;
-    this.apply.emit(this.filter);
+    this.apply.emit(this.extraction_filter);
   }
 }

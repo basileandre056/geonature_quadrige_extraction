@@ -53,6 +53,20 @@
   background-color: #1e7e34;
 }
 
+/* Bouton maj des programes personnalisé */
+.maj_prgrm-btn {
+  padding: 0.6rem 1.2rem;
+  background-color: #cc2121;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.maj_prgrm-btn:hover {
+  background-color: #cc2121;
+}
+
 /* Tableau programmes */
 .programmes-table {
   width: 100%;
