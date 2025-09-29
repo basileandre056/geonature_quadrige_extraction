@@ -10,25 +10,38 @@
     </small>
   </div>
 
-  <!-- Fields -->
-  <div class="filter-field">
-    <label>Fields:</label>
-    <div class="fields-list">
-      <div *ngFor="let f of filter.fields; let i = index" class="field-item">
-        {{ f }}
-        <button type="button" class="remove-btn" (click)="removeField(i)">×</button>
+      <!-- Fields -->
+    <div class="filter-field">
+      <label>Fields:</label>
+
+      <div class="fields-list">
+        <div *ngFor="let f of filter.fields; let i = index" class="field-item">
+          {{ f }}
+          <button type="button" class="remove-btn" (click)="removeField(i)">×</button>
+        </div>
       </div>
+
+  <!-- ✅ debug éventuel : à placer ICI (en dehors de la boucle ci-dessus) -->
+  <!-- <pre>{{ remainingFields }}</pre> -->
+
+      <div class="field-input">
+        <select [(ngModel)]="newField" [disabled]="remainingFields.length === 0">
+          <option value="">-- Choisir un champ --</option>
+          <option *ngFor="let field of remainingFields" [value]="field">
+            {{ field }}
+          </option>
+        </select>
+        <button type="button" (click)="addField()" [disabled]="!newField">Ajouter</button>
+      </div>
+
+      <small *ngIf="filter.fields.length === 0" class="error-msg">
+        Au moins un champ est requis
+      </small>
+      <small *ngIf="remainingFields.length === 0" class="error-msg">
+        Tous les champs disponibles ont été ajoutés.
+      </small>
     </div>
 
-    <div class="field-input">
-      <input type="text" [(ngModel)]="newField" placeholder="Ajouter un champ..." />
-      <button type="button" (click)="addField()">Ajouter</button>
-    </div>
-
-    <small *ngIf="filter.fields.length === 0" class="error-msg">
-      Au moins un champ est requis
-    </small>
-  </div>
 
   <!-- Période -->
   <div class="filter-field">

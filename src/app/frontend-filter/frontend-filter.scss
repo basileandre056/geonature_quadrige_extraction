@@ -7,8 +7,8 @@
   border: 1px solid #ccc;
   box-shadow: 0 4px 10px rgba(0,0,0,0.25);
   border-radius: 10px;
-  width: 450px;  /* fenêtre plus grande */
-  z-index: 1000;
+  width: 450px;  /* largeur fixe de la fenêtre du filtre */
+  z-index: 1000; /* passe au-dessus des autres éléments */
 
   h2 {
     margin-top: 0;
@@ -17,6 +17,7 @@
     text-align: center;
   }
 
+  /* Chaque champ de formulaire */
   .filter-field {
     display: flex;
     flex-direction: column;
@@ -33,6 +34,7 @@
       border-radius: 6px;
     }
 
+    /* Messages d'erreur sous les inputs */
     .error-msg {
       color: red;
       font-size: 0.8rem;
@@ -40,6 +42,7 @@
     }
   }
 
+  /* Ligne spéciale pour afficher deux inputs de dates côte à côte */
   .period-row {
     display: flex;
     gap: 1rem;
@@ -57,6 +60,7 @@
         border-radius: 6px;
       }
 
+      /* Surligne un input invalide en rouge */
       input.invalid {
         border-color: red;
         background-color: #ffe6e6;
@@ -70,6 +74,7 @@
     }
   }
 
+  /* Liste des champs déjà ajoutés (petits tags avec croix) */
   .fields-list {
     display: flex;
     flex-wrap: wrap;
@@ -101,18 +106,22 @@
     }
   }
 
+  /* Zone pour ajouter un nouveau champ */
   .field-input {
     display: flex;
     gap: 0.5rem;
     flex-direction: column;
 
-    input {
+    /* Input texte et select ont le même style */
+    input, select {
       flex: 1;
       padding: 0.4rem;
       border: 1px solid #ccc;
       border-radius: 6px;
+      background: #fff;
     }
 
+    /* Bouton "Ajouter" */
     button {
       padding: 0.4rem 0.8rem;
       border: none;
@@ -133,6 +142,7 @@
     }
   }
 
+  /* Petit bouton secondaire (style gris) */
   .small-btn {
     background-color: #6c757d;
     margin-top: 0.5rem;
@@ -148,6 +158,7 @@
     }
   }
 
+  /* Actions en bas : Appliquer / Fermer */
   .filter-actions {
     display: flex;
     justify-content: space-between;
