@@ -93,7 +93,7 @@
 /* Première colonne (checkbox) étroite et centrée */
 .programmes-table th:first-child,
 .programmes-table td:first-child {
-  width: 10%;
+  width: 9%;
   text-align: center;
   vertical-align: middle;
 }
@@ -104,9 +104,15 @@
   width: 25%;
 }
 
-/* Dernière colonne (Acteur) */
-.programmes-table th:nth-child(5),
-.programmes-table td:nth-child(5) {
+/* Troisième colonne (Libellé) */
+.programmes-table th:nth-child(3),
+.programmes-table td:nth-child(3) {
+  width: 25%;
+}
+
+/* Dernière colonne (Responsable) */
+.programmes-table th:nth-child(6),
+.programmes-table td:nth-child(6) {
   width: 30%;
 }
 

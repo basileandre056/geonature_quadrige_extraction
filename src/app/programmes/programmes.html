@@ -58,10 +58,11 @@
         />
         Tout sélectionner
       </th>
-      <th>Nom du programme</th>
-      <th>Date début</th>
-      <th>Date fin</th>
-      <th>Acteur</th>
+      <th>Programme</th>
+      <th>Libellé</th>
+      <th>Date de début</th>
+      <th>Etat</th>
+      <th>Responsables</th>
     </tr>
   </thead>
   <tbody>
@@ -70,9 +71,10 @@
         <input type="checkbox" [(ngModel)]="prog.checked" name="{{ prog.name }}" />
       </td>
       <td>{{ prog.name }}</td>
+      <td>{{ prog.libelle }}</td>
       <td>{{ prog.startDate || '' }}</td>
-      <td>{{ prog.endDate || '' }}</td>
-      <td>{{ prog.actor || '' }}</td>
+      <td>{{ prog.etat || '' }}</td>
+      <td>{{ prog.responsable || '' }}</td>
     </tr>
   </tbody>
 </table>
@@ -82,3 +84,12 @@
 
 <!-- Fichiers ZIP des données -->
 <app-extracted-links [files]="extractedFiles"></app-extracted-links>
+
+
+<!-- bouton maj des programmes -->
+
+<!-- bouton relancer filtrage seul -->
+<button (click)="relancer_filtrage_seul()" [disabled]="isLoading" class="maj_prgrm-btn">
+  {{ isLoading ? 'Filtrage...' : 'Relancer uniquement le filtrage' }}
+</button>
+

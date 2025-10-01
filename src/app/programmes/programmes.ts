@@ -101,38 +101,98 @@ export class Programmes {
   }
 
   Extraire_programmes() {
-    console.log('➡️ clic sur Extraire_programmes()');
-    if (!this.programs_filter) {
-      this.message = 'Veuillez définir un filtre d’extraction de programmes.';
-      return;
-    }
+  console.log('➡️ clic sur Extraire_programmes()');
+  if (!this.programs_filter) {
+    this.message = 'Veuillez définir un filtre d’extraction de programmes.';
+    return;
+  }
 
-    this.isLoading = true;
-    this.message = 'Extraction des programmes en cours...';
+  this.isLoading = true;
+  this.message = 'Extraction et filtrage des programmes en cours...';
 
-    this.http
-  .post<ProgramExtractionResponse>('http://localhost:5000/program-extraction', {
-    filter: this.programs_filter
-  })
-  .subscribe({
+  this.http
+    .post<any>('http://localhost:5000/program-extraction', { filter: this.programs_filter })
+    .subscribe({
+      next: (res) => {
+        console.log('[FRONTEND] ⬅️ Réponse reçue (programmes filtrés):', res);
+        if (res?.status === 'ok' && res?.fichiers_csv?.length > 0) {
+          const csvUrl = res.fichiers_csv[0].url;
+          this.chargerProgrammesDepuisCSV(csvUrl);
+        } else {
+          this.message = res?.message ?? 'Réponse inattendue du serveur';
+        }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('[FRONTEND] ❌ Erreur HTTP (programmes):', err);
+        this.message = err?.error?.message ?? 'Erreur serveur inattendue';
+        this.isLoading = false;
+      }
+    });
+}
+
+relancer_filtrage_seul() {
+  console.log("➡️ clic sur relancer_filtrage_seul()");
+  this.isLoading = true;
+  this.http.get<any>('http://localhost:5000/filtrage_seul').subscribe({
     next: (res) => {
-      console.log('[FRONTEND] ⬅️ Réponse reçue (programmes):', res);
-      if (res?.status === 'ok') {
-        this.extractedProgramFiles = this.mapToExtractedLinks(res?.fichiers_csv);
-        this.message = `CSV programmes disponible (${this.extractedProgramFiles.length} fichier(s))`;
+      if (res?.status === 'ok' && res?.fichiers_csv?.length > 0) {
+        const csvUrl = res.fichiers_csv[0].url;
+        this.chargerProgrammesDepuisCSV(csvUrl);
+      } else if (res?.status === 'ok' && (!res?.fichiers_csv || res.fichiers_csv.length === 0)) {
+        // cas spécifique : pas de CSV à filtrer
+        this.message = "⚠️ Aucun CSV à filtrer, extrayez d’abord la liste des programmes.";
       } else {
-        this.message = res?.message ?? 'Réponse inattendue du serveur';
+        this.message = res?.message ?? 'Erreur backend';
       }
       this.isLoading = false;
     },
     error: (err) => {
-      console.error('[FRONTEND] ❌ Erreur HTTP (programmes):', err);
-      this.message = err?.error?.message ?? 'Erreur serveur inattendue';
+      console.error("[FRONTEND] ❌ Erreur HTTP (filtrage seul):", err);
+      this.message = "Erreur lors du filtrage seul.";
       this.isLoading = false;
     }
   });
-  }
+}
 
+
+private chargerProgrammesDepuisCSV(csvUrl: string) {
+  console.log("[FRONTEND] 📥 Téléchargement du CSV filtré :", csvUrl);
+
+  this.http.get(csvUrl, { responseType: 'text' }).subscribe({
+    next: (csvData) => {
+      const lignes = csvData.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+      const header = lignes[0].split(";");
+      const data = lignes.slice(1);
+
+      const idxCode = header.indexOf("Programme : Code");
+      const idxLibelle = header.indexOf("Programme : Libellé");
+      const idxEtat = header.indexOf("Programme : Etat");
+      const idxDate = header.indexOf("Programme : Date de création");
+      const idxResp = header.indexOf("Programme : Droit : Personne : Responsable : NOM Prénom : Liste");
+
+      const nouveauxProgrammes = data.map(ligne => {
+        const cols = ligne.split(";");
+        return {
+          name: cols[idxCode] ?? "",
+          checked: false,
+          Programme_Libellé: idxLibelle !== -1 ? cols[idxLibelle] ?? "" : undefined,
+          etat: idxEtat !== -1 ? cols[idxEtat] ?? "" : undefined,
+          startDate: idxDate !== -1 ? cols[idxDate] ?? "" : undefined,
+          responsable: idxResp !== -1 ? cols[idxResp] ?? "" : undefined
+        };
+      }).filter(p => p.name !== "");
+
+      this.programmes = nouveauxProgrammes;
+      this.message = `✅ Liste mise à jour (${this.programmes.length} programmes depuis CSV filtré)`;
+      console.log("[FRONTEND] Liste mise à jour :", this.programmes);
+    },
+    error: (err) => {
+      console.error("[FRONTEND] ❌ Erreur téléchargement CSV filtré :", err);
+      this.message = "Erreur lors du téléchargement du CSV filtré.";
+    }
+  });
+}
   Extraire_donnees() {
     console.log('➡️ clic sur Extraire_donnees()');
     const selections = this.programmes.filter(p => p.checked).map(p => p.name);
@@ -151,7 +211,7 @@ export class Programmes {
     this.message = 'Extraction des données en cours...';
 
     this.http
-      .post<ExtractionResponse>('http://localhost:5000/extractions', {
+      .post<ExtractionResponse>('http://localhost:5000/data-extractions', {
         programmes: selections,
         filter: this.data_filter
       })
