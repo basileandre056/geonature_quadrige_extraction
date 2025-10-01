@@ -176,8 +176,7 @@ private chargerProgrammesDepuisCSV(csvUrl: string) {
         return {
           name: cols[idxCode] ?? "",
           checked: false,
-          Programme_Libellé: idxLibelle !== -1 ? cols[idxLibelle] ?? "" : undefined,
-          etat: idxEtat !== -1 ? cols[idxEtat] ?? "" : undefined,
+          libelle: idxLibelle !== -1 ? cols[idxLibelle] ?? "" : undefined,          etat: idxEtat !== -1 ? cols[idxEtat] ?? "" : undefined,
           startDate: idxDate !== -1 ? cols[idxDate] ?? "" : undefined,
           responsable: idxResp !== -1 ? cols[idxResp] ?? "" : undefined
         };

@@ -1,8 +1,8 @@
 export interface Programme {
-  name: string; //Programme : Code
+  name: string;
   checked: boolean;
-  libelle?: string; //Programme : Libellé
-  startDate?: string; //Programme : Date de création
-  etat?: string; //Programme : Etat
-  responsable?: string; //Programme : Responsable
+  libelle?: string;  // au lieu de Programme_Libellé
+  etat?: string;
+  startDate?: string;
+  responsable?: string;
 }
