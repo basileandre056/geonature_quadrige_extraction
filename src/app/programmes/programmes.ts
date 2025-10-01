@@ -172,15 +172,16 @@ private chargerProgrammesDepuisCSV(csvUrl: string) {
       const idxResp = header.indexOf("Programme : Droit : Personne : Responsable : NOM Prénom : Liste");
 
       const nouveauxProgrammes = data.map(ligne => {
-        const cols = ligne.split(";");
-        return {
-          name: cols[idxCode] ?? "",
-          checked: false,
-          libelle: idxLibelle !== -1 ? cols[idxLibelle] ?? "" : undefined,          etat: idxEtat !== -1 ? cols[idxEtat] ?? "" : undefined,
-          startDate: idxDate !== -1 ? cols[idxDate] ?? "" : undefined,
-          responsable: idxResp !== -1 ? cols[idxResp] ?? "" : undefined
-        };
-      }).filter(p => p.name !== "");
+  const cols = ligne.split(";");
+  return {
+    name: cols[idxCode] ?? "",
+    checked: false,
+    libelle: idxLibelle !== -1 ? cols[idxLibelle] ?? "" : undefined,
+    etat: idxEtat !== -1 ? cols[idxEtat] ?? "" : undefined,
+    startDate: idxDate !== -1 ? cols[idxDate] ?? "" : undefined,
+    responsable: idxResp !== -1 ? (cols[idxResp]?.replaceAll("|", ", ") ?? "") : undefined
+  };
+}).filter(p => p.name !== "");
 
       this.programmes = nouveauxProgrammes;
       this.message = `✅ Liste mise à jour (${this.programmes.length} programmes depuis CSV filtré)`;
