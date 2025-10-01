@@ -12,11 +12,11 @@ CORS(app)
 def recevoir_program_extraction():
     data = request.json
     program_filter = data.get('filter', {})
-    print("\n[BACKEND]  Requête reçue sur /program-extraction")
-    print("Filtre reçu :", program_filter)
+    print("\n[BACKEND] ➡️ Requête reçue sur /program-extraction")
+    print("[BACKEND] Filtre reçu :", program_filter)
 
     try:
-        # Ici tu adaptes extract_programs pour qu’il retourne directement l’URL Ifremer (fileUrl)
+        # Lancer l’extraction (retourne l’URL Ifremer du CSV)
         file_url = extract_programs(program_filter)
         print(f"[BACKEND]  URL CSV reçue depuis Ifremer : {file_url}")
     except Exception as e:
@@ -27,16 +27,24 @@ def recevoir_program_extraction():
             "message": str(e)
         }), 500
 
+    # Générer un nom de fichier explicite basé sur le filtre
+    filter_name = program_filter.get("name", "extraction").replace(" ", "_")
+    file_name = f"programmes_{filter_name}.csv"
+    print(f"[BACKEND]  Nom du fichier généré : {file_name}")
+
+    # Construire la réponse envoyée au frontend
     response = {
         "status": "ok",
-        "filtre_recu": program_filter,   # debug : ce qu’on a envoyé
-        "csv_url": file_url,              # l’URL Ifremer directe
-        "message": ("Réponse envoyée au frontend")
-
+        "filtre_recu": program_filter,  # pour debug côté frontend
+        "fichiers_csv": [
+            {"file_name": file_name, "url": file_url}
+        ]
     }
 
-    print("[BACKEND] ⬅ Réponse envoyée au frontend :")
+    print("[BACKEND]  Réponse envoyée au frontend :", response)
     return jsonify(response), 200
+
+
 
 
 
@@ -79,7 +87,7 @@ def recevoir_extractions():
         "programmes_recus": programmes,
         "filtre_recu": filter_data,  #  pour debug côté frontend
         "fichiers_zip": [
-            {"programme": p, "url": url} for p, url in zip(programmes, download_links)
+            {"file_name": p, "url": url} for p, url in zip(programmes, download_links)
         ]
     }), 200
 

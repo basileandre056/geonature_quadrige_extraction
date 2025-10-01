@@ -9,21 +9,25 @@
   />
 
   <div class="button-row">
-    <!-- bouton extraire donnes -->
-    <button (click)="ExtraireDonnees()" [disabled]="isLoading" class="extract-btn">
-      {{ isLoading ? 'Extraction en cours...' : 'Extraire' }}
+    <!-- bouton extraire données -->
+    <button (click)="Extraire_donnees()" [disabled]="isLoading" class="extract-btn">
+      {{ isLoading ? 'Extraction en cours...' : 'Extraire données' }}
     </button>
 
-    <!-- bouton ajouter filtre personalisé -->
+    <!-- bouton extraire programmes -->
+    <button (click)="Extraire_programmes()" [disabled]="isLoading" class="extract-btn">
+      {{ isLoading ? 'Extraction en cours...' : 'Extraire programmes' }}
+    </button>
+
+    <!-- bouton ajouter filtre personnalisé -->
     <button (click)="showFilter = true" class="filter-btn">
       Ajouter un filtre personnalisé
     </button>
 
     <!-- bouton maj programmes -->
-   <button (click)="showExtractionFilter = true" [disabled]="isLoading" class="maj_prgrm-btn">
+    <button (click)="showExtractionFilter = true" [disabled]="isLoading" class="maj_prgrm-btn">
       {{ isLoading ? 'Mise à jour...' : 'Mettre à jour la liste des programmes' }}
     </button>
-
   </div>
 
   <!-- Fenêtre filtre classique -->
@@ -33,7 +37,7 @@
     (close)="showFilter = false">
   </app-frontend-filter>
 
-  <!-- ✅ Fenêtre extraction -->
+  <!-- Fenêtre extraction programmes -->
   <app-program-extraction-filter
     *ngIf="showExtractionFilter"
     (apply)="onExtractionFilterApplied($event)"
@@ -62,7 +66,9 @@
   </thead>
   <tbody>
     <tr *ngFor="let prog of filteredProgrammes">
-      <td><input type="checkbox" [(ngModel)]="prog.checked" name="{{ prog.name }}" /></td>
+      <td>
+        <input type="checkbox" [(ngModel)]="prog.checked" name="{{ prog.name }}" />
+      </td>
       <td>{{ prog.name }}</td>
       <td>{{ prog.startDate || '' }}</td>
       <td>{{ prog.endDate || '' }}</td>
@@ -71,8 +77,8 @@
   </tbody>
 </table>
 
-<!-- Affichage des .zip extraits -->
-<app-extracted-links [files]="extractedFiles"></app-extracted-links>
+<!-- Fichiers CSV des programmes -->
+<app-extracted-links [files]="extractedProgramFiles"></app-extracted-links>
 
-<!-- Affichage du .csv extraits -->
-<app-extracted-links [files]="extractedStrategies"></app-extracted-links>
+<!-- Fichiers ZIP des données -->
+<app-extracted-links [files]="extractedFiles"></app-extracted-links>

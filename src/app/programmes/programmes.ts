@@ -2,14 +2,15 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
+
 import { Programme } from '../models/programmes';
 import { ExtractedLink } from '../models/extractedLinks';
 import { ExtractedLinks } from '../extracted-links/extracted-links';
 
 import { ExtractionResponse } from '../models/extraction-response';
+import { ProgramExtractionResponse } from '../models/program-extraction-response';
 import { FrontendFilterComponent } from '../frontend-filter/frontend-filter';
 import { ProgramExtractionFilterComponent } from '../program-extraction-filter/program-extraction-filter';
-import { ProgramResponse } from '../models/programs_response';
 
 @Component({
   selector: 'app-programmes',
@@ -46,8 +47,8 @@ export class Programmes {
     { name: 'RESEAUAMP_SBH_QUADRAT_OURSINS', checked: false }
   ];
 
-  extractedFiles: ExtractedLink[] = [];
-  extractedStrategies: ExtractedLink []=[];
+  extractedFiles: ExtractedLink[] = [];         // ZIP des données
+  extractedProgramFiles: ExtractedLink[] = [];  // CSV des programmes
 
   message: string = '';
   isLoading: boolean = false;
@@ -56,16 +57,28 @@ export class Programmes {
   showFilter = false;
   showExtractionFilter = false;
 
-  // ✅ deux filtres séparés
-  data_filter: any = null;     // filtre pour l’extraction des données
-  programs_filter: any = null; // filtre pour la mise à jour des programmes
+  data_filter: any = null;     // filtre pour extraction de données
+  programs_filter: any = null; // filtre pour extraction de programmes
 
   constructor(private http: HttpClient) {}
 
+  private mapToExtractedLinks(raw: any): ExtractedLink[] {
+    if (!Array.isArray(raw)) return [];
+    return raw
+      .map((item: any) => {
+        const file_name =
+          item?.file_name ??
+          item?.programme ??
+          item?.name ??
+          'fichier';
+        const url = item?.url ?? '';
+        return { file_name, url } as ExtractedLink;
+      })
+      .filter((f: ExtractedLink) => !!f.url);
+  }
+
   get filteredProgrammes() {
-    if (!this.searchText) {
-      return this.programmes;
-    }
+    if (!this.searchText) return this.programmes;
     return this.programmes.filter(p =>
       p.name.toLowerCase().includes(this.searchText.toLowerCase())
     );
@@ -75,62 +88,53 @@ export class Programmes {
     this.programmes.forEach(p => (p.checked = this.allSelected));
   }
 
-  // Quand on applique le filtre d’extraction de données
   onFilterApplied(filterData: any) {
-    console.log('Filtre appliqué depuis FrontendFilter:', filterData);
+    console.log('[FRONTEND] Filtre appliqué (données):', filterData);
     this.showFilter = false;
     this.data_filter = filterData;
   }
 
-  // Quand on applique le filtre d’extraction de programmes
   onExtractionFilterApplied(filterData: any) {
-    console.log('Filtre extraction appliqué:', filterData);
+    console.log('[FRONTEND] Filtre appliqué (programmes):', filterData);
     this.showExtractionFilter = false;
     this.programs_filter = filterData;
   }
 
-  //  Mise à jour des programmes depuis le backend
- Extraire_programmes() {
-  if (!this.programs_filter) {
-    this.message = 'Veuillez définir un filtre d’extraction de programmes.';
-    console.warn("[FRONTEND] ❌ Aucun filtre défini pour l’extraction des programmes");
-    return;
+  Extraire_programmes() {
+    console.log('➡️ clic sur Extraire_programmes()');
+    if (!this.programs_filter) {
+      this.message = 'Veuillez définir un filtre d’extraction de programmes.';
+      return;
+    }
+
+    this.isLoading = true;
+    this.message = 'Extraction des programmes en cours...';
+
+    this.http
+  .post<ProgramExtractionResponse>('http://localhost:5000/program-extraction', {
+    filter: this.programs_filter
+  })
+  .subscribe({
+    next: (res) => {
+      console.log('[FRONTEND] ⬅️ Réponse reçue (programmes):', res);
+      if (res?.status === 'ok') {
+        this.extractedProgramFiles = this.mapToExtractedLinks(res?.fichiers_csv);
+        this.message = `CSV programmes disponible (${this.extractedProgramFiles.length} fichier(s))`;
+      } else {
+        this.message = res?.message ?? 'Réponse inattendue du serveur';
+      }
+      this.isLoading = false;
+    },
+    error: (err) => {
+      console.error('[FRONTEND] ❌ Erreur HTTP (programmes):', err);
+      this.message = err?.error?.message ?? 'Erreur serveur inattendue';
+      this.isLoading = false;
+    }
+  });
   }
 
-  this.isLoading = true;
-  this.message = `Mise à jour des programmes en cours...`;
-  console.log("[FRONTEND] ➡️ Envoi de la requête à /program-extraction avec :", this.programs_filter);
-
-  this.http
-    .post<ProgramResponse>('http://localhost:5000/program-extraction', {
-      filter: this.programs_filter
-    })
-    .subscribe({
-      next: (res) => {
-        console.log("[FRONTEND] ⬅️ Réponse reçue :", res);
-        if (res.status === 'ok' && res.programmes_recus) {
-          this.programmes = res.programmes_recus.map(p => ({
-            name: p.code,
-            lieu_mnemonique: p.lieu_mnemonique,
-            checked: false
-          }));
-          this.message = `Liste des programmes mise à jour (${this.programmes.length})`;
-          console.log("[FRONTEND] ✅ Programmes mis à jour :", this.programmes);
-        } else {
-          this.message = res.message ?? 'Réponse inattendue du serveur';
-          console.warn("[FRONTEND] ⚠️ Réponse inattendue :", res);
-        }
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error("[FRONTEND] ❌ Erreur HTTP :", err);
-        this.message = err.error?.message ?? 'Erreur serveur inattendue';
-        this.isLoading = false;
-      }
-    });
-}
-  // ⚡️ Extraction des données depuis le backend
-  ExtraireDonnees() {
+  Extraire_donnees() {
+    console.log('➡️ clic sur Extraire_donnees()');
     const selections = this.programmes.filter(p => p.checked).map(p => p.name);
 
     if (selections.length === 0) {
@@ -144,7 +148,7 @@ export class Programmes {
     }
 
     this.isLoading = true;
-    this.message = `Processing... L’extraction peut prendre une minute ou deux`;
+    this.message = 'Extraction des données en cours...';
 
     this.http
       .post<ExtractionResponse>('http://localhost:5000/extractions', {
@@ -153,23 +157,19 @@ export class Programmes {
       })
       .subscribe({
         next: (res) => {
-          if (res.status === 'ok') {
-            this.message = `Backend a reçu : ${res.programmes_recus?.join(', ')}`;
-            this.extractedFiles = res.fichiers_zip ?? [];
+          console.log('[FRONTEND] ⬅️ Réponse reçue (données):', res);
+          if (res?.status === 'ok') {
+            this.extractedFiles = this.mapToExtractedLinks(res?.fichiers_zip);
+            this.message = `Fichiers extraits (${this.extractedFiles.length})`;
+          } else {
+            this.message = res?.message ?? 'Réponse inattendue du serveur';
+            this.extractedFiles = [];
           }
           this.isLoading = false;
         },
         error: (err) => {
-          console.error(err);
-
-          if (err.status === 400) {
-            this.message = err.error?.message ?? 'Requête invalide (400)';
-          } else if (err.status === 404) {
-            this.message = err.error?.message ?? 'Aucun fichier trouvé (404)';
-          } else {
-            this.message = 'Erreur serveur inattendue';
-          }
-
+          console.error('[FRONTEND] ❌ Erreur HTTP (données):', err);
+          this.message = err?.error?.message ?? 'Erreur serveur inattendue';
           this.extractedFiles = [];
           this.isLoading = false;
         }
