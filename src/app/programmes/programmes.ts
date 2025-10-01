@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { Programme } from '../models/programmes';
 import { ExtractedLink } from '../models/extractedLinks';
 import { ExtractedLinks } from '../extracted-links/extracted-links';
+
 import { ExtractionResponse } from '../models/extraction-response';
 import { FrontendFilterComponent } from '../frontend-filter/frontend-filter';
 import { ProgramExtractionFilterComponent } from '../program-extraction-filter/program-extraction-filter';
@@ -46,6 +47,8 @@ export class Programmes {
   ];
 
   extractedFiles: ExtractedLink[] = [];
+  extractedStrategies: ExtractedLink []=[];
+
   message: string = '';
   isLoading: boolean = false;
   allSelected = false;

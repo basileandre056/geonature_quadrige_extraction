@@ -1,4 +1,4 @@
 export interface ExtractedLink {
-  programme: string;
+  file_name: string;
   url: string;
 }

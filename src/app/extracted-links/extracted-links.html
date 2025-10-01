@@ -3,7 +3,7 @@
 
   <ul *ngIf="files.length > 0; else noFiles">
     <li *ngFor="let fichier of files">
-      <strong>{{ fichier.programme }}</strong> :
+      <strong>{{ fichier.file_name }}</strong> :
       <a [href]="fichier.url" target="_blank">{{ fichier.url }}</a>
     </li>
   </ul>

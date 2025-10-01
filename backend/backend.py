@@ -11,46 +11,33 @@ CORS(app)
 @app.route('/program-extraction', methods=['POST'])
 def recevoir_program_extraction():
     data = request.json
-    filter_data = data.get('filter', {})
-    print("\n[BACKEND] ➡️ Requête reçue sur /program-extraction")
-    print("Filtre reçu :", filter_data)
+    program_filter = data.get('filter', {})
+    print("\n[BACKEND]  Requête reçue sur /program-extraction")
+    print("Filtre reçu :", program_filter)
 
     try:
-        csv_path = extract_programs(filter_data)
-        print(f"[BACKEND] ✅ CSV généré et téléchargé : {csv_path}")
+        # Ici tu adaptes extract_programs pour qu’il retourne directement l’URL Ifremer (fileUrl)
+        file_url = extract_programs(program_filter)
+        print(f"[BACKEND]  URL CSV reçue depuis Ifremer : {file_url}")
     except Exception as e:
-        print(f"[BACKEND] ❌ Erreur lors de l’extraction : {e}")
+        print(f"[BACKEND]  Erreur lors de l’extraction : {e}")
         return jsonify({
             "status": "warning",
             "type": "not_found",
             "message": str(e)
         }), 500
 
-    programmes = []
-    try:
-        with open(csv_path, encoding="utf-8") as f:
-            import csv
-            reader = csv.DictReader(f, delimiter=";")
-            for row in reader:
-                programmes.append({
-                    "code": row.get("Programme : Code", ""),
-                    "lieu_mnemonique": row.get("Lieu : Mnémonique", "")
-                })
-        print(f"[BACKEND] ✅ {len(programmes)} programmes extraits du CSV")
-    except Exception as e:
-        print(f"[BACKEND] ❌ Erreur lors du parsing du CSV : {e}")
-        return jsonify({
-            "status": "warning",
-            "type": "parsing",
-            "message": str(e)
-        }), 500
-
     response = {
         "status": "ok",
-        "programmes_recus": programmes
+        "filtre_recu": program_filter,   # debug : ce qu’on a envoyé
+        "csv_url": file_url,              # l’URL Ifremer directe
+        "message": ("Réponse envoyée au frontend")
+
     }
-    print("[BACKEND] ⬅️ Réponse envoyée au frontend :", response)
+
+    print("[BACKEND] ⬅ Réponse envoyée au frontend :")
     return jsonify(response), 200
+
 
 
 

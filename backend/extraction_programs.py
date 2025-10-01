@@ -10,10 +10,10 @@ def extract_programs(filter_data: dict,
                     access_token = "2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:CA8375B7CF45E83F3B637FE97F8DA0F6263120AA9D58C6888A32111C766B054C:1|D6YumLYYbW2wWLoiFkGx++l1psS6BxzHCB5zm2mJRivNlAppnQOVWOZOX+y1C66pkFOxzvADjh7JT9yy2PwsAg==",
                     output_dir="output_programs"):
     """
-    Exécute une extraction de programmes avec un filtre donné
-    et télécharge le CSV généré dans output_dir.
+    Lance une extraction de programmes et retourne directement l’URL CSV fournie par Ifremer.
     """
-    # Init client
+
+    # Initialisation du client GraphQL
     transport = RequestsHTTPTransport(
         url=graphql_url,
         verify=True,
@@ -21,32 +21,41 @@ def extract_programs(filter_data: dict,
     )
     client = Client(transport=transport, fetch_schema_from_transport=False)
 
-    # Construire dynamiquement la requête GraphQL en fonction du filtre
-    query = f"""
+    # -------------------------
+    # 1) Construire la requête executeProgramExtraction
+    # -------------------------
+    name = filter_data.get("name", "Extraction Programmes")
+    monitoring_location = filter_data.get("monitoringLocation", "")
+
+    query = gql(f"""
     query {{
       executeProgramExtraction(
         filter: {{
-          name: "{filter_data.get("name","Programmes")}"
+          name: "{name}"
           criterias: [{{
-            monitoringLocation: {{ searchText: "{filter_data.get("monitoringLocation","")}" }}
+            monitoringLocation: {{ searchText: "{monitoring_location}" }}
           }}]
         }}
-      ){{
+      ) {{
         id
         name
         startDate
         status
       }}
     }}
-    """
-    execute_query = gql(query)
+    """)
 
-    # 1) Lancer extraction
-    response = client.execute(execute_query)
-    task = response["executeProgramExtraction"]
-    task_id = task["id"]
+    try:
+        response = client.execute(query)
+        task = response["executeProgramExtraction"]
+        task_id = task["id"]
+        print(f"[extract_programs] ✅ Extraction lancée (id={task_id}, nom={task['name']})")
+    except Exception as e:
+        raise RuntimeError(f"Erreur lors du lancement de l’extraction : {e}")
 
-    # 2) Poller jusqu’à ce que le fichier soit dispo
+    # -------------------------
+    # 2) Suivi du statut
+    # -------------------------
     status_query = gql("""
     query getStatus($id: Int!) {
         getExtraction(id: $id) {
@@ -62,20 +71,14 @@ def extract_programs(filter_data: dict,
         status_resp = client.execute(status_query, variable_values={"id": task_id})
         extraction = status_resp["getExtraction"]
         status = extraction["status"]
+        print(f"[extract_programs] Statut : {status}")
 
         if status == "SUCCESS":
             file_url = extraction["fileUrl"]
+            print(f"[extract_programs] ✅ Fichier disponible : {file_url}")
         elif status in ["PENDING", "RUNNING"]:
             time.sleep(2)
         else:
             raise RuntimeError(f"Tâche en erreur : {extraction.get('error')}")
 
-    # 3) Télécharger le CSV
-    os.makedirs(output_dir, exist_ok=True)
-    csv_path = os.path.join(output_dir, os.path.basename(file_url))
-    r = requests.get(file_url)
-    r.raise_for_status()
-    with open(csv_path, "wb") as f:
-        f.write(r.content)
-
-    return csv_path
+    return file_url
