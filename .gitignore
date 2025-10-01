@@ -8,6 +8,7 @@ __pycache__/
 *.sqlite3
 
 # ---- Flask outputs ----
+output_test/
 outputs/
 instance/
 *.log
