@@ -107,7 +107,7 @@ def nettoyer_csv(input_path, output_path):
     df = pd.read_csv(input_path, sep=";", dtype=str)
 
     # Vérifier que les colonnes attendues existent
-    colonnes_requises = ["Lieu : Mnémonique", "Programme : Code", "Programme : Etat", "Programme : Date de création"]
+    colonnes_requises = ["Lieu : Mnémonique", "Programme : Code","Programme : Libellé", "Programme : Etat", "Programme : Date de création","Programme : Droit : Personne : Responsable : NOM Prénom : Liste"]
     for col in colonnes_requises:
         if col not in df.columns:
             raise ValueError(f"❌ Colonne manquante dans le CSV extrait : {col}")
@@ -116,7 +116,7 @@ def nettoyer_csv(input_path, output_path):
     df_filtre = df[df["Lieu : Mnémonique"].str.startswith("126", na=False)]
 
     # Garder uniquement les colonnes utiles
-    df_reduit = df_filtre[["Programme : Code", "Programme : Etat", "Programme : Date de création"]]
+    df_reduit = df_filtre[["Programme : Code","Programme : Libellé", "Programme : Etat", "Programme : Date de création","Programme : Droit : Personne : Responsable : NOM Prénom : Liste"]]
 
     # Supprimer les doublons sur le code programme
     df_unique = df_reduit.drop_duplicates(subset=["Programme : Code"])
@@ -130,7 +130,7 @@ def nettoyer_csv(input_path, output_path):
 
 if __name__ == "__main__":
     # Étape 1 : extraction et téléchargement du brut
-    csv_brut = extract_programs_test()
+    csv_brut = output_dir = "output_test/Programmes_126_brut.csv"
 
     # Étape 2 : nettoyage et sauvegarde du filtré
     csv_filtre = "output_test/Programmes_126_filtered.csv"
