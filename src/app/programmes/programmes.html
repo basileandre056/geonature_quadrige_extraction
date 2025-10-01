@@ -10,18 +10,18 @@
 
   <div class="button-row">
     <!-- bouton extraire données -->
-    <button (click)="Extraire_donnees()" [disabled]="isLoading" class="extract-btn">
+    <button (click)="Extraire_donnees()" [disabled]="isLoading" class="extract-data-btn">
       {{ isLoading ? 'Extraction en cours...' : 'Extraire données' }}
     </button>
 
-    <!-- bouton extraire programmes -->
-    <button (click)="Extraire_programmes()" [disabled]="isLoading" class="extract-btn">
-      {{ isLoading ? 'Extraction en cours...' : 'Extraire programmes' }}
+        <!-- bouton ajouter filtre données personnalisé -->
+    <button (click)="showFilter = true" class="data-filter-btn">
+      Ajouter un filtre personnalisé
     </button>
 
-    <!-- bouton ajouter filtre personnalisé -->
-    <button (click)="showFilter = true" class="filter-btn">
-      Ajouter un filtre personnalisé
+    <!-- bouton extraire programmes -->
+    <button (click)="Extraire_programmes()" [disabled]="isLoading" class="extract-prog-btn">
+      {{ isLoading ? 'Extraction en cours...' : 'Extraire programmes' }}
     </button>
 
     <!-- bouton maj programmes -->

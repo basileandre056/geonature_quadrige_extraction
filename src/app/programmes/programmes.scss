@@ -25,47 +25,62 @@
   margin-bottom: 1rem;
 }
 
-/* Bouton Extraire */
-.extract-btn {
+/* Bouton Extraire Données (bleu) */
+.extract-data-btn {
   padding: 0.6rem 1.2rem;
   background-color: #007bff;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  transition: background-color 0.3s;
 }
-
-.extract-btn:hover {
+.extract-data-btn:hover {
   background-color: #0056b3;
 }
 
-/* Bouton Filtre personnalisé */
-.filter-btn {
+/* Bouton Extraire Programmes (vert) */
+.extract-prog-btn {
   padding: 0.6rem 1.2rem;
-  background-color: #28a745;
+  background-color: #007bff;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  transition: background-color 0.3s;
+}
+.extract-prog-btn:hover {
+  background-color: #0056b3;
 }
 
-.filter-btn:hover {
-  background-color: #1e7e34;
+/* Bouton Filtre personnalisé (turquoise) */
+.data-filter-btn {
+  padding: 0.6rem 1.2rem;
+  background-color: #139e0f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+.data-filter-btn:hover {
+  background-color: #08693c;
 }
 
-/* Bouton maj des programes personnalisé */
+/* Bouton maj programmes (vert clair) */
 .maj_prgrm-btn {
   padding: 0.6rem 1.2rem;
-  background-color: #cc2121;
+  background-color: #139e0f;
   color: white;
   border: none;
   border-radius: 6px;
   cursor: pointer;
+  transition: background-color 0.3s;
+}
+.maj_prgrm-btn:hover {
+  background-color: #08693c;
 }
 
-.maj_prgrm-btn:hover {
-  background-color: #cc2121;
-}
 
 /* Tableau programmes */
 .programmes-table {
