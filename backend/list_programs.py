@@ -101,20 +101,31 @@ def nettoyer_csv(input_path, output_path):
     """
     Nettoie le CSV pour ne garder que :
       - les lignes où Lieu : Mnémonique commence par '126'
-      - uniquement la colonne Programme : Code
-      - suppression des doublons
+      - uniquement les colonnes : Programme : Code, Programme : Etat, Programme : Date de création
+      - suppression des doublons basés sur Programme : Code
     """
     df = pd.read_csv(input_path, sep=";", dtype=str)
 
     # Vérifier que les colonnes attendues existent
-    if "Lieu : Mnémonique" not in df.columns or "Programme : Code" not in df.columns:
-        raise ValueError("❌ Colonnes attendues manquantes dans le CSV extrait")
+    colonnes_requises = ["Lieu : Mnémonique", "Programme : Code", "Programme : Etat", "Programme : Date de création"]
+    for col in colonnes_requises:
+        if col not in df.columns:
+            raise ValueError(f"❌ Colonne manquante dans le CSV extrait : {col}")
 
+    # Filtrer uniquement les lignes où le lieu commence par "126"
     df_filtre = df[df["Lieu : Mnémonique"].str.startswith("126", na=False)]
-    df_codes = df_filtre[["Programme : Code"]].drop_duplicates()
 
-    df_codes.to_csv(output_path, sep=";", index=False)
+    # Garder uniquement les colonnes utiles
+    df_reduit = df_filtre[["Programme : Code", "Programme : Etat", "Programme : Date de création"]]
+
+    # Supprimer les doublons sur le code programme
+    df_unique = df_reduit.drop_duplicates(subset=["Programme : Code"])
+
+    # Sauvegarder le résultat
+    df_unique.to_csv(output_path, sep=";", index=False)
     print(f"[TEST] ✅ CSV filtré enregistré : {output_path}")
+
+
 
 
 if __name__ == "__main__":
