@@ -60,7 +60,27 @@ export class Programmes {
   data_filter: any = null;     // filtre pour extraction de données
   programs_filter: any = null; // filtre pour extraction de programmes
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+  this.initialiserProgrammes();
+  }
+
+  private initialiserProgrammes() {
+    this.http.get<any>('http://localhost:5000/last-programmes').subscribe({
+      next: (res) => {
+        if (res?.status === 'ok' && res?.programmes?.length > 0) {
+          this.programmes = res.programmes;
+          console.log(`[FRONTEND] ✅ Liste initialisée depuis le backend (${this.programmes.length} programmes)`);
+        } else {
+          console.warn("[FRONTEND] ⚠️ Aucun programme trouvé dans le backend, utilisation de la liste par défaut");
+        }
+      },
+      error: (err) => {
+        console.error("[FRONTEND] ❌ Erreur backend :", err);
+        console.warn("[FRONTEND] → Initialisation avec la liste par défaut");
+      }
+    });
+  }
+
 
   private mapToExtractedLinks(raw: any): ExtractedLink[] {
     if (!Array.isArray(raw)) return [];

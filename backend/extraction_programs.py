@@ -137,6 +137,44 @@ def nettoyer_csv(input_path, output_path):
     print(f"[extract_programs] ✅ CSV filtré enregistré : {output_path}")
 
 
+def sauvegarder_derniere_version(filtre_path, save_dir="output_test"):
+    """
+    Copie le CSV filtré vers last_programmes_updates.csv
+    """
+    os.makedirs(save_dir, exist_ok=True)
+    dest_path = os.path.join(save_dir, "last_programmes_updates.csv")
+
+    with open(filtre_path, "rb") as src, open(dest_path, "wb") as dst:
+        dst.write(src.read())
+
+    print(f"[extract_programs] 💾 Copie effectuée vers {dest_path}")
+    return dest_path
+
+
+def csv_to_programmes_json(csv_path: str):
+    """
+    Charge un CSV filtré et le transforme en liste JSON de programmes.
+    """
+    if not os.path.exists(csv_path):
+        return []
+
+    df = pd.read_csv(csv_path, sep=";", dtype=str).fillna("")
+
+    programmes = []
+    for _, row in df.iterrows():
+        programmes.append({
+            "name": row.get("Programme : Code", ""),
+            "checked": False,
+            "libelle": row.get("Programme : Libellé", ""),
+            "etat": row.get("Programme : Etat", ""),
+            "startDate": row.get("Programme : Date de création", ""),
+            "responsable": row.get("Programme : Droit : Personne : Responsable : NOM Prénom : Liste", "").replace("|", ", ")
+        })
+    return programmes
+
+
+
+
 # -------------------------
 # Mode test (remplace list_programs.py)
 # -------------------------

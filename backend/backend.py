@@ -1,14 +1,19 @@
+import os
+import requests
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from extraction_data import extract_ifremer_data
-from extraction_programs import extract_programs, nettoyer_csv
-import os
-import requests
+from extraction_programs import extract_programs, nettoyer_csv, sauvegarder_derniere_version, csv_to_programmes_json
 
 app = Flask(__name__)
 CORS(app)
 
-OUTPUT_DIR = os.path.join(os.getcwd(), "output_test")
+# -------------------------
+# Dossiers robustes (toujours relatifs au fichier backend.py)
+# -------------------------
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # chemin du dossier "backend/"
+OUTPUT_DIR = os.path.join(BASE_DIR, "output_test")
+SAVE_DIR = os.path.join(BASE_DIR, "saved_programmes")
 
 
 # -------------------------
@@ -22,7 +27,7 @@ def recevoir_program_extraction():
     print("[BACKEND] Filtre reçu :", program_filter)
 
     try:
-        # Étape 1 : lancer l’extraction Ifremer (URL CSV brut)
+        # Étape 1 : lancer l’extraction Ifremer
         file_url = extract_programs(program_filter)
         print(f"[BACKEND] URL CSV reçue depuis Ifremer : {file_url}")
 
@@ -39,22 +44,23 @@ def recevoir_program_extraction():
         filtre_path = os.path.join(OUTPUT_DIR, "Programmes_126_filtered.csv")
         nettoyer_csv(brut_path, filtre_path)
 
+        # Étape 4 : sauvegarde last_programmes_updates.csv
+        sauvegarder_derniere_version(filtre_path, SAVE_DIR)
+
+        # Étape 5 : conversion JSON
+        programmes_json = csv_to_programmes_json(filtre_path)
+
     except Exception as e:
         print(f"[BACKEND] Erreur extraction/filtrage : {e}")
-        return jsonify({
-            "status": "warning",
-            "type": "not_found",
-            "message": str(e)
-        }), 500
+        return jsonify({"status": "error", "message": str(e)}), 500
 
-    # Réponse envoyée au frontend
-    response = {
+    return jsonify({
         "status": "ok",
         "fichiers_csv": [
             {"file_name": "Programmes_126_filtered.csv", "url": f"http://localhost:5000/output_test/Programmes_126_filtered.csv"}
-        ]
-    }
-    return jsonify(response), 200
+        ],
+        "programmes": programmes_json
+    }), 200
 
 
 # -------------------------
@@ -70,10 +76,14 @@ def relancer_filtrage():
             return jsonify({
                 "status": "ok",
                 "fichiers_csv": [],
+                "programmes": [],
                 "message": "⚠️ Aucun CSV brut trouvé. Veuillez d’abord extraire les programmes."
             }), 200
 
         nettoyer_csv(brut_path, filtre_path)
+        sauvegarder_derniere_version(filtre_path, SAVE_DIR)
+
+        programmes_json = csv_to_programmes_json(filtre_path)
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -83,6 +93,7 @@ def relancer_filtrage():
         "fichiers_csv": [
             {"file_name": "Programmes_126_filtered.csv", "url": f"http://localhost:5000/output_test/Programmes_126_filtered.csv"}
         ],
+        "programmes": programmes_json,
         "message": "Filtrage relancé avec succès"
     }), 200
 
@@ -134,5 +145,37 @@ def download_output_file(filename):
     return send_from_directory(OUTPUT_DIR, filename)
 
 
+# -------------------------
+# 5) Servir les fichiers sauvegardés
+# -------------------------
+@app.route('/saved_programmes/<path:filename>', methods=['GET'])
+def download_saved_file(filename):
+    return send_from_directory(SAVE_DIR, filename)
+
+
+# -------------------------
+# 6) Récupérer la dernière liste de programmes en JSON
+# -------------------------
+@app.route('/last-programmes', methods=['GET'])
+def get_last_programmes():
+    csv_path = os.path.join(SAVE_DIR, "last_programmes_updates.csv")
+    programmes = csv_to_programmes_json(csv_path)
+
+    if not programmes:
+        return jsonify({
+            "status": "empty",
+            "message": "Aucun programme sauvegardé",
+            "programmes": []
+        }), 200
+
+    return jsonify({
+        "status": "ok",
+        "programmes": programmes
+    }), 200
+
+
 if __name__ == '__main__':
+    print("➡️ BASE_DIR =", BASE_DIR)
+    print("➡️ OUTPUT_DIR =", OUTPUT_DIR)
+    print("➡️ SAVE_DIR =", SAVE_DIR)
     app.run(debug=True)
