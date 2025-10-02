@@ -68,7 +68,7 @@ def recevoir_program_extraction():
         filtre_path = os.path.join(OUTPUT_DIR, f"Programmes_{monitoring_location}_filtered.csv")
         nettoyer_csv(brut_path, filtre_path, monitoring_location)
 
-        # Étape 4 : sauvegarde last_programmes_updates.csv
+        # Étape 4 : sauvegarde last_programmes.csv
         sauvegarder_derniere_version(filtre_path, SAVE_DIR)
 
         # Étape 5 : conversion JSON
