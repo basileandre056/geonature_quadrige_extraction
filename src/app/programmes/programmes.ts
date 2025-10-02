@@ -154,26 +154,30 @@ export class Programmes {
 relancer_filtrage_seul() {
   console.log("➡️ clic sur relancer_filtrage_seul()");
   this.isLoading = true;
-  this.http.get<any>('http://localhost:5000/filtrage_seul').subscribe({
-    next: (res) => {
-      if (res?.status === 'ok' && res?.fichiers_csv?.length > 0) {
-        const csvUrl = res.fichiers_csv[0].url;
-        this.chargerProgrammesDepuisCSV(csvUrl);
-      } else if (res?.status === 'ok' && (!res?.fichiers_csv || res.fichiers_csv.length === 0)) {
-        // cas spécifique : pas de CSV à filtrer
-        this.message = "⚠️ Aucun CSV à filtrer, extrayez d’abord la liste des programmes.";
-      } else {
-        this.message = res?.message ?? 'Erreur backend';
+
+  // Option 1 : renvoyer le filtre actuel
+  this.http.post<any>('http://localhost:5000/filtrage_seul', { filter: this.programs_filter || {} })
+    .subscribe({
+      next: (res) => {
+        if (res?.status === 'ok' && res?.fichiers_csv?.length > 0) {
+          const csvUrl = res.fichiers_csv[0].url;
+          this.chargerProgrammesDepuisCSV(csvUrl);
+        } else if (res?.status === 'ok' && (!res?.fichiers_csv || res.fichiers_csv.length === 0)) {
+          this.message = "⚠️ Aucun CSV à filtrer, extrayez d’abord la liste des programmes.";
+        } else {
+          this.message = res?.message ?? 'Erreur backend';
+        }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error("[FRONTEND] ❌ Erreur HTTP (filtrage seul):", err);
+        this.message = "Erreur lors du filtrage seul.";
+        this.isLoading = false;
       }
-      this.isLoading = false;
-    },
-    error: (err) => {
-      console.error("[FRONTEND] ❌ Erreur HTTP (filtrage seul):", err);
-      this.message = "Erreur lors du filtrage seul.";
-      this.isLoading = false;
-    }
-  });
+    });
 }
+
+
 
 
 private chargerProgrammesDepuisCSV(csvUrl: string) {

@@ -3,7 +3,8 @@ import requests
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from extraction_data import extract_ifremer_data
-from extraction_programs import extract_programs, nettoyer_csv, sauvegarder_derniere_version, csv_to_programmes_json
+from extraction_programs import extract_programs, nettoyer_csv, csv_to_programmes_json, sauvegarder_derniere_version
+import json
 
 app = Flask(__name__)
 CORS(app)
@@ -14,15 +15,35 @@ CORS(app)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # chemin du dossier "backend/"
 OUTPUT_DIR = os.path.join(BASE_DIR, "output_test")
 SAVE_DIR = os.path.join(BASE_DIR, "saved_programmes")
+LAST_FILTER_FILE = os.path.join(SAVE_DIR, "last_filter.json")
+
+
+def sauvegarder_filtre(program_filter: dict):
+    os.makedirs(SAVE_DIR, exist_ok=True)
+    with open(LAST_FILTER_FILE, "w", encoding="utf-8") as f:
+        json.dump(program_filter, f)
+    print(f"[BACKEND] 💾 Filtre sauvegardé dans {LAST_FILTER_FILE}")
+
+def charger_filtre() -> dict:
+    if os.path.exists(LAST_FILTER_FILE):
+        with open(LAST_FILTER_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    return {}
+
+
+
 
 
 # -------------------------
 # 1) Extraction + filtrage programmes
 # -------------------------
+
 @app.route('/program-extraction', methods=['POST'])
 def recevoir_program_extraction():
     data = request.json
     program_filter = data.get('filter', {})
+    monitoring_location = program_filter.get("monitoringLocation", "")
+
     print("\n[BACKEND] ➡️ Requête reçue sur /program-extraction")
     print("[BACKEND] Filtre reçu :", program_filter)
 
@@ -31,8 +52,11 @@ def recevoir_program_extraction():
         file_url = extract_programs(program_filter)
         print(f"[BACKEND] URL CSV reçue depuis Ifremer : {file_url}")
 
+        # Sauvegarder le filtre utilisé
+        sauvegarder_filtre(program_filter)
+
         # Étape 2 : télécharger le CSV brut
-        brut_path = os.path.join(OUTPUT_DIR, "Programmes_126_brut.csv")
+        brut_path = os.path.join(OUTPUT_DIR, f"Programmes_{monitoring_location}_brut.csv")
         r = requests.get(file_url)
         r.raise_for_status()
         os.makedirs(OUTPUT_DIR, exist_ok=True)
@@ -41,8 +65,8 @@ def recevoir_program_extraction():
         print(f"[BACKEND] ✅ CSV brut sauvegardé : {brut_path}")
 
         # Étape 3 : filtrer le CSV
-        filtre_path = os.path.join(OUTPUT_DIR, "Programmes_126_filtered.csv")
-        nettoyer_csv(brut_path, filtre_path)
+        filtre_path = os.path.join(OUTPUT_DIR, f"Programmes_{monitoring_location}_filtered.csv")
+        nettoyer_csv(brut_path, filtre_path, monitoring_location)
 
         # Étape 4 : sauvegarde last_programmes_updates.csv
         sauvegarder_derniere_version(filtre_path, SAVE_DIR)
@@ -57,30 +81,49 @@ def recevoir_program_extraction():
     return jsonify({
         "status": "ok",
         "fichiers_csv": [
-            {"file_name": "Programmes_126_filtered.csv", "url": f"http://localhost:5000/output_test/Programmes_126_filtered.csv"}
+            {"file_name": f"Programmes_{monitoring_location}_filtered.csv", "url": f"http://localhost:5000/output_test/Programmes_{monitoring_location}_filtered.csv"}
         ],
         "programmes": programmes_json
     }), 200
 
 
+
 # -------------------------
 # 2) Relancer uniquement le filtrage
 # -------------------------
-@app.route('/filtrage_seul', methods=['GET'])
+@app.route('/filtrage_seul', methods=['POST', 'GET'])
 def relancer_filtrage():
+    if request.method == "POST":
+        data = request.json or {}
+        program_filter = data.get('filter', {})
+    else:
+        program_filter = {}
+
+    # si aucun filtre envoyé → on recharge le dernier sauvegardé
+    if not program_filter:
+        program_filter = charger_filtre()
+
+    monitoring_location = program_filter.get("monitoringLocation", "")
+
+    if not monitoring_location:
+        return jsonify({
+            "status": "error",
+            "message": "Aucun filtre trouvé (ni reçu, ni sauvegardé)."
+        }), 400
+
     try:
-        brut_path = os.path.join(OUTPUT_DIR, "Programmes_126_brut.csv")
-        filtre_path = os.path.join(OUTPUT_DIR, "Programmes_126_filtered.csv")
+        brut_path = os.path.join(OUTPUT_DIR, f"Programmes_{monitoring_location}_brut.csv")
+        filtre_path = os.path.join(OUTPUT_DIR, f"Programmes_{monitoring_location}_filtered.csv")
 
         if not os.path.exists(brut_path):
             return jsonify({
                 "status": "ok",
                 "fichiers_csv": [],
                 "programmes": [],
-                "message": "⚠️ Aucun CSV brut trouvé. Veuillez d’abord extraire les programmes."
+                "message": "⚠️ Aucun CSV brut trouvé pour ce filtre. Veuillez d’abord extraire les programmes."
             }), 200
 
-        nettoyer_csv(brut_path, filtre_path)
+        nettoyer_csv(brut_path, filtre_path, monitoring_location)
         sauvegarder_derniere_version(filtre_path, SAVE_DIR)
 
         programmes_json = csv_to_programmes_json(filtre_path)
@@ -91,11 +134,13 @@ def relancer_filtrage():
     return jsonify({
         "status": "ok",
         "fichiers_csv": [
-            {"file_name": "Programmes_126_filtered.csv", "url": f"http://localhost:5000/output_test/Programmes_126_filtered.csv"}
+            {"file_name": f"Programmes_{monitoring_location}_filtered.csv", "url": f"http://localhost:5000/output_test/Programmes_{monitoring_location}_filtered.csv"}
         ],
         "programmes": programmes_json,
         "message": "Filtrage relancé avec succès"
     }), 200
+
+
 
 
 # -------------------------

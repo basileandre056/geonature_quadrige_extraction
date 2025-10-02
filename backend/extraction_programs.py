@@ -6,7 +6,6 @@ import pandas as pd
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
 
-
 def extract_programs(filter_data: dict,
                     graphql_url="https://quadrige-core.ifremer.fr/graphql/public",
                     access_token = "2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:CA8375B7CF45E83F3B637FE97F8DA0F6263120AA9D58C6888A32111C766B054C:1|D6YumLYYbW2wWLoiFkGx++l1psS6BxzHCB5zm2mJRivNlAppnQOVWOZOX+y1C66pkFOxzvADjh7JT9yy2PwsAg==",
@@ -102,13 +101,15 @@ def download_csv(file_url: str, name="Programmes", output_dir="output_test") -> 
     return file_path
 
 
-def nettoyer_csv(input_path, output_path):
+def nettoyer_csv(input_path, output_path, monitoring_location_prefix: str):
     """
     Nettoie le CSV pour ne garder que :
-      - les lignes où Lieu : Mnémonique commence par '126'
+      - les lignes où Lieu : Mnémonique commence par monitoring_location_prefix
       - uniquement les colonnes utiles
       - suppression des doublons basés sur Programme : Code
     """
+    import pandas as pd
+
     df = pd.read_csv(input_path, sep=";", dtype=str)
 
     colonnes_requises = [
@@ -123,7 +124,9 @@ def nettoyer_csv(input_path, output_path):
         if col not in df.columns:
             raise ValueError(f"❌ Colonne manquante dans le CSV extrait : {col}")
 
-    df_filtre = df[df["Lieu : Mnémonique"].str.startswith("126", na=False)]
+    # Filtrage dynamique sur la base du monitoring location
+    df_filtre = df[df["Lieu : Mnémonique"].str.startswith(monitoring_location_prefix, na=False)]
+
     df_reduit = df_filtre[[
         "Programme : Code",
         "Programme : Libellé",
@@ -136,19 +139,6 @@ def nettoyer_csv(input_path, output_path):
     df_unique.to_csv(output_path, sep=";", index=False)
     print(f"[extract_programs] ✅ CSV filtré enregistré : {output_path}")
 
-
-def sauvegarder_derniere_version(filtre_path, save_dir="output_test"):
-    """
-    Copie le CSV filtré vers last_programmes_updates.csv
-    """
-    os.makedirs(save_dir, exist_ok=True)
-    dest_path = os.path.join(save_dir, "last_programmes_updates.csv")
-
-    with open(filtre_path, "rb") as src, open(dest_path, "wb") as dst:
-        dst.write(src.read())
-
-    print(f"[extract_programs] 💾 Copie effectuée vers {dest_path}")
-    return dest_path
 
 
 def csv_to_programmes_json(csv_path: str):
@@ -173,6 +163,20 @@ def csv_to_programmes_json(csv_path: str):
     return programmes
 
 
+def sauvegarder_derniere_version(filtre_path: str, save_dir="output_test"):
+    """
+    Copie le CSV filtré vers last_programmes_updates.csv
+    """
+    os.makedirs(save_dir, exist_ok=True)
+    dest_path = os.path.join(save_dir, "last_programmes_updates.csv")
+
+    with open(filtre_path, "rb") as src, open(dest_path, "wb") as dst:
+        dst.write(src.read())
+
+    print(f"[extract_programs] 💾 Copie effectuée vers {dest_path}")
+    return dest_path
+
+
 
 
 # -------------------------
@@ -193,6 +197,6 @@ if __name__ == "__main__":
 
     # Étape 3 : nettoyage
     csv_filtre = "output_test/Programmes_126_filtered.csv"
-    nettoyer_csv(csv_brut, csv_filtre)
+    nettoyer_csv(csv_brut, csv_filtre,filtre["monitoringLocation"])
 
     print(f"[MAIN] ✅ Extraction terminée, fichier filtré disponible : {csv_filtre}")
