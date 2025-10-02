@@ -3,7 +3,7 @@
 
   <!-- Name -->
   <div class="filter-field">
-    <label>Name:</label>
+    <label>Nom du filtre:</label>
     <input type="text" [(ngModel)]="extraction_filter.name" name="name" required />
     <small *ngIf="extraction_filter.name.trim() === ''" class="error-msg">
       Ce champ est requis
@@ -12,7 +12,7 @@
 
       <!-- Fields -->
     <div class="filter-field">
-      <label>Fields:</label>
+      <label>Champs à Extraire:</label>
 
       <div class="fields-list">
         <div *ngFor="let f of extraction_filter.fields; let i = index" class="field-item">
@@ -47,17 +47,19 @@
   <div class="filter-field">
     <label>Période :</label>
     <div class="period-row">
+
+
       <div class="date-input">
         <input type="date" [(ngModel)]="extraction_filter.startDate" name="startDate" required />
-        <small *ngIf="extraction_filter.startDate.trim() === ''" class="error-msg">
-          Date de début requise
+        <small *ngIf="!isFormValid() && extraction_filter.startDate.trim() === '' && extraction_filter.endDate.trim() === '' && extraction_filter.monitoringLocation.trim() === ''" class="error-msg">
+          Vous devez définir soit une période, soit un code de lieu d'observation, soit les deux.
         </small>
       </div>
 
       <div class="date-input">
         <input type="date" [(ngModel)]="extraction_filter.endDate" name="endDate" required />
-        <small *ngIf="extraction_filter.endDate.trim() === ''" class="error-msg">
-          Date de fin requise
+        <small *ngIf="!isFormValid() && extraction_filter.startDate.trim() === '' && extraction_filter.endDate.trim() === '' && extraction_filter.monitoringLocation.trim() === ''" class="error-msg">
+          Vous devez définir soit une période, soit un code de lieu d'observation, soit les deux.
         </small>
       </div>
     </div>
@@ -65,11 +67,11 @@
 
   <!-- Monitoring location -->
   <div class="filter-field">
-    <label>Monitoring location:</label>
+    <label>Code du lieu d'observation</label>
     <input type="text" [(ngModel)]="extraction_filter.monitoringLocation" name="monitoringLocation" required />
-    <small *ngIf="extraction_filter.monitoringLocation.trim() === ''" class="error-msg">
-      Ce champ est requis
-    </small>
+      <small *ngIf="!isFormValid() && extraction_filter.startDate.trim() === '' && extraction_filter.endDate.trim() === '' && extraction_filter.monitoringLocation.trim() === ''" class="error-msg">
+        Vous devez définir soit une période, soit un code de lieu d'observation, soit les deux.
+      </small>
   </div>
 
   <!-- Actions -->

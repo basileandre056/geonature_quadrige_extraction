@@ -113,17 +113,27 @@ export class FrontendFilterComponent {
 
   // ✅ n’affiche que les champs non encore choisis
   get remainingFields(): string[] {
+
     return this.availableFields.filter(f => !this.extraction_filter.fields.includes(f));
+
   }
 
-  newField = '';
+    newField = '';
 
-  isFormValid(): boolean {
-    return ['name','fields','startDate','endDate','monitoringLocation']
-      .every((k) => {
-        const v = (this.extraction_filter as any)[k];
-        return Array.isArray(v) ? v.length > 0 : v.toString().trim() !== '';
-      });
+    isFormValid(): boolean {
+    const f = this.extraction_filter;
+
+    // Obligatoires
+    if (f.name.trim() === '') return false;
+    if (!Array.isArray(f.fields) || f.fields.length === 0) return false;
+
+    // Condition : soit une période valide, soit un code de lieu, soit les deux
+    const hasPeriod = f.startDate.trim() !== '' && f.endDate.trim() !== '';
+    const hasLocation = f.monitoringLocation.trim() !== '';
+
+    if (!hasPeriod && !hasLocation) return false;
+
+    return true;
   }
 
   addField() {
