@@ -1,11 +1,11 @@
-import { Component, EventEmitter, Output } from '@angular/core';
-import { CommonModule } from '@angular/common';   // ✅ nécessaire pour *ngIf / *ngFor
+import { Component, EventEmitter, Output, HostListener, ElementRef, ViewChild } from '@angular/core';
+import { CommonModule } from '@angular/common';   //  nécessaire pour *ngIf / *ngFor
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-frontend-filter',
   standalone: true,
-  imports: [CommonModule, FormsModule],            // ✅ ajoute CommonModule ici
+  imports: [CommonModule, FormsModule],
   templateUrl: './frontend-filter.html',
   styleUrls: ['./frontend-filter.scss']
 })
@@ -22,11 +22,41 @@ export class FrontendFilterComponent {
     commentaire: ''
   };
 
+// liste des localisations suggérées (tableau pour l’affichage)
+sugested_locations = [
+  { code: '126-', label: 'Réunion' },
+  { code: '145-', label: 'Mayotte' },
+  { code: '048-', label: 'Maurice' },
+];
+
+showSuggestions = false;
+
+// refs sur l’input et le panneau de suggestions
+@ViewChild('locInput') locInput?: ElementRef<HTMLInputElement>;
+@ViewChild('suggestionsPanel') suggestionsPanel?: ElementRef<HTMLElement>;
+
+openSuggestions() {
+  this.showSuggestions = true;
+}
+
+selectSuggestion(code: string) {
+  this.extraction_filter.monitoringLocation = code;
+  this.showSuggestions = false;
+}
+
+// ferme si clic en dehors de l’input et du panneau
+@HostListener('document:click', ['$event'])
+onDocumentClick(event: MouseEvent) {
+  const target = event.target as Node;
+  const inInput = this.locInput?.nativeElement.contains(target);
+  const inPanel = this.suggestionsPanel?.nativeElement.contains(target);
+  if (!inInput && !inPanel) {
+    this.showSuggestions = false;
+  }
+}
 
 
-
-
-  // ✅ liste complète des champs
+  //  liste complète des champs
   availableFields: string[] = [
     "MONITORING_LOCATION_ORDER_ITEM_TYPE_ID",
     "MONITORING_LOCATION_ORDER_ITEM_TYPE_NAME",
@@ -111,7 +141,7 @@ export class FrontendFilterComponent {
     "MEASUREMENT_RECORDER_DEPARTMENT_NAME"
   ];
 
-  // ✅ n’affiche que les champs non encore choisis
+  //  n’affiche que les champs non encore choisis
   get remainingFields(): string[] {
 
     return this.availableFields.filter(f => !this.extraction_filter.fields.includes(f));

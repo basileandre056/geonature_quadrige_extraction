@@ -19,6 +19,7 @@
 
   /* Chaque champ de formulaire */
   .filter-field {
+    position: relative; // <-- pour positionner le panneau par rapport au champ
     display: flex;
     flex-direction: column;
     margin-bottom: 1.2rem;
@@ -105,6 +106,34 @@
       }
     }
   }
+
+  .suggestions {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: calc(100% + 4px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    background: #fff;
+    max-height: 180px;
+    overflow-y: auto;
+    z-index: 1100;
+
+    li {
+      padding: 0.45rem 0.6rem;
+      cursor: pointer;
+
+      &:hover {
+        background: #f0f0f0;
+      }
+    }
+  }
+
+
+
 
   /* Zone pour ajouter un nouveau champ */
   .field-input {

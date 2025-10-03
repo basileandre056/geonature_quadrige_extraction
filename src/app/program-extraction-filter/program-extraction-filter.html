@@ -4,16 +4,48 @@
   <!-- Nom du filtre -->
   <div class="filter-field">
     <label>Nom du filtre :</label>
-    <input type="text" [(ngModel)]="filter.name" placeholder="Nom du filtre" />
-    <small *ngIf="filter.name.trim() === ''" class="error-msg">Ce champ est requis</small>
+    <input
+      type="text"
+      [(ngModel)]="filter.name"
+      placeholder="Nom du filtre"
+      (keydown.enter)="applyFilter()" />
+      <small *ngIf="filter.name.trim() === ''" class="error-msg">
+        Ce champ est requis
+      </small>
   </div>
 
-  <!-- Monitoring location -->
-  <div class="filter-field">
-    <label>Monitoring location :</label>
-    <input type="text" [(ngModel)]="filter.monitoringLocation" placeholder="Lieu de surveillance" />
-    <small *ngIf="filter.monitoringLocation.trim() === ''" class="error-msg">Ce champ est requis</small>
-  </div>
+    <!-- Monitoring location -->
+<div class="filter-field">
+  <label>Code du lieu d'observation</label>
+
+  <input
+    #locInput
+    type="text"
+    autocomplete="off"
+    [(ngModel)]="filter.monitoringLocation"
+    name="monitoringLocation"
+    (focus)="openSuggestions()"
+    (click)="openSuggestions()"
+    (keydown.escape)="showSuggestions = false"
+    (keydown.enter)="applyFilter()"
+  />
+
+  <!-- Liste des suggestions -->
+  <ul *ngIf="showSuggestions" #suggestionsPanel class="suggestions">
+    <li
+      *ngFor="let loc of sugested_locations"
+      (mousedown)="selectSuggestion(loc.code); $event.preventDefault()"
+    >
+      {{ loc.label }} : {{ loc.code }}
+    </li>
+  </ul>
+
+  <small *ngIf="submitted && filter.monitoringLocation.trim() === ''" class="error-msg">
+  Ce champ est requis
+</small>
+
+</div>
+
 
   <!-- Actions -->
   <div class="filter-actions">
