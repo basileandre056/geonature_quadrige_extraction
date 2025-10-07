@@ -88,12 +88,21 @@ export class Programmes {
     this.programmes.forEach(p => (p.checked = this.allSelected));
   }
 
+  // 🔹 Gestion d’ouverture des filtres (ferme l’autre automatiquement)
+  openDataFilter() {
+    this.showProgramFilter = false; // fermer filtre programme
+    this.showDataFilter = true;
+  }
+
+  openProgramFilter() {
+    this.showDataFilter = false; // fermer filtre données
+    this.showProgramFilter = true;
+  }
+
   // 🔹 Quand le filtre de données est appliqué
   onDataFilterApplied(filterData: any) {
     console.log('[FRONTEND] 🎯 Filtre appliqué (données):', filterData);
-    this.showDataFilter = false;
-
-    // Supprimer la localisation (elle est gérée par le backend)
+    this.showDataFilter = false; // fermeture automatique
     const { monitoringLocation, ...filterWithoutLocation } = filterData;
     this.dataFilter = filterWithoutLocation;
   }
@@ -101,7 +110,7 @@ export class Programmes {
   // 🔹 Quand le filtre de programmes est appliqué
   onProgramFilterApplied(filterData: any) {
     console.log('[FRONTEND] 📋 Filtre appliqué (programmes):', filterData);
-    this.showProgramFilter = false;
+    this.showProgramFilter = false; // fermeture automatique
     this.programFilter = filterData;
   }
 
@@ -110,6 +119,11 @@ export class Programmes {
   // -----------------------------------------------------
   extractPrograms() {
     console.log('➡️ clic sur extractPrograms()');
+
+    // Fermer les fenêtres avant extraction
+    this.showDataFilter = false;
+    this.showProgramFilter = false;
+
     if (!this.programFilter) {
       this.message = 'Veuillez définir un filtre d’extraction de programmes.';
       return;
@@ -142,7 +156,6 @@ export class Programmes {
   relancerFiltrageSeul() {
     console.log("➡️ clic sur relancerFiltrageSeul()");
     this.isLoading = true;
-
     this.http.post<any>('http://localhost:5000/filtrage_seul', { filter: this.programFilter || {} })
       .subscribe({
         next: (res) => {
@@ -193,7 +206,6 @@ export class Programmes {
 
         this.programmes = nouveauxProgrammes;
         this.message = `✅ Liste mise à jour (${this.programmes.length} programmes depuis CSV filtré)`;
-        console.log("[FRONTEND] Liste mise à jour :", this.programmes);
       },
       error: (err) => {
         console.error("[FRONTEND] ❌ Erreur téléchargement CSV filtré :", err);
@@ -207,6 +219,11 @@ export class Programmes {
   // -----------------------------------------------------
   extractData() {
     console.log('➡️ clic sur extractData()');
+
+    // Fermer les fenêtres avant extraction
+    this.showDataFilter = false;
+    this.showProgramFilter = false;
+
     const selectedPrograms = this.programmes.filter(p => p.checked).map(p => p.name);
 
     if (selectedPrograms.length === 0) {

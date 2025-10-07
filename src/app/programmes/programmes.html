@@ -11,22 +11,27 @@
   <div class="button-row">
     <!-- 🟦 Extraction de données -->
     <button (click)="extractData()" [disabled]="isLoading" class="extract-data-btn">
-      {{ isLoading ? 'Extraction en cours...' : 'Extraire les données' }}
+      <span *ngIf="isLoading" class="emoji spin">🔄</span>
+      {{ isLoading ? 'Extraction en cours...' : '🌐 Extraire les données' }}
     </button>
 
     <!-- 🔧 Ajout d’un filtre personnalisé pour les données -->
-    <button (click)="showDataFilter = true" class="data-filter-btn">
-      Ajouter un filtre personnalisé
+    <button (click)="openDataFilter()" class="data-filter-btn">
+    <span *ngIf="isLoading" class="emoji spin">⏳</span>
+     {{ isLoading ? 'Extraction en cours...' : '🔧 Filtre personnalisé pour extraction des données' }}
     </button>
 
     <!-- 🟩 Extraction de programmes -->
     <button (click)="extractPrograms()" [disabled]="isLoading" class="extract-prog-btn">
-      {{ isLoading ? 'Extraction en cours...' : 'Extraire les programmes' }}
+      <span *ngIf="isLoading" class="emoji spin">🔄</span>
+      {{ isLoading ? 'Extraction en cours...' : '🌐 Extraire les programmes' }}
     </button>
 
-    <!-- 🔄 Mise à jour de la liste des programmes -->
-    <button (click)="showProgramFilter = true" [disabled]="isLoading" class="maj_prgrm-btn">
-      {{ isLoading ? 'Mise à jour...' : 'Mettre à jour la liste des programmes' }}
+    <!-- 🔧 Filtre de Mise à jour de la liste des programmes -->
+    <button (click)="openProgramFilter()" [disabled]="isLoading" class="maj_prgrm-btn">
+      <span *ngIf="isLoading" class="emoji spin">⏳</span>
+      {{ isLoading ? 'Extraction en cours...' : '🔧 Filtre personnalisé pour la mise à jour des programmes' }}
+
     </button>
   </div>
 

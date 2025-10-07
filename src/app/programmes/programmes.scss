@@ -10,19 +10,45 @@
 /* Barre de recherche */
 .search-bar {
   display: block;
-  width: 400px;        /* largeur fixe */
-  max-width: 100%;     /* responsive */
-  margin-bottom: 2rem; /* espace avec le bouton */
+  width: 400px;
+  max-width: 100%;
+  margin-bottom: 2rem;
 }
 
 /* Conteneur des boutons */
 .button-row {
   display: flex;
-  justify-content: center;   /* centre horizontalement */
-  align-items: center;       /* aligne verticalement */
-  gap: 1.5rem;               /* espace entre les deux boutons */
+  justify-content: center;
+  align-items: center;
+  gap: 1.5rem;
   margin-top: 1rem;
   margin-bottom: 1rem;
+}
+
+/* Boutons */
+button {
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* Émojis animés */
+.emoji {
+  display: inline-block;
+  font-size: 1.2em;
+  vertical-align: middle;
+  transition: transform 0.3s ease;
+}
+
+.emoji.spin {
+  display: inline-block;
+  animation: spin 1.5s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 /* Bouton Extraire Données (bleu) */
@@ -39,7 +65,7 @@
   background-color: #0056b3;
 }
 
-/* Bouton Extraire Programmes (vert) */
+/* Bouton Extraire Programmes (bleu aussi pour homogénéité) */
 .extract-prog-btn {
   padding: 0.6rem 1.2rem;
   background-color: #007bff;
@@ -53,7 +79,7 @@
   background-color: #0056b3;
 }
 
-/* Bouton Filtre personnalisé (turquoise) */
+/* Bouton Filtre personnalisé (vert) */
 .data-filter-btn {
   padding: 0.6rem 1.2rem;
   background-color: #139e0f;
@@ -67,7 +93,7 @@
   background-color: #08693c;
 }
 
-/* Bouton maj programmes (vert clair) */
+/* Bouton mise à jour programmes (vert aussi) */
 .maj_prgrm-btn {
   padding: 0.6rem 1.2rem;
   background-color: #139e0f;
@@ -81,7 +107,6 @@
   background-color: #08693c;
 }
 
-
 /* Tableau programmes */
 .programmes-table {
   width: 100%;
@@ -89,7 +114,6 @@
   margin-bottom: 1rem;
 }
 
-/* Titres centrés et uniformisés */
 .programmes-table th {
   background-color: #f5f5f5;
   font-weight: bold;
@@ -98,14 +122,12 @@
   border: 1px solid #ddd;
 }
 
-/* Cellules */
 .programmes-table td {
   border: 1px solid #ddd;
   padding: 0.75rem;
   text-align: left;
 }
 
-/* Première colonne (checkbox) étroite et centrée */
 .programmes-table th:first-child,
 .programmes-table td:first-child {
   width: 9%;
@@ -113,25 +135,21 @@
   vertical-align: middle;
 }
 
-/* Deuxième colonne (Nom du programme) */
 .programmes-table th:nth-child(2),
 .programmes-table td:nth-child(2) {
   width: 25%;
 }
 
-/* Troisième colonne (Libellé) */
 .programmes-table th:nth-child(3),
 .programmes-table td:nth-child(3) {
   width: 25%;
 }
 
-/* Dernière colonne (Responsable) */
 .programmes-table th:nth-child(6),
 .programmes-table td:nth-child(6) {
   width: 30%;
 }
 
-/* Lignes alternées grises */
 .programmes-table tr:nth-child(even) {
   background-color: #fafafa;
 }
