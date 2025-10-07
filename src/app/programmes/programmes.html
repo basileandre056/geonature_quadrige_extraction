@@ -9,39 +9,39 @@
   />
 
   <div class="button-row">
-    <!-- bouton extraire données -->
-    <button (click)="Extraire_donnees()" [disabled]="isLoading" class="extract-data-btn">
-      {{ isLoading ? 'Extraction en cours...' : 'Extraire données' }}
+    <!-- 🟦 Extraction de données -->
+    <button (click)="extractData()" [disabled]="isLoading" class="extract-data-btn">
+      {{ isLoading ? 'Extraction en cours...' : 'Extraire les données' }}
     </button>
 
-        <!-- bouton ajouter filtre données personnalisé -->
-    <button (click)="showFilter = true" class="data-filter-btn">
+    <!-- 🔧 Ajout d’un filtre personnalisé pour les données -->
+    <button (click)="showDataFilter = true" class="data-filter-btn">
       Ajouter un filtre personnalisé
     </button>
 
-    <!-- bouton extraire programmes -->
-    <button (click)="Extraire_programmes()" [disabled]="isLoading" class="extract-prog-btn">
-      {{ isLoading ? 'Extraction en cours...' : 'Extraire programmes' }}
+    <!-- 🟩 Extraction de programmes -->
+    <button (click)="extractPrograms()" [disabled]="isLoading" class="extract-prog-btn">
+      {{ isLoading ? 'Extraction en cours...' : 'Extraire les programmes' }}
     </button>
 
-    <!-- bouton maj programmes -->
-    <button (click)="showExtractionFilter = true" [disabled]="isLoading" class="maj_prgrm-btn">
+    <!-- 🔄 Mise à jour de la liste des programmes -->
+    <button (click)="showProgramFilter = true" [disabled]="isLoading" class="maj_prgrm-btn">
       {{ isLoading ? 'Mise à jour...' : 'Mettre à jour la liste des programmes' }}
     </button>
   </div>
 
-  <!-- Fenêtre filtre classique -->
+  <!-- 🌐 Fenêtre filtre données -->
   <app-frontend-filter
-    *ngIf="showFilter"
-    (apply)="onFilterApplied($event)"
-    (close)="showFilter = false">
+    *ngIf="showDataFilter"
+    (apply)="onDataFilterApplied($event)"
+    (close)="showDataFilter = false">
   </app-frontend-filter>
 
-  <!-- Fenêtre extraction programmes -->
+  <!-- 🧭 Fenêtre filtre programmes -->
   <app-program-extraction-filter
-    *ngIf="showExtractionFilter"
-    (apply)="onExtractionFilterApplied($event)"
-    (close)="showExtractionFilter = false">
+    *ngIf="showProgramFilter"
+    (apply)="onProgramFilterApplied($event)"
+    (close)="showProgramFilter = false">
   </app-program-extraction-filter>
 </div>
 
@@ -61,7 +61,7 @@
       <th>Programme</th>
       <th>Libellé</th>
       <th>Date de début</th>
-      <th>Etat</th>
+      <th>État</th>
       <th>Responsables</th>
     </tr>
   </thead>
@@ -79,17 +79,13 @@
   </tbody>
 </table>
 
-<!-- Fichiers CSV des programmes -->
+<!-- 📊 Fichiers CSV des programmes -->
 <app-extracted-links [files]="extractedProgramFiles"></app-extracted-links>
 
-<!-- Fichiers ZIP des données -->
-<app-extracted-links [files]="extractedFiles"></app-extracted-links>
+<!-- 📦 Fichiers ZIP des données -->
+<app-extracted-links [files]="extractedDataFiles"></app-extracted-links>
 
-
-<!-- bouton maj des programmes -->
-
-<!-- bouton relancer filtrage seul -->
-<button (click)="relancer_filtrage_seul()" [disabled]="isLoading" class="maj_prgrm-btn">
+<!-- 🔁 Bouton relancer le filtrage seul -->
+<button (click)="relancerFiltrageSeul()" [disabled]="isLoading" class="maj_prgrm-btn">
   {{ isLoading ? 'Filtrage...' : 'Relancer uniquement le filtrage' }}
 </button>
-

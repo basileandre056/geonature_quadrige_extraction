@@ -1,9 +1,9 @@
 <div class="filter-card">
   <h2>Sélectionnez vos critères de filtrage</h2>
 
-  <!-- Name -->
+  <!-- Nom du filtre -->
   <div class="filter-field">
-    <label>Nom du filtre:</label>
+    <label>Nom du filtre :</label>
     <input
       type="text"
       [(ngModel)]="extraction_filter.name"
@@ -16,56 +16,45 @@
     </small>
   </div>
 
-      <!-- Fields -->
-    <div class="filter-field">
-      <label>Champs à Extraire:</label>
+  <!-- Champs à extraire -->
+  <div class="filter-field">
+    <label>Champs à extraire :</label>
 
-      <div class="fields-list">
-        <div *ngFor="let f of extraction_filter.fields; let i = index" class="field-item">
-          {{ f }}
-          <button type="button" class="remove-btn" (click)="removeField(i)">×</button>
-        </div>
+    <div class="fields-list">
+      <div *ngFor="let f of extraction_filter.fields; let i = index" class="field-item">
+        {{ f }}
+        <button type="button" class="remove-btn" (click)="removeField(i)">×</button>
       </div>
-
-
-  <!-- <pre>{{ remainingFields }}</pre> -->
-
-      <div class="field-input">
-        <select [(ngModel)]="newField" [disabled]="remainingFields.length === 0">
-          <option value="">-- Choisir un champ --</option>
-          <option *ngFor="let field of remainingFields" [value]="field">
-            {{ field }}
-          </option>
-        </select>
-        <button type="button" (click)="addField()" [disabled]="!newField">Ajouter</button>
-      </div>
-
-      <small *ngIf="extraction_filter.fields.length === 0" class="error-msg">
-        Au moins un champ est requis
-      </small>
-      <small *ngIf="remainingFields.length === 0" class="error-msg">
-        Tous les champs disponibles ont été ajoutés.
-      </small>
     </div>
 
+    <div class="field-input">
+      <select [(ngModel)]="newField" [disabled]="remainingFields.length === 0">
+        <option value="">-- Choisir un champ --</option>
+        <option *ngFor="let field of remainingFields" [value]="field">
+          {{ field }}
+        </option>
+      </select>
+      <button type="button" (click)="addField()" [disabled]="!newField">Ajouter</button>
+    </div>
 
-  <!-- Période -->
+    <small *ngIf="extraction_filter.fields.length === 0" class="error-msg">
+      Au moins un champ est requis
+    </small>
+    <small *ngIf="remainingFields.length === 0" class="error-msg">
+      Tous les champs disponibles ont été ajoutés.
+    </small>
+  </div>
+
+  <!-- Période (facultative) -->
   <div class="filter-field">
-    <label>Période :</label>
+    <label>Période (optionnelle) :</label>
     <div class="period-row">
-
-
       <div class="date-input">
         <input
           type="date"
           [(ngModel)]="extraction_filter.startDate"
           name="startDate"
-          required
-          (keydown.enter)="applyFilter()"
         />
-        <small *ngIf="!isFormValid() && extraction_filter.startDate.trim() === '' && extraction_filter.endDate.trim() === '' && extraction_filter.monitoringLocation.trim() === ''" class="error-msg">
-          Vous devez définir soit une période, soit un code de lieu d'observation, soit les deux.
-        </small>
       </div>
 
       <div class="date-input">
@@ -73,52 +62,10 @@
           type="date"
           [(ngModel)]="extraction_filter.endDate"
           name="endDate"
-          required
-          (keydown.enter)="applyFilter()"
         />
-        <small *ngIf="!isFormValid() && extraction_filter.startDate.trim() === '' && extraction_filter.endDate.trim() === '' && extraction_filter.monitoringLocation.trim() === ''" class="error-msg">
-          Vous devez définir soit une période, soit un code de lieu d'observation, soit les deux.
-        </small>
       </div>
     </div>
   </div>
-
-  <!-- Monitoring location -->
-<div class="filter-field">
-  <label>Code du lieu d'observation</label>
-
-  <input
-    #locInput
-    type="text"
-    autocomplete="off"
-    [(ngModel)]="extraction_filter.monitoringLocation"
-    name="monitoringLocation"
-    (focus)="openSuggestions()"
-    (click)="openSuggestions()"
-    (keydown.escape)="showSuggestions = false"
-    (keydown.enter)="applyFilter()"
-
-  />
-
-  <!-- Liste des suggestions -->
-  <ul *ngIf="showSuggestions" #suggestionsPanel class="suggestions">
-    <li
-      *ngFor="let loc of sugested_locations"
-      (mousedown)="selectSuggestion(loc.code); $event.preventDefault()"
-    >
-      {{ loc.label }} : {{ loc.code }}
-    </li>
-  </ul>
-
-  <small
-    *ngIf="!isFormValid() && extraction_filter.startDate.trim() === ''
-           && extraction_filter.endDate.trim() === ''
-           && extraction_filter.monitoringLocation.trim() === ''"
-    class="error-msg">
-    Vous devez définir soit une période, soit un code de lieu d'observation, soit les deux.
-  </small>
-</div>
-
 
   <!-- Actions -->
   <div class="filter-actions">
