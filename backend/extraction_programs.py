@@ -27,6 +27,9 @@ def extract_programs(filter_data: dict,
     # -------------------------
     name = filter_data.get("name", "Extraction Programmes")
     monitoring_location = filter_data.get("monitoringLocation", "")
+    if not monitoring_location:
+      raise ValueError("Le champ 'monitoringLocation' est vide — requête annulée.")
+
 
     query = gql(f"""
     query {{

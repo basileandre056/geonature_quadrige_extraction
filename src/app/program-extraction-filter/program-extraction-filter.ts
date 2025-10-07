@@ -20,11 +20,16 @@ export class ProgramExtractionFilterComponent {
 
 
   // liste des localisations suggérées (tableau pour l’affichage)
-  sugested_locations = [
-    { code: '126-', label: 'Réunion' },
-    { code: '145-', label: 'Mayotte' },
-    { code: '048-', label: 'Maurice' },
-  ];
+sugested_locations = [
+  { code: '126-', label: 'Réunion' },
+  { code: '145-', label: 'Mayotte' },
+  { code: '048-', label: 'Maurice' },
+  { code: '153-', label: 'Ile Tromelin' },
+  { code: '152-', label: 'Iles Glorieuses' },
+  { code: '154-', label: 'Ile Juan De Nova' },
+  { code: '155-', label: 'Ile Bassas Da India' },
+  { code: '156-', label: 'Ile Europa' },
+];
 
 submitted = false;
 

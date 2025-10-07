@@ -150,12 +150,13 @@ def relancer_filtrage():
 def recevoir_data_extractions():
     data = request.json
     programmes: list[str] = data.get('programmes', [])
-    filter_data: dict = data.get('filter', {})
+    filter_data_front: dict = data.get('filter', {})
 
     print("[BACKEND] ➡️ Requête reçue sur /data-extractions")
     print("[BACKEND] Programmes reçus :", programmes)
-    print("[BACKEND] Filtre reçu :", filter_data)
+    print("[BACKEND] Filtre reçu depuis le frontend :", filter_data_front)
 
+    # 1️⃣ Vérifier qu'on a bien des programmes
     if not programmes:
         return jsonify({
             "status": "warning",
@@ -163,8 +164,31 @@ def recevoir_data_extractions():
             "message": "Aucun programme reçu par le backend"
         }), 400
 
-    download_links = extract_ifremer_data(programmes, filter_data)
+    # 2️⃣ Charger le dernier filtre sauvegardé (pour récupérer la vraie monitoringLocation)
+    last_filter = charger_filtre()
+    monitoring_location = last_filter.get("monitoringLocation", "")
 
+    if not monitoring_location:
+        return jsonify({
+            "status": "error",
+            "message": "Aucune monitoringLocation trouvée dans le dernier filtre sauvegardé."
+        }), 400
+
+    # 3️⃣ Fusionner les infos : on garde le reste du filtre du frontend (périodes, champs, etc.)
+    # mais on remplace la localisation par celle du dernier filtre
+    filter_data = dict(filter_data_front)  # copie du filtre frontend
+    filter_data["monitoringLocation"] = monitoring_location
+
+    print(f"[BACKEND] ✅ Localisation remplacée par celle du filtre des derniers programmes importés : {monitoring_location}")
+
+    # 4️⃣ Lancer l’extraction
+    try:
+        download_links = extract_ifremer_data(programmes, filter_data)
+    except Exception as e:
+        print(f"[BACKEND] ❌ Erreur lors de l’extraction des données : {e}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+    # 5️⃣ Vérifier la réponse
     if not download_links:
         return jsonify({
             "status": "warning",
@@ -175,7 +199,7 @@ def recevoir_data_extractions():
     return jsonify({
         "status": "ok",
         "programmes_recus": programmes,
-        "filtre_recu": filter_data,
+        "filtre_utilise": filter_data,
         "fichiers_zip": [
             {"file_name": p, "url": url} for p, url in zip(programmes, download_links)
         ]
