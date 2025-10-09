@@ -362,6 +362,24 @@ docker ps
 
 --retries=3 → il faut 3 échecs consécutifs pour passer en “unhealthy”
 
+### 🧠 Ce que ça fait le patch :
+
+```bash
+# Patch pour éviter le téléchargement bloqué par le proxy
+sed -i 's|with open_remote_file(base_url, "HABREF_50.zip"|# with open_remote_file(base_url, "HABREF_50.zip"|' \
+/home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py && \
+ \
+```
+
+🔹 Le sed commente la ligne responsable du téléchargement du fichier HABREF_50.zip
+
+🔹 Le reste des migrations (création de schémas, extensions, données locales) s’exécute normalement
+
+🔹 Aucune dépendance réseau n’est requise
+
+🔹 Tu auras une base GeoNature opérationnelle (il manquera seulement les données d’habitats INPN, mais tu pourras les importer plus tard si besoin)
+
+
 ### 6️⃣ Construction de l’image Docker
 
 ```bash
