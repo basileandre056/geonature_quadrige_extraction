@@ -314,11 +314,11 @@ RUN service postgresql start && \
     sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION IF NOT EXISTS postgis;' && \
     sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;' && \
     \
-    # 🩵 PATCH HABREF – empêche le téléchargement du fichier INPN bloqué par le proxy
+    # 🩹 PATCH HABREF – empêche le téléchargement du fichier INPN bloqué par le proxy
     sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/op.bulk_insert/d' \
     /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py && \
     \
-    # 🩵 PATCH TAXREF – empêche le téléchargement du fichier TAXREF_v17_2024.zip bloqué par le proxy
+    # 🩹 PATCH TAXREF – empêche le téléchargement du fichier TAXREF_v17_2024.zip bloqué par le proxy
     sed -i '/with open_remote_file(base_url, taxref_archive_name/,/op.bulk_insert/d' \
     /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py && \
     \
