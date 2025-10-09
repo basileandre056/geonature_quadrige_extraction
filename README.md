@@ -217,6 +217,9 @@ nano Dockerfile
 
 ### 5️⃣ Contenu du Dockerfile
 
+
+```bash
+
 # ===============================================
 # 🐧 GeoNature – Dockerfile Debian 12 (Bookworm)
 # ===============================================
@@ -327,6 +330,9 @@ RUN ./06_configure_apache.sh && \
 
 EXPOSE 80 443
 CMD ["bash"]
+
+
+```
 
 
 ### 6️⃣ Construction de l’image Docker
