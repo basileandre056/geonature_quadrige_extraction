@@ -441,7 +441,7 @@ sudo docker build \
   -t geonature-full:2.16.0 .
 ```
 
-Attention, cette opération prend plus ou moins 20minutes..
+Attention, cette opération prend une 30aine de minutes...
 
 ### 7️⃣ Test du conteneur
 
