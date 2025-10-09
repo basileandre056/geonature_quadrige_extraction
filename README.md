@@ -408,7 +408,7 @@ sudo docker build \
   --build-arg HTTP_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
   --build-arg HTTPS_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
   --build-arg NO_PROXY=localhost,127.0.0.1 \
-  -t geonature-debian12 .
+  -t geonature-full:2.16.0 .
 ```
 
 Attention, cette opération prend plus ou moins 20minutes..
