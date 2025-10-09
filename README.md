@@ -223,7 +223,6 @@ nano Dockerfile
 # ===============================================
 # 🐧 GeoNature – Dockerfile Debian 12 (Bookworm)
 # ===============================================
-# Basé sur Debian 12, compatible GeoNature 2.13+
 FROM debian:12
 
 # -----------------------------------------------
@@ -247,18 +246,21 @@ ENV LC_ALL=fr_FR.UTF-8
 # -----------------------------------------------
 # 🔹 Étape 1 : Système de base
 # -----------------------------------------------
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
+ARG DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update -qq && \
+    apt-get install -yq --no-install-recommends \
         apt-transport-https ca-certificates curl wget gnupg \
         software-properties-common locales tzdata sudo unzip git \
         python3 python3-pip python3-venv python3-dev build-essential \
         libpq-dev libgdal-dev libffi-dev libpangocairo-1.0-0 \
-        postgresql postgresql-contrib postgis apache2 redis && \
+        postgresql postgresql-contrib postgresql-15-postgis-3 apache2 redis && \
     echo "Europe/Paris" > /etc/timezone && \
     dpkg-reconfigure -f noninteractive tzdata && \
     sed -i 's/# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen fr_FR.UTF-8 && update-locale LANG=fr_FR.UTF-8 && \
     rm -rf /var/lib/apt/lists/*
+
 
 # -----------------------------------------------
 # 🔹 Étape 2 : Utilisateur GeoNature
@@ -279,7 +281,7 @@ RUN python3 -m venv /home/geonature/venv && \
 ENV PATH="/home/geonature/venv/bin:$PATH"
 
 # -----------------------------------------------
-# 🔹 Étape 4 : Téléchargement et installation GeoNature
+# 🔹 Étape 4 : Téléchargement et configuration GeoNature
 # -----------------------------------------------
 ARG GEONATURE_VERSION=2.16.0
 RUN wget https://github.com/PnX-SI/GeoNature/archive/refs/tags/${GEONATURE_VERSION}.zip && \
@@ -289,7 +291,6 @@ RUN wget https://github.com/PnX-SI/GeoNature/archive/refs/tags/${GEONATURE_VERSI
 
 WORKDIR /home/geonature/geonature
 
-# Copie du fichier de config
 RUN cp config/settings.ini.sample config/settings.ini && \
     sed -i "s|my_url = .*|my_url = http://localhost/|" config/settings.ini && \
     sed -i "s|user_pg = .*|user_pg = geonaturedb|" config/settings.ini && \
@@ -301,24 +302,20 @@ RUN cp config/settings.ini.sample config/settings.ini && \
 # -----------------------------------------------
 WORKDIR /home/geonature/geonature/install
 
-# NVM (Node Version Manager) + Node + npm + Angular CLI
 RUN ./00_install_nvm.sh && \
     bash -i -c "source ~/.bashrc && nvm install 20 && npm install -g @angular/cli"
 
-# Installation backend Python + dépendances
 RUN ./01_install_backend.sh
 
-# Création BDD PostgreSQL (PostGIS, rôles, schémas)
 USER root
 RUN service postgresql start && \
     sudo -u postgres psql -c "CREATE USER geonaturedb WITH PASSWORD 'geonaturepass';" && \
     sudo -u postgres createdb -O geonaturedb geonaturedb && \
-    sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION postgis;' && \
-    sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION pg_trgm;' && \
+    sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION IF NOT EXISTS postgis;' && \
+    sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;' && \
+    sudo -u geonature bash -c "cd /home/geonature/geonature/install && ./03_create_db.sh && ./04_install_gn_modules.sh && ./05_install_frontend.sh" && \
     service postgresql stop
-
 USER geonature
-RUN ./03_create_db.sh && ./04_install_gn_modules.sh && ./05_install_frontend.sh
 
 # -----------------------------------------------
 # 🔹 Étape 6 : Configuration Apache
@@ -326,10 +323,20 @@ RUN ./03_create_db.sh && ./04_install_gn_modules.sh && ./05_install_frontend.sh
 USER root
 RUN ./06_configure_apache.sh && \
     a2enmod ssl rewrite headers && \
-    service apache2 restart
+    apache2ctl restart
 
 EXPOSE 80 443
-CMD ["bash"]
+
+
+# ------------------------------------------------------------------------------
+# 🔹 Étape 7 : Démarrage automatique et Healthcheck – Vérification des services
+# ------------------------------------------------------------------------------
+HEALTHCHECK --interval=60s --timeout=10s --retries=3 CMD \
+    pg_isready -U geonaturedb -d geonaturedb -h localhost > /dev/null 2>&1 && \
+    curl -fs http://localhost/geonature/api/ > /dev/null 2>&1 || exit 1
+
+
+CMD service postgresql start && apache2ctl start && bash
 
 
 ```
