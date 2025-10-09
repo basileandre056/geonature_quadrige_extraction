@@ -217,13 +217,15 @@ nano Dockerfile
 
 ### 5️⃣ Contenu du Dockerfile
 
-```dockerfile
 # ===============================================
 # 🐧 GeoNature – Dockerfile Debian 12 (Bookworm)
 # ===============================================
+# Basé sur Debian 12, compatible GeoNature 2.13+
 FROM debian:12
 
-# Configuration du proxy (réseau d’entreprise)
+# -----------------------------------------------
+# 🔹 Configuration du proxy réseau (RIE)
+# -----------------------------------------------
 ARG HTTP_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080
 ARG HTTPS_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080
 ARG NO_PROXY=localhost,127.0.0.1
@@ -236,28 +238,96 @@ LABEL maintainer="basile.andre"
 LABEL description="Environnement GeoNature basé sur Debian 12 (Bookworm)"
 
 ENV DEBIAN_FRONTEND=noninteractive
+ENV LANG=fr_FR.UTF-8
+ENV LC_ALL=fr_FR.UTF-8
 
+# -----------------------------------------------
+# 🔹 Étape 1 : Système de base
+# -----------------------------------------------
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
         apt-transport-https ca-certificates curl wget gnupg \
-        software-properties-common locales tzdata \
-        python3 python3-pip python3-venv python3-dev \
-        build-essential git postgresql postgresql-contrib postgis libpq-dev && \
+        software-properties-common locales tzdata sudo unzip git \
+        python3 python3-pip python3-venv python3-dev build-essential \
+        libpq-dev libgdal-dev libffi-dev libpangocairo-1.0-0 \
+        postgresql postgresql-contrib postgis apache2 redis && \
     echo "Europe/Paris" > /etc/timezone && \
     dpkg-reconfigure -f noninteractive tzdata && \
     sed -i 's/# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen fr_FR.UTF-8 && update-locale LANG=fr_FR.UTF-8 && \
-    useradd -ms /bin/bash geonature && \
     rm -rf /var/lib/apt/lists/*
+
+# -----------------------------------------------
+# 🔹 Étape 2 : Utilisateur GeoNature
+# -----------------------------------------------
+RUN useradd -ms /bin/bash geonature && \
+    adduser geonature sudo && \
+    echo "geonature ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
 
 USER geonature
 WORKDIR /home/geonature
 
-RUN python3 -m venv venv && ./venv/bin/pip install --upgrade pip
+# -----------------------------------------------
+# 🔹 Étape 3 : Installation Python (venv)
+# -----------------------------------------------
+RUN python3 -m venv /home/geonature/venv && \
+    /home/geonature/venv/bin/pip install --upgrade pip setuptools wheel
 
 ENV PATH="/home/geonature/venv/bin:$PATH"
-CMD ["/bin/bash"]
-```
+
+# -----------------------------------------------
+# 🔹 Étape 4 : Téléchargement et installation GeoNature
+# -----------------------------------------------
+ARG GEONATURE_VERSION=2.16.0
+RUN wget https://github.com/PnX-SI/GeoNature/archive/refs/tags/${GEONATURE_VERSION}.zip && \
+    unzip ${GEONATURE_VERSION}.zip && \
+    mv GeoNature-${GEONATURE_VERSION} geonature && \
+    rm ${GEONATURE_VERSION}.zip
+
+WORKDIR /home/geonature/geonature
+
+# Copie du fichier de config
+RUN cp config/settings.ini.sample config/settings.ini && \
+    sed -i "s|my_url = .*|my_url = http://localhost/|" config/settings.ini && \
+    sed -i "s|user_pg = .*|user_pg = geonaturedb|" config/settings.ini && \
+    sed -i "s|user_pg_pass = .*|user_pg_pass = geonaturepass|" config/settings.ini && \
+    sed -i "s|mode = .*|mode = dev|" config/settings.ini
+
+# -----------------------------------------------
+# 🔹 Étape 5 : Installation backend et frontend
+# -----------------------------------------------
+WORKDIR /home/geonature/geonature/install
+
+# NVM (Node Version Manager) + Node + npm + Angular CLI
+RUN ./00_install_nvm.sh && \
+    bash -i -c "source ~/.bashrc && nvm install 20 && npm install -g @angular/cli"
+
+# Installation backend Python + dépendances
+RUN ./01_install_backend.sh
+
+# Création BDD PostgreSQL (PostGIS, rôles, schémas)
+USER root
+RUN service postgresql start && \
+    sudo -u postgres psql -c "CREATE USER geonaturedb WITH PASSWORD 'geonaturepass';" && \
+    sudo -u postgres createdb -O geonaturedb geonaturedb && \
+    sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION postgis;' && \
+    sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION pg_trgm;' && \
+    service postgresql stop
+
+USER geonature
+RUN ./03_create_db.sh && ./04_install_gn_modules.sh && ./05_install_frontend.sh
+
+# -----------------------------------------------
+# 🔹 Étape 6 : Configuration Apache
+# -----------------------------------------------
+USER root
+RUN ./06_configure_apache.sh && \
+    a2enmod ssl rewrite headers && \
+    service apache2 restart
+
+EXPOSE 80 443
+CMD ["bash"]
+
 
 ### 6️⃣ Construction de l’image Docker
 
