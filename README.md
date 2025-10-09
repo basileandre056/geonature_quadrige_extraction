@@ -313,9 +313,16 @@ RUN service postgresql start && \
     sudo -u postgres createdb -O geonaturedb geonaturedb && \
     sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION IF NOT EXISTS postgis;' && \
     sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;' && \
+    \
+    # Patch pour éviter le téléchargement bloqué par le proxy (supprime le bloc complet)
+    sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/for table, filename in table_files.items()/d' \
+    /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py && \
+    \
     sudo -u geonature bash -c "cd /home/geonature/geonature/install && ./03_create_db.sh && ./04_install_gn_modules.sh && ./05_install_frontend.sh" && \
     service postgresql stop
 USER geonature
+
+
 
 # -----------------------------------------------
 # 🔹 Étape 6 : Configuration Apache
@@ -365,11 +372,25 @@ docker ps
 ### 🧠 Ce que ça fait le patch :
 
 ```bash
-# Patch pour éviter le téléchargement bloqué par le proxy
-sed -i 's|with open_remote_file(base_url, "HABREF_50.zip"|# with open_remote_file(base_url, "HABREF_50.zip"|' \
-/home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py && \
- \
+# Patch pour éviter le téléchargement bloqué par le proxy (supprime le bloc complet)
+RUN sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/for table, filename in table_files.items()/d' \
+    /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py
+
 ```
+
+🧱 Explication :
+
+/pattern1/,/pattern2/d → supprime toutes les lignes entre pattern1 et pattern2 incluses.
+
+Donc ici :
+
+il efface le with open_remote_file(...)
+
+et le for table, filename in table_files.items():
+
+ainsi que tout ce qui se trouve entre les deux.
+
+➡️ Python ne verra plus d’indentation incohérente, et la migration passera sans erreur.
 
 🔹 Le sed commente la ligne responsable du téléchargement du fichier HABREF_50.zip
 
