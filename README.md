@@ -74,6 +74,15 @@ Lancer le frontend :
 ng serve
 ```
 
+ou,
+
+Lancer le frontend avec un polling toutes les 2 secondes :
+
+```bash
+ng serve --poll=2000
+```
+
+
 Le frontend est accessible sur :
 👉 http://localhost:4200
 
