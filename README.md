@@ -206,6 +206,8 @@ Résultat attendu :
 HTTP Proxy: http://pfrie-std.proxy.e2.rie.gouv.fr:8080  
 HTTPS Proxy: http://pfrie-std.proxy.e2.rie.gouv.fr:8080
 
+Si vous n'avez pas le résultat attendu : voir [Problèmes rencontrés et solutions — Proxy RIE](#problèmes-rencontrés-et-solutions--proxy-rie)
+
 ### 4️⃣ Création du dossier du projet
 
 ```bash
@@ -592,5 +594,3 @@ Version : 1.0
 Dernière mise à jour : Octobre 2025
 
 ---
-
-Souhaites-tu que je te fasse une **version abrégée** (moins technique, pour la page d’accueil du dépôt)
