@@ -369,14 +369,24 @@ docker ps
 
 --retries=3 → il faut 3 échecs consécutifs pour passer en “unhealthy”
 
-### 🧠 Ce que ça fait le patch :
+### 🩹 Ce que ça fait le patch :
+
+la migration 46e91e738845_insert_inpn_data_in_ref_habitats_schema.py a été patchée
+
 
 ```bash
 # Patch pour éviter le téléchargement bloqué par le proxy (supprime le bloc complet)
-RUN sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/for table, filename in table_files.items()/d' \
+RUN sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/op.bulk_insert/d' \
     /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py
 
 ```
+
+Si plus tard on dispose d'un accès à Internet sans proxy, on pourra relancer juste cette migration à la main :
+
+```bash
+geonature db upgrade 46e91e738845_insert_inpn_data_in_ref_habitats_schema
+```
+
 
 🧱 Explication :
 
@@ -399,6 +409,19 @@ ainsi que tout ce qui se trouve entre les deux.
 🔹 Aucune dépendance réseau n’est requise
 
 🔹 Tu auras une base GeoNature opérationnelle (il manquera seulement les données d’habitats INPN, mais tu pourras les importer plus tard si besoin)
+
+
+### 🧠 Pourquoi c’est sûr
+
+Le code supprimé est isolé dans une migration de données externes, pas une dépendance logicielle.
+
+Le reste du système (backend Flask, PostgreSQL, API, frontend Angular) ne dépend pas de ces données pour fonctionner.
+
+Le patch n’affecte ni les dépendances Python, ni la base PostgreSQL, ni la logique applicative.
+
+C’est donc une désactivation propre d’une partie non essentielle, uniquement pour contourner le proxy fermé.
+
+
 
 
 ### 6️⃣ Construction de l’image Docker
