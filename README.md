@@ -6,12 +6,13 @@ Projet combinant un **frontend Angular** et un **backend Flask** pour extraire e
 
 ## 🚀 Installation
 
-### 1. Cloner le projet
+### 1️⃣ Cloner le projet
+
 ```bash
 git clone https://github.com/<ton-utilisateur>/<ton-repo>.git
 cd geonature_quadrige_extraction
 
-2. Backend (Flask)
+2️⃣ Backend (Flask)
 
 Créer un environnement virtuel et installer les dépendances :
 
@@ -23,24 +24,26 @@ Lancer le backend :
 
 python backend/backend.py
 
-Le backend est accessible sur http://127.0.0.1:5000
-3. Frontend (Angular)
+Le backend est accessible sur :
+👉 http://127.0.0.1:5000
+3️⃣ Frontend (Angular)
 
-Installer Node.js et Angular CLI (si pas déjà installés) :
+Installer Node.js et Angular CLI (si non installés) :
 
 sudo apt install nodejs npm -y
 npm install -g @angular/cli
 
 Installer les dépendances Angular :
 
-cd frontend   # aller dans le dossier Angular
+cd frontend
 npm install
 
 Lancer le frontend :
 
 ng serve
 
-👉 Le frontend est disponible sur : http://localhost:4200
+Le frontend est accessible sur :
+👉 http://localhost:4200
 📂 Structure du projet
 
 geonature_quadrige_extraction/
@@ -54,110 +57,79 @@ geonature_quadrige_extraction/
 │   ├── angular.json
 │   ├── package.json
 │── output_test/         # Fichiers CSV et ZIP générés
-│── saved_programmes/    # Sauvegardes des derniers programmes et filtres
-│── venv/                # Environnement virtuel Python (ignoré par git)
+│── saved_programmes/    # Sauvegardes des programmes et filtres
+│── venv/                # Environnement virtuel Python
 │── requirements.txt     # Dépendances Python
 │── .gitignore
 │── README.md
 
 ⚙️ TestGeo (Frontend Angular)
 
-Ce projet a été généré avec Angular CLI
-
-version 20.3.2.
-🧩 Development server
-
-Pour lancer un serveur de développement local :
+Ce projet a été généré avec Angular CLI v20.3.2.
+🧩 Serveur de développement
 
 ng serve
 
-Ouvre ton navigateur sur http://localhost:4200/.
-L’application se rechargera automatiquement à chaque modification des fichiers sources.
-🧱 Code scaffolding
+Ouvrez votre navigateur sur http://localhost:4200
 
-Angular CLI permet de générer rapidement du code.
-Par exemple, pour créer un nouveau composant :
+.
+L’application se recharge automatiquement à chaque modification.
+🧱 Génération de composants
 
 ng generate component component-name
-
-Pour afficher la liste complète des schémas disponibles :
-
 ng generate --help
 
-🏗️ Building
-
-Pour compiler le projet :
+🏗️ Compilation
 
 ng build
 
-Les fichiers générés seront placés dans le dossier dist/.
-La build de production optimise automatiquement les performances.
-🧪 Running unit tests
-
-Exécuter les tests unitaires avec Karma
-
-:
+Les fichiers compilés seront dans le dossier dist/.
+🧪 Tests unitaires
 
 ng test
 
-🌐 Running end-to-end tests
-
-Pour exécuter des tests de bout en bout (e2e) :
+🌐 Tests end-to-end
 
 ng e2e
 
-⚠️ Angular CLI ne fournit pas de framework e2e par défaut — choisis celui qui correspond à ton usage.
-📚 Ressources supplémentaires
+    ⚠️ Angular CLI ne fournit pas de framework e2e par défaut.
 
-🔗 Pour plus d’informations sur Angular CLI, consulte :
-👉 Angular CLI Overview and Command Reference
-
-
-
-# 🐳 Configuration d’un Docker pour installer GeoNature et toutes ses dépendances (Debian 12)
+🐳 Configuration d’un Docker pour installer GeoNature et toutes ses dépendances (Debian 12)
 
 Ce guide décrit les étapes nécessaires pour installer et configurer Docker, paramétrer le proxy réseau RIE, et construire une image Debian 12 prête pour GeoNature.
-
----
-
-## 1️⃣ Installation de Docker Desktop
+1️⃣ Installation de Docker Desktop
 
 Téléchargez Docker Desktop pour Windows depuis :
 👉 https://www.docker.com/products/docker-desktop
 
 Lors de l’installation, sélectionnez les options suivantes :
+Option	Choix
+Start Docker Desktop when you sign in	✅
+Open Docker Dashboard when Docker Desktop starts	❌
+Choose container terminal → Integrated	✅
+Enable Docker terminal	✅
+Enable Docker Debug by default	❌
+Expose daemon on tcp://localhost:2375 without TLS	❌
+Use the WSL 2 based engine	✅
+Add the *.docker.internal names to hosts file	✅
+2️⃣ Configuration du proxy réseau
 
-Option | Choix
--------|-------
-Start Docker Desktop when you sign in | ✅
-Open Docker Dashboard when Docker Desktop starts | ❌
-Choose container terminal → Integrated | ✅
-Enable Docker terminal | ✅
-Enable Docker Debug by default | ❌
-Expose daemon on tcp://localhost:2375 without TLS | ❌
-Use the WSL 2 based engine | ✅
-Add the *.docker.internal names to hosts file | ✅
+    Ouvrir Docker Desktop
 
----
+    Aller dans Settings → Resources → Proxies
 
-## 2️⃣ Configuration du proxy réseau
+    Remplir les trois champs suivants :
 
-1. Ouvrir Docker Desktop  
-2. Aller dans **Settings → Resources → Proxies**  
-3. Remplir les trois champs suivants selon votre environnement :
+Exemple pour le réseau RIE :
 
-Exemple pour le réseau **RIE** :
-
-HTTP Proxy:  http://pfrie-std.proxy.e2.rie.gouv.fr:8080  
-HTTPS Proxy: http://pfrie-std.proxy.e2.rie.gouv.fr:8080  
+HTTP Proxy:  http://pfrie-std.proxy.e2.rie.gouv.fr:8080
+HTTPS Proxy: http://pfrie-std.proxy.e2.rie.gouv.fr:8080
 No Proxy: localhost,127.0.0.1
 
-4. Cliquer sur **Apply & Restart**  
-   (Docker redémarre automatiquement avec cette configuration)
+    Cliquer sur Apply & Restart
+    (Docker redémarre automatiquement avec cette configuration)
 
----
-
-## 3️⃣ Vérification du proxy dans WSL
+3️⃣ Vérification du proxy dans WSL
 
 Dans votre terminal WSL (Ubuntu ou Debian) :
 
@@ -165,26 +137,18 @@ docker info | grep -i proxy
 
 Vous devez voir :
 
-HTTP Proxy: http://pfrie-std.proxy.e2.rie.gouv.fr:8080  
-HTTPS Proxy: http://pfrie-std.proxy.e2.rie.gouv.fr:8080  
+HTTP Proxy: http://pfrie-std.proxy.e2.rie.gouv.fr:8080
+HTTPS Proxy: http://pfrie-std.proxy.e2.rie.gouv.fr:8080
 
-Si ce n’est pas le cas, consultez la section **Problèmes rencontrés** à la fin du document.
+Si ce n’est pas le cas, voir la section Problèmes rencontrés ci-dessous.
+4️⃣ Création du dossier du projet
 
----
-
-## 4️⃣ Création du dossier du projet
-
-cd ~  
-mkdir geonature-docker  
-cd geonature-docker  
-
-Créer un fichier nommé **Dockerfile** :
-
+cd ~
+mkdir geonature-docker
+cd geonature-docker
 nano Dockerfile
 
----
-
-## 5️⃣ Contenu du Dockerfile
+5️⃣ Contenu du Dockerfile
 
 # ===============================================
 # 🐧 GeoNature – Dockerfile Debian 12 (Bookworm)
@@ -229,11 +193,9 @@ RUN python3 -m venv venv && ./venv/bin/pip install --upgrade pip
 ENV PATH="/home/geonature/venv/bin:$PATH"
 CMD ["/bin/bash"]
 
----
+6️⃣ Construction de l’image Docker
 
-## 6️⃣ Construction de l’image Docker
-
-Depuis le dossier **geonature-docker**, exécuter :
+Depuis le dossier geonature-docker, exécuter :
 
 sudo docker build \
   --build-arg HTTP_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
@@ -241,40 +203,35 @@ sudo docker build \
   --build-arg NO_PROXY=localhost,127.0.0.1 \
   -t geonature-debian12 .
 
-Le processus peut durer plusieurs minutes.  
-Docker télécharge Debian 12, installe Python, PostgreSQL, PostGIS, et configure l’environnement.
-
----
-
-## 7️⃣ Test du conteneur
-
-Une fois le build terminé :
+7️⃣ Test du conteneur
 
 docker run -it geonature-debian12 bash
 
-Puis dans le conteneur :
+Dans le conteneur :
 
-python3 --version  
-psql --version  
-curl -I https://www.google.com  
+python3 --version
+psql --version
+curl -I https://www.google.com
 
 Vous devez voir :
-- Une version de Python 3.x  
-- Une version de PostgreSQL  
-- Un code **200 OK** indiquant une connexion Internet via le proxy  
 
----
+    Une version de Python 3.x
 
-## ✅ Résultat final
+    Une version de PostgreSQL
 
-Vous disposez maintenant d’un conteneur **Debian 12** :
-- Configuré avec le **proxy RIE**  
-- Intégrant **Python, pip, PostgreSQL et PostGIS**  
-- Prêt pour l’installation de **GeoNature**  
+    Un code 200 OK (connexion Internet via proxy)
 
+✅ Résultat final
 
+Vous disposez maintenant d’un conteneur Debian 12 :
 
-# 🧰 Problèmes rencontrés et solutions — Configuration Docker avec Proxy RIE
+    Configuré avec le proxy RIE
+
+    Intégrant Python, pip, PostgreSQL et PostGIS
+
+    Prêt pour l’installation de GeoNature
+
+🧰 Problèmes rencontrés et solutions — Configuration Docker avec Proxy RIE
 
 Ce document décrit les problèmes rencontrés lors de la configuration de Docker sous WSL avec un proxy réseau RIE, ainsi que leurs solutions détaillées.
 
