@@ -387,90 +387,68 @@ docker ps
 
 --retries=3 → il faut 3 échecs consécutifs pour passer en “unhealthy”
 
-### 🩹 Ce que font les patchs :
+### 🩹 Détail des patchs « proxy » dans le Dockerfile
 
-les migrations 46e91e738845_insert_inpn_data_in_ref_habitats_schema.py et TAXREF_v17_2024.zip ont  été patchée
+Lorsque GeoNature s'installe, certains scripts de migration tentent de télécharger automatiquement des fichiers externes (par exemple les bases INPN/HABREF ou TAXREF) pour peupler la base de données.  
+Dans un environnement protégé par un proxy RIE, ces téléchargements échouent et bloquent l'installation complète.  
+Les patchs appliqués dans le Dockerfile ont pour but de neutraliser ces étapes sans casser la logique des migrations ni l'intégrité de la base.
 
+---
 
-```bash
-\
-    # Patch HABREF (bloqué par proxy)
-    sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/op.bulk_insert/d' \
-    /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py && \
-    \
-    # 🩹 PATCH TAXREF – remplace le téléchargement du fichier par un simple log (proxy RIE)
-    RUN python3 - <<'EOF'
-    import re
-    f = "/home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py"
-    text = open(f).read()
-    new_text = re.sub(
-        r'with open_remote_file\(base_url, taxref_archive_name.*?op\.bulk_insert\(.*?\)\n',
-        '    logger.info("Telechargement TAXREF ignore (proxy RIE)")\n',
-        text,
-        flags=re.S
-    )
-    open(f, "w").write(new_text)
-    EOF
+#### **1. Patch HABREF (INPN)**
+- **Situation :**  
+  La migration `46e91e738845_insert_inpn_data_in_ref_habitats_schema.py` tente de télécharger et d’insérer automatiquement le fichier d’habitats `HABREF_50.zip` depuis l’INPN.
+- **Problème :**  
+  Le proxy RIE bloque ce téléchargement, ce qui provoque l’échec de la migration et donc de l’installation globale.
+- **Solution appliquée :**  
+  On utilise la commande `sed '/with open_remote_file(base_url, "HABREF_50.zip"/,/op.bulk_insert/d' ...` pour **supprimer tout le bloc de code** qui :
+  - tente de télécharger le fichier externe,
+  - puis insère les données dans la base.
+- **Effet :**  
+  La migration passe sans erreur : seules les données externes INPN ne sont pas importées, mais la structure de la base et les autres données locales sont créées normalement.
 
-    # 🔎 Vérification du remplacement dans taxref_v15_v16.py
-    grep -A3 "def import_taxref" \
-    /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py && \
-    \
-```
+---
 
-Si plus tard on dispose d'un accès à Internet sans proxy, on pourra relancer juste cette migration à la main :
+#### **2. Patch TAXREF**
+- **Situation :**  
+  Le script Python `taxref_v15_v16.py` effectue un téléchargement automatique du fichier TAXREF (taxonomie nationale) via Internet, puis l’insère en base.
+- **Problème :**  
+  Le proxy institutionnel bloque ce téléchargement, provoquant là aussi l’échec de la migration.
+- **Solution appliquée :**  
+  Plutôt que d’utiliser `sed` (peu fiable sur du code Python complexe), on exploite un script Python lancé en une ligne :
+  - Il recherche dans le fichier le bloc de code contenant `with open_remote_file(...) ... op.bulk_insert(...)`
+  - Il remplace tout ce bloc par une ligne : `logger.info("Telechargement TAXREF ignore (proxy RIE)")`
+- **Effet :**  
+  - Le script saute donc le téléchargement et l’insertion, mais la migration ne plante pas (aucune erreur d’indentation ou d’appel de fonction).
+  - Un log clair signale que l’étape a été ignorée à cause du proxy.
+  - La structure de la base et le reste de l’installation restent intacts.
 
-```bash
-geonature db upgrade 46e91e738845_insert_inpn_data_in_ref_habitats_schema
-```
+---
 
-utilisation d’un petit python3 -c au lieu du sed
+#### **3. Robustesse et sécurité des patchs**
+- **Portée limitée :**  
+  Ces patchs ne touchent que les parties responsables des téléchargements distants dans des scripts de migration de données : *le code de l’application, la logique métier, les dépendances Python et la structure de la base ne sont pas modifiés*.
+- **Réversibilité :**  
+  Si, plus tard, un accès Internet direct devient disponible, il suffira de relancer les migrations concernées pour importer les données manquantes.
+- **Intégrité :**  
+  La base GeoNature obtenue reste parfaitement fonctionnelle : seules les données externes (INPN, TAXREF) seront absentes, mais pourront être ajoutées ultérieurement.
+- **Méthode utilisée :**  
+  - Le patch HABREF avec `sed` : supprime un bloc de lignes délimité par deux patterns (très efficace pour effacer proprement une séquence de code dans un fichier).
+  - Le patch TAXREF avec Python : permet un remplacement plus robuste qu’un simple sed, notamment pour respecter l’indentation et la syntaxe Python.
 
+---
 
-💡 Explications :
+#### **4. Pourquoi ce choix technique est pertinent**
+- **Non-intrusif :** on désactive seulement les importations impossibles à cause du proxy, sans casser le reste des migrations.
+- **Lisibilité :** les logs générés permettent de savoir précisément quelles étapes ont été ignorées, facilitant un éventuel rattrapage manuel.
+- **Installation automatisée et fiable** : on évite tout blocage lors du build Docker, même sans accès Internet complet.
 
-Le <<'EOF' bloque les expansions de variables et caractères spéciaux (très sûr).
+---
 
-On cherche tout le bloc with open_remote_file(...) ... op.bulk_insert(...) et on le remplace par une ligne Python valide et indentée.
+#### **En résumé**
+Ces patchs sont une désactivation ciblée et temporaire de l’import automatique de données externes, indispensable pour une installation GeoNature en environnement réseau restreint.  
+Le fonctionnement de la plateforme n’est pas altéré et les imports manquants peuvent être réalisés dès que l’accès Internet est possible.
 
-C’est beaucoup plus robuste que sed, surtout avec des parenthèses ou guillemets.
-
-Plutôt que de se battre avec sed, on va directement faire le remplacement avec Python (qui comprend bien la syntaxe et garde l’indentation).
-
-
-
-🧱 Explication :
-
-/pattern1/,/pattern2/d → supprime toutes les lignes entre pattern1 et pattern2 incluses.
-
-Donc ici :
-
-il efface le with open_remote_file(...)
-
-et le for table, filename in table_files.items():
-
-ainsi que tout ce qui se trouve entre les deux.
-
-➡️ Python ne verra plus d’indentation incohérente, et la migration passera sans erreur.
-
-🔹 Le sed commente la ligne responsable du téléchargement du fichier HABREF_50.zip
-
-🔹 Le reste des migrations (création de schémas, extensions, données locales) s’exécute normalement
-
-🔹 Aucune dépendance réseau n’est requise
-
-🔹 Tu auras une base GeoNature opérationnelle (il manquera seulement les données d’habitats INPN, mais tu pourras les importer plus tard si besoin)
-
-
-### 🧠 Pourquoi c’est sûr
-
-Le code supprimé est isolé dans une migration de données externes, pas une dépendance logicielle.
-
-Le reste du système (backend Flask, PostgreSQL, API, frontend Angular) ne dépend pas de ces données pour fonctionner.
-
-Le patch n’affecte ni les dépendances Python, ni la base PostgreSQL, ni la logique applicative.
-
-C’est donc une désactivation propre d’une partie non essentielle, uniquement pour contourner le proxy fermé.
 
 
 
