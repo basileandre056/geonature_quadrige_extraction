@@ -246,8 +246,6 @@ ENV LC_ALL=fr_FR.UTF-8
 # -----------------------------------------------
 # 🔹 Étape 1 : Système de base
 # -----------------------------------------------
-ARG DEBIAN_FRONTEND=noninteractive
-
 RUN apt-get update -qq && \
     apt-get install -yq --no-install-recommends \
         apt-transport-https ca-certificates curl wget gnupg \
@@ -260,7 +258,6 @@ RUN apt-get update -qq && \
     sed -i 's/# fr_FR.UTF-8 UTF-8/fr_FR.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen fr_FR.UTF-8 && update-locale LANG=fr_FR.UTF-8 && \
     rm -rf /var/lib/apt/lists/*
-
 
 # -----------------------------------------------
 # 🔹 Étape 2 : Utilisateur GeoNature
@@ -307,6 +304,9 @@ RUN ./00_install_nvm.sh && \
 
 RUN ./01_install_backend.sh
 
+# -----------------------------------------------
+# 🔹 Étape 6 : Base de données PostgreSQL + Patchs RIE
+# -----------------------------------------------
 USER root
 RUN service postgresql start && \
     sudo -u postgres psql -c "CREATE USER geonaturedb WITH PASSWORD 'geonaturepass';" && \
@@ -314,18 +314,21 @@ RUN service postgresql start && \
     sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION IF NOT EXISTS postgis;' && \
     sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;' && \
     \
-    # Patch pour éviter le téléchargement bloqué par le proxy (supprime le bloc complet)
-    sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/for table, filename in table_files.items()/d' \
+    # 🩵 PATCH HABREF – empêche le téléchargement du fichier INPN bloqué par le proxy
+    sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/op.bulk_insert/d' \
     /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py && \
     \
+    # 🩵 PATCH TAXREF – empêche le téléchargement du fichier TAXREF_v17_2024.zip bloqué par le proxy
+    sed -i '/with open_remote_file(base_url, taxref_archive_name/,/op.bulk_insert/d' \
+    /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py && \
+    \
+    # ⚙️ Exécution des scripts d’installation GeoNature
     sudo -u geonature bash -c "cd /home/geonature/geonature/install && ./03_create_db.sh && ./04_install_gn_modules.sh && ./05_install_frontend.sh" && \
     service postgresql stop
 USER geonature
 
-
-
 # -----------------------------------------------
-# 🔹 Étape 6 : Configuration Apache
+# 🔹 Étape 7 : Configuration Apache
 # -----------------------------------------------
 USER root
 RUN ./06_configure_apache.sh && \
@@ -334,16 +337,15 @@ RUN ./06_configure_apache.sh && \
 
 EXPOSE 80 443
 
-
-# ------------------------------------------------------------------------------
-# 🔹 Étape 7 : Démarrage automatique et Healthcheck – Vérification des services
-# ------------------------------------------------------------------------------
+# -----------------------------------------------
+# 🔹 Étape 8 : Healthcheck + Démarrage
+# -----------------------------------------------
 HEALTHCHECK --interval=60s --timeout=10s --retries=3 CMD \
     pg_isready -U geonaturedb -d geonaturedb -h localhost > /dev/null 2>&1 && \
     curl -fs http://localhost/geonature/api/ > /dev/null 2>&1 || exit 1
 
+CMD ["bash", "-c", "service postgresql start && apache2ctl start && bash"]
 
-CMD service postgresql start && apache2ctl start && bash
 
 
 ```
@@ -369,16 +371,21 @@ docker ps
 
 --retries=3 → il faut 3 échecs consécutifs pour passer en “unhealthy”
 
-### 🩹 Ce que fait le patch :
+### 🩹 Ce que font les patchs :
 
-la migration 46e91e738845_insert_inpn_data_in_ref_habitats_schema.py a été patchée
+les migrations 46e91e738845_insert_inpn_data_in_ref_habitats_schema.py et TAXREF_v17_2024.zip ont  été patchée
 
 
 ```bash
-# Patch pour éviter le téléchargement bloqué par le proxy (supprime le bloc complet)
-RUN sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/op.bulk_insert/d' \
-    /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py
-
+\
+    # Patch HABREF (bloqué par proxy)
+    sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/op.bulk_insert/d' \
+    /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py && \
+    \
+    # Patch TAXREF (bloqué par proxy)
+    sed -i '/with open_remote_file(base_url, taxref_archive_name/,/op.bulk_insert/d' \
+    /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py && \
+    \
 ```
 
 Si plus tard on dispose d'un accès à Internet sans proxy, on pourra relancer juste cette migration à la main :
