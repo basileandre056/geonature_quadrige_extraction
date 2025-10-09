@@ -369,7 +369,7 @@ docker ps
 
 --retries=3 → il faut 3 échecs consécutifs pour passer en “unhealthy”
 
-### 🩹 Ce que ça fait le patch :
+### 🩹 Ce que fait le patch :
 
 la migration 46e91e738845_insert_inpn_data_in_ref_habitats_schema.py a été patchée
 
