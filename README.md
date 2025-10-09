@@ -320,8 +320,22 @@ RUN service postgresql start && \
     sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/op.bulk_insert/d' \
     /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py && \
     \
-    # 🩹 PATCH TAXREF – empêche le téléchargement du fichier TAXREF_v17_2024.zip bloqué par le proxy
-    sed -i '/with open_remote_file(base_url, taxref_archive_name/,/op.bulk_insert/c\    logger.info("⚠️  Téléchargement TAXREF ignoré (proxy RIE)")' \
+    # 🩹 PATCH TAXREF – remplace le téléchargement du fichier par un simple log (proxy RIE)
+    RUN python3 - <<'EOF'
+    import re
+    f = "/home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py"
+    text = open(f).read()
+    new_text = re.sub(
+        r'with open_remote_file\(base_url, taxref_archive_name.*?op\.bulk_insert\(.*?\)\n',
+        '    logger.info("Telechargement TAXREF ignore (proxy RIE)")\n',
+        text,
+        flags=re.S
+    )
+    open(f, "w").write(new_text)
+    EOF
+
+    # 🔎 Vérification du remplacement dans taxref_v15_v16.py
+    grep -A3 "def import_taxref" \
     /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py && \
     \
     # ⚙️ Exécution des scripts d’installation GeoNature
@@ -384,10 +398,23 @@ les migrations 46e91e738845_insert_inpn_data_in_ref_habitats_schema.py et TAXREF
     sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/op.bulk_insert/d' \
     /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py && \
     \
-    # PATCH TAXREF – remplace le téléchargement du fichier par un simple log (proxy RIE)
-    sed -i '/with open_remote_file(base_url, taxref_archive_name/,/op.bulk_insert/c\    logger.info("⚠️  Téléchargement TAXREF ignoré (proxy RIE)")' \
-    /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py
+    # 🩹 PATCH TAXREF – remplace le téléchargement du fichier par un simple log (proxy RIE)
+    RUN python3 - <<'EOF'
+    import re
+    f = "/home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py"
+    text = open(f).read()
+    new_text = re.sub(
+        r'with open_remote_file\(base_url, taxref_archive_name.*?op\.bulk_insert\(.*?\)\n',
+        '    logger.info("Telechargement TAXREF ignore (proxy RIE)")\n',
+        text,
+        flags=re.S
+    )
+    open(f, "w").write(new_text)
+    EOF
 
+    # 🔎 Vérification du remplacement dans taxref_v15_v16.py
+    grep -A3 "def import_taxref" \
+    /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py && \
     \
 ```
 
@@ -396,6 +423,20 @@ Si plus tard on dispose d'un accès à Internet sans proxy, on pourra relancer j
 ```bash
 geonature db upgrade 46e91e738845_insert_inpn_data_in_ref_habitats_schema
 ```
+
+utilisation d’un petit python3 -c au lieu du sed
+
+
+💡 Explications :
+
+Le <<'EOF' bloque les expansions de variables et caractères spéciaux (très sûr).
+
+On cherche tout le bloc with open_remote_file(...) ... op.bulk_insert(...) et on le remplace par une ligne Python valide et indentée.
+
+C’est beaucoup plus robuste que sed, surtout avec des parenthèses ou guillemets.
+
+Plutôt que de se battre avec sed, on va directement faire le remplacement avec Python (qui comprend bien la syntaxe et garde l’indentation).
+
 
 
 🧱 Explication :
