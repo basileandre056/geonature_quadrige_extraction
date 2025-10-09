@@ -339,6 +339,8 @@ sudo docker build \
   -t geonature-debian12 .
 ```
 
+Attention, cette opération prend plus ou moins 20minutes..
+
 ### 7️⃣ Test du conteneur
 
 ```bash
