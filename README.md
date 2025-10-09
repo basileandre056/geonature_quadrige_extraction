@@ -341,6 +341,44 @@ CMD service postgresql start && apache2ctl start && bash
 
 ```
 
+### 🔍 Ce que fait ce HEALTHCHECK
+
+pg_isready → vérifie que PostgreSQL répond bien sur le socket local
+curl -fs http://localhost/geonature/api/ → vérifie que l’API GeoNature est accessible via Apache
+Si l’un des deux échoue → Docker marque le conteneur comme “unhealthy”
+On peut voir l’état en direct avec :
+
+```bash
+docker ps
+```
+→ colonne STATUS affichera healthy ou unhealthy
+
+
+### 🧠 Quelques précisions techniques
+
+--interval=60s → Docker teste toutes les 60 secondes
+
+--timeout=10s → si la commande met plus de 10s, elle est considérée échouée
+
+--retries=3 → il faut 3 échecs consécutifs pour passer en “unhealthy”
+
+### ✅ Vérification manuelle dans ton conteneur
+
+Une fois que le build terminé et le docker lancé :
+```bash
+docker run -it -p 8080:80 geonature-full:2.16.0
+```
+
+On peut vérifier
+
+
+```bash
+pg_isready -U geonaturedb -d geonaturedb -h localhost
+curl -I http://localhost/geonature/api/
+```
+
+→ On devrait Obtenir accepting connections et un HTTP/1.1 200 OK
+
 
 ### 6️⃣ Construction de l’image Docker
 
