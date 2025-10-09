@@ -328,15 +328,6 @@ RUN service postgresql start && \
     sudo -u geonature bash -c "cd /home/geonature/geonature/install && ./03_create_db.sh && ./04_install_gn_modules.sh && ./05_install_frontend.sh" && \
     service postgresql stop
 USER geonature
-# -----------------------------------------------
-# 🔹 Étape 7 : Configuration Apache
-# -----------------------------------------------
-USER root
-RUN ./06_configure_apache.sh && \
-    a2enmod ssl rewrite headers && \
-    apache2ctl restart
-
-EXPOSE 80 443
 
 # -----------------------------------------------
 # 🔹 Étape 7 : Configuration Apache
@@ -393,9 +384,10 @@ les migrations 46e91e738845_insert_inpn_data_in_ref_habitats_schema.py et TAXREF
     sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/op.bulk_insert/d' \
     /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py && \
     \
-    # Patch TAXREF (bloqué par proxy)
-    sed -i '/with open_remote_file(base_url, taxref_archive_name/,/op.bulk_insert/d' \
-    /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py && \
+    # PATCH TAXREF – remplace le téléchargement du fichier par un simple log (proxy RIE)
+    sed -i '/with open_remote_file(base_url, taxref_archive_name/,/op.bulk_insert/c\    logger.info("⚠️  Téléchargement TAXREF ignoré (proxy RIE)")' \
+    /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py
+
     \
 ```
 
