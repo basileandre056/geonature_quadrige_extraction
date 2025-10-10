@@ -505,7 +505,10 @@ Le fonctionnement de la plateforme n’est pas altéré et les imports manquants
 
 ### 6️⃣ Construction de l’image Docker
 
-#### ** 1. Commande avec cache (standard)** 
+On dispose de trois modes principaux pour construire l’image :
+
+#### 1️⃣ Construction standard (avec cache)
+
 ```bash
 sudo docker build \
   --build-arg HTTP_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
@@ -513,35 +516,11 @@ sudo docker build \
   --build-arg NO_PROXY=localhost,127.0.0.1 \
   -t geonature-full:2.16.0 .
 ```
-Attention, cette opération prend une 30aine de minutes...
+- **Rapide** : Docker réutilise les couches déjà construites (cache).
+- **À privilégier** : lorsque le Dockerfile est stable et qu’aucun script ou patch n’a été modifié.
+- **Limite :** une étape déjà exécutée (ex : patch Python) ne sera pas rejouée, même si le script a changé → risque d’erreurs masquées.
 
-#### **Particularités :** 
-
-Docker réutilise les couches déjà construites (cache).
-
-Chaque instruction RUN, COPY, ADD, etc., est mise en cache individuellement.
-
-Si une étape n’a pas changé depuis le dernier build, Docker ne la relance pas (tu vois CACHED dans les logs).
-
-⚠️ Cela signifie :
-
-Si ton patch Python a été exécuté une fois, Docker ne le rejoue jamais tant que cette étape reste identique.
-
-Donc le cache peut masquer une erreur (tu penses que le patch est appliqué, mais il ne l’est pas).
-
-🟢 Quand l’utiliser :
-
-Quand ton Dockerfile est stable et que tu veux un build rapide.
-
-Quand tu ne modifies pas les scripts d’installation.
-
-🔴 Quand éviter :
-
-Quand tu modifies une étape RUN, un patch ou un script intermédiaire.
-
-Quand tu veux forcer une réinstallation (apt, pip, patch, etc.).
-
-#### ** 2. Commande sans cache** 
+#### 2️⃣ Construction complète (sans cache)
 
 ```bash
 sudo docker build --no-cache \
@@ -549,65 +528,37 @@ sudo docker build --no-cache \
   --build-arg HTTPS_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
   --build-arg NO_PROXY=localhost,127.0.0.1 \
   -t geonature-full:2.16.0 .
-
 ```
+- **Lent (20–40 min)** : Docker rejoue toutes les étapes (installation, patchs, etc.).
+- **À utiliser :** lorsque l’on modifie des scripts, des variables, des patchs ou si l’on souhaite garantir que toutes les modifications sont bien prises en compte.
+- **Garantie** : build 100 % propre et reproductible.
 
-#### **Particularités :** 
+#### 3️⃣ Forcer le rebuild partiel (casser le cache sur une étape précise)
 
-Docker ignore complètement le cache local.
+Pour forcer la réexécution d’une étape (ex : patch Python), on ajoute une variable bidon avant le RUN concerné :
 
-Il rejoue toutes les étapes depuis zéro :
-
-apt-get update, pip install, ./03_create_db.sh, patchs, etc.
-
-C’est plus long (souvent 20–40 minutes de build complet).
-
-Mais tu es sûr que toutes les modifications sont bien prises en compte.
-
-🟢 Quand l’utiliser :
-
-Quand tu modifies :
-
-des scripts du dossier install/
-
-des patchs Python (comme ton patch TAXREF)
-
-les variables ARG ou ENV
-
-ou quand tu veux une image 100 % propre et reproductible.
-
-🔴 Inconvénients :
-
-Plus lent (pas de cache sur les paquets, Node, pip, etc.).
-
-Tire à nouveau tous les artefacts externes (GitHub, npm…).
-
-⚙️ 🔸 3. Variante “rebuild propre mais partiel”
-
-Si tu veux rejouer à partir d’une étape spécifique sans tout effacer, tu peux casser le cache à la main.
-
-Exemple : tu veux forcer la réexécution du patch TAXREF (après l’étape 12).
-
-➡️ Ajoute une variable ARG “bidon” avant ton patch :
-
+```bash
 sudo docker build --build-arg CACHE_BREAKER=$(date +%s) \
   -t geonature-full:2.16.0 .
+```
+Dans le Dockerfile, placer :
 
-et au moment du build :
-
-✅ Résumé rapide
-Mode	Commande	Vitesse	Fiabilité	Cas d’usage
-⚡ Avec cache	docker build	Rapide	Risque d’erreurs masquées	Builds répétitifs sans changement
-🧱 Sans cache	docker build --no-cache	Lent	100 % sûr	Après modif. de patchs, scripts, ENV
-🔁 Semi-propre	--build-arg CACHE_BREAKER=$(date +%s)	Moyen	Partiel	Forcer rebuild à partir d’une étape
-
-
-# Pour casser le cache à partir d’ici
+```dockerfile
 ARG CACHE_BREAKER=1
 RUN /home/geonature/geonature/backend/venv/bin/python3 - <<'EOF'
-# ... ton patch ...
+# ... le patch à rejouer ...
 EOF
+```
 
+---
+
+| Mode        | Commande                                  | Vitesse | Fiabilité  | Cas d’usage                              |
+|-------------|-------------------------------------------|---------|------------|------------------------------------------|
+| ⚡ Avec cache         | docker build                                  | Rapide  | Risque d’erreurs masquées | Builds répétitifs sans changement         |
+| 🧱 Sans cache         | docker build --no-cache                        | Lent    | 100 % sûr              | Après modification de patchs, scripts, ENV|
+| 🔁 Semi-propre        | --build-arg CACHE_BREAKER=$(date +%s)          | Moyen   | Partiel                | Forcer rebuild à partir d’une étape       |
+
+---
 
 ### 7️⃣ Test du conteneur
 
