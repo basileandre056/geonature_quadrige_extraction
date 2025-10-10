@@ -670,6 +670,83 @@ docker pull hello-world
 
 ---
 
+🔸 Problème 6 — Téléchargement lent avec Docker + proxy RIE :
+
+⚙️ Téléchargement manuel de GeoNature (solution alternative en environnement RIE)
+🧩 Contexte
+
+Lors du build de l’image Docker GeoNature, l’étape suivante :
+
+```bash
+RUN wget -q https://github.com/PnX-SI/GeoNature/archive/refs/tags/${GEONATURE_VERSION}.zip && \
+    unzip ${GEONATURE_VERSION}.zip && \
+    mv GeoNature-${GEONATURE_VERSION} geonature && \
+    rm ${GEONATURE_VERSION}.zip```
+
+télécharge le code source de GeoNature depuis GitHub.
+
+Dans un environnement RIE (Réseau Interministériel de l’État), ce téléchargement peut :
+
+prendre plusieurs minutes (débit souvent limité à quelques centaines de Ko/s),
+
+ou échouer avec une erreur exit code 4 si le proxy interrompt la connexion HTTPS avant la fin du transfert.
+
+🚀 Solution recommandée
+
+Pour éviter les lenteurs ou erreurs réseau, télécharger l’archive GitHub en dehors du Docker et la fournir directement au build.
+
+Cette méthode :
+
+fonctionne sans accès Internet dans le conteneur ;
+
+évite tout problème lié au proxy ;
+
+accélère fortement la compilation (l’étape devient quasi instantanée).
+
+
+🔧 Étapes à suivre
+
+Télécharger manuellement l’archive GeoNature :
+
+wget https://github.com/PnX-SI/GeoNature/archive/refs/tags/2.16.0.zip -O 2.16.0.zip
+
+ceci ne passe qu’une seule fois par le proxy RIE)
+
+Déplacer le fichier dans le répertoire du Dockerfile :
+
+mv 2.16.0.zip ~/geonature-docker/
+
+Modifier le Dockerfile :
+Remplacer la ligne de téléchargement par une copie locale :
+
+
+# Étape 4 – Copie locale du code GeoNature (pour éviter les téléchargements bloqués par le proxy)
+COPY 2.16.0.zip /tmp/
+RUN unzip /tmp/2.16.0.zip && \
+    mv GeoNature-2.16.0 geonature && \
+    rm /tmp/2.16.0.zip
+
+
+Recompiler normalement :
+
+
+sudo docker build --no-cache \
+  --build-arg HTTP_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
+  --build-arg HTTPS_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
+  --build-arg NO_PROXY=localhost,127.0.0.1 \
+  -t geonature-full:2.16.0 .
+
+
+✅ Résultat
+
+Le build n’a plus besoin d’accéder à GitHub.
+
+Aucune dépendance au proxy ou au débit réseau.
+
+L’étape de téléchargement passe de plusieurs minutes à moins de 5 secondes.
+
+
+
 ## 🧭 Résumé global
 
 | Problème         | Cause principale                      | Solution                                |
