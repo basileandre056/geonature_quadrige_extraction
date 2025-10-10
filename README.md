@@ -405,13 +405,13 @@ CMD ["bash", "-c", "service postgresql start && apache2ctl start && bash"]
 
 ```
 
-🆕 Changements récents notables
-Modification	Pourquoi	Effet
-Ajout de ENV BASH_ENV=""	Pour neutraliser le .bashrc de l’hôte (qui pouvait lancer Apache/PostgreSQL ou forcer le proxy).	Empêche tout conflit entre l’environnement Ubuntu et le conteneur pendant le build.
-Séparation du bloc après EOF dans un nouveau RUN	Docker ne permet pas de continuer un RUN juste après un heredoc (EOF).	Évite l’erreur unknown instruction: &&.
-Commentaires et emoji limités aux lignes #	Docker ne supporte pas les caractères UTF-8 dans les instructions.	Les emoji décoratifs restent dans les commentaires sans casser le parser.
-Test if f.exists() dans le patch TAXREF	Certains chemins peuvent varier selon la version de GeoNature.	Rend le patch plus robuste (ne plante pas si le fichier n’existe pas).
-Logs explicites dans les patchs	Pour garder une trace claire pendant le build.	Facilite le diagnostic si une migration est ignorée.
+| Modification                                 | Pourquoi                                                                                         | Effet                                                                                      |
+|-----------------------------------------------|--------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------|
+| Ajout de ENV BASH_ENV=""                      | Pour neutraliser le .bashrc de l’hôte (qui pouvait lancer Apache/PostgreSQL ou forcer le proxy). | Empêche tout conflit entre l’environnement Ubuntu et le conteneur pendant le build.         |
+| Séparation du bloc après EOF dans un nouveau RUN | Docker ne permet pas de continuer un RUN juste après un heredoc (EOF).                          | Évite l’erreur unknown instruction: &&.                                                    |
+| Commentaires et emoji limités aux lignes #    | Docker ne supporte pas les caractères UTF-8 dans les instructions.                              | Les emoji décoratifs restent dans les commentaires sans casser le parser.                  |
+| Test if f.exists() dans le patch TAXREF       | Certains chemins peuvent varier selon la version de GeoNature.                                  | Rend le patch plus robuste (ne plante pas si le fichier n’existe pas).                     |
+| Logs explicites dans les patchs               | Pour garder une trace claire pendant le build.                                                  | Facilite le diagnostic si une migration est ignorée.                                       |
 
 
 ### 🔍 Ce que fait ce HEALTHCHECK
