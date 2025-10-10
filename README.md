@@ -505,6 +505,7 @@ Le fonctionnement de la plateforme n’est pas altéré et les imports manquants
 
 ### 6️⃣ Construction de l’image Docker
 
+#### ** 1. Commande avec cache (standard)** 
 ```bash
 sudo docker build \
   --build-arg HTTP_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
@@ -512,8 +513,101 @@ sudo docker build \
   --build-arg NO_PROXY=localhost,127.0.0.1 \
   -t geonature-full:2.16.0 .
 ```
-
 Attention, cette opération prend une 30aine de minutes...
+
+#### **Particularités :** 
+
+Docker réutilise les couches déjà construites (cache).
+
+Chaque instruction RUN, COPY, ADD, etc., est mise en cache individuellement.
+
+Si une étape n’a pas changé depuis le dernier build, Docker ne la relance pas (tu vois CACHED dans les logs).
+
+⚠️ Cela signifie :
+
+Si ton patch Python a été exécuté une fois, Docker ne le rejoue jamais tant que cette étape reste identique.
+
+Donc le cache peut masquer une erreur (tu penses que le patch est appliqué, mais il ne l’est pas).
+
+🟢 Quand l’utiliser :
+
+Quand ton Dockerfile est stable et que tu veux un build rapide.
+
+Quand tu ne modifies pas les scripts d’installation.
+
+🔴 Quand éviter :
+
+Quand tu modifies une étape RUN, un patch ou un script intermédiaire.
+
+Quand tu veux forcer une réinstallation (apt, pip, patch, etc.).
+
+#### ** 2. Commande sans cache** 
+
+```bash
+sudo docker build --no-cache \
+  --build-arg HTTP_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
+  --build-arg HTTPS_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
+  --build-arg NO_PROXY=localhost,127.0.0.1 \
+  -t geonature-full:2.16.0 .
+
+```
+
+#### **Particularités :** 
+
+Docker ignore complètement le cache local.
+
+Il rejoue toutes les étapes depuis zéro :
+
+apt-get update, pip install, ./03_create_db.sh, patchs, etc.
+
+C’est plus long (souvent 20–40 minutes de build complet).
+
+Mais tu es sûr que toutes les modifications sont bien prises en compte.
+
+🟢 Quand l’utiliser :
+
+Quand tu modifies :
+
+des scripts du dossier install/
+
+des patchs Python (comme ton patch TAXREF)
+
+les variables ARG ou ENV
+
+ou quand tu veux une image 100 % propre et reproductible.
+
+🔴 Inconvénients :
+
+Plus lent (pas de cache sur les paquets, Node, pip, etc.).
+
+Tire à nouveau tous les artefacts externes (GitHub, npm…).
+
+⚙️ 🔸 3. Variante “rebuild propre mais partiel”
+
+Si tu veux rejouer à partir d’une étape spécifique sans tout effacer, tu peux casser le cache à la main.
+
+Exemple : tu veux forcer la réexécution du patch TAXREF (après l’étape 12).
+
+➡️ Ajoute une variable ARG “bidon” avant ton patch :
+
+sudo docker build --build-arg CACHE_BREAKER=$(date +%s) \
+  -t geonature-full:2.16.0 .
+
+et au moment du build :
+
+✅ Résumé rapide
+Mode	Commande	Vitesse	Fiabilité	Cas d’usage
+⚡ Avec cache	docker build	Rapide	Risque d’erreurs masquées	Builds répétitifs sans changement
+🧱 Sans cache	docker build --no-cache	Lent	100 % sûr	Après modif. de patchs, scripts, ENV
+🔁 Semi-propre	--build-arg CACHE_BREAKER=$(date +%s)	Moyen	Partiel	Forcer rebuild à partir d’une étape
+
+
+# Pour casser le cache à partir d’ici
+ARG CACHE_BREAKER=1
+RUN /home/geonature/geonature/backend/venv/bin/python3 - <<'EOF'
+# ... ton patch ...
+EOF
+
 
 ### 7️⃣ Test du conteneur
 
