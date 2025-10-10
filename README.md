@@ -538,7 +538,7 @@ Résultat attendu :
     ✅ Code HTTP 200 OK (connexion Internet via proxy)
     
 
-### ✅ Vérification manuelle dans le conteneur
+### Vérification manuelle dans le conteneur
 
 Une fois que le build terminé et le docker lancé :
 ```bash
@@ -650,7 +650,7 @@ docker pull hello-world
 
 ---
 
-## ✅ Résultat final
+## Résultat final
 
 Docker est configuré avec succès pour fonctionner avec le proxy RIE,
 et l’environnement est prêt pour la construction de l’image GeoNature Debian 12.
