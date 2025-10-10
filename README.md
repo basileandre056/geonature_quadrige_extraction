@@ -604,10 +604,12 @@ curl -I http://localhost/geonature/api/
 
 ## 🧰 Problèmes rencontrés et solutions — Proxy RIE
 
-🔸 Problème 1 — Proxy non pris en compte par Docker
+---
 
-Cause : Proxys Docker Desktop non appliqués à WSL.  
-Solution : Configuration manuelle dans /etc/docker/daemon.json.
+### 🔸 Problème 1 — Proxy non pris en compte par Docker
+
+**Cause :** Proxys Docker Desktop non appliqués à WSL.  
+**Solution :** Configurer manuellement le proxy dans `/etc/docker/daemon.json`.
 
 ```json
 {
@@ -619,10 +621,12 @@ Solution : Configuration manuelle dans /etc/docker/daemon.json.
 }
 ```
 
-🔸 Problème 2 — Service Docker introuvable
+---
 
-Cause : Docker non installé ou en mode rootless.  
-Solution :
+### 🔸 Problème 2 — Service Docker introuvable
+
+**Cause :** Docker non installé ou en mode rootless.  
+**Solution :** Installer et activer Docker :
 
 ```bash
 sudo apt update
@@ -631,20 +635,25 @@ sudo systemctl start docker
 sudo systemctl enable docker
 ```
 
-🔸 Problème 3 — Répertoire /etc/docker manquant
+---
 
-Solution :
+### 🔸 Problème 3 — Répertoire `/etc/docker` manquant
+
+**Cause :** Pas de configuration Docker initiale.  
+**Solution :** Créer le répertoire et le fichier de configuration :
 
 ```bash
 sudo mkdir -p /etc/docker
 sudo nano /etc/docker/daemon.json
 ```
+Ajouter la configuration du proxy comme indiqué dans le Problème 1.
 
-Ajouter la configuration du proxy.
+---
 
-🔸 Problème 4 — Proxy non appliqué au client Docker
+### 🔸 Problème 4 — Proxy non appliqué au client Docker
 
-Solution : Modifier ~/.docker/config.json :
+**Cause :** Proxy non configuré côté client Docker.  
+**Solution :** Modifier `~/.docker/config.json` :
 
 ```json
 {
@@ -658,92 +667,76 @@ Solution : Modifier ~/.docker/config.json :
 }
 ```
 
-🔸 Problème 5 — Vérification finale
+---
 
-Tester avec :
+### 🔸 Problème 5 — Vérification finale
+
+**Cause :** Vérifier que Docker fonctionne bien avec le proxy.  
+**Solution :** Tester avec l’image de test :
 
 ```bash
 docker pull hello-world
 ```
-
 ✅ Téléchargement réussi → Docker fonctionne correctement via le proxy.
 
 ---
 
-🔸 Problème 6 — Téléchargement lent avec Docker + proxy RIE :
+### 🔸 Problème 6 — Téléchargement lent ou échoué lors du build Docker (proxy RIE)
 
-⚙️ Téléchargement manuel de GeoNature (solution alternative en environnement RIE)
-🧩 Contexte
-
-Lors du build de l’image Docker GeoNature, l’étape suivante :
+**Cause :**  
+Lors du build de l’image Docker GeoNature, l’étape suivante télécharge le code source depuis GitHub, ce qui peut être long (débit limité) ou échouer (erreur exit code 4) à cause du proxy :
 
 ```bash
 RUN wget -q https://github.com/PnX-SI/GeoNature/archive/refs/tags/${GEONATURE_VERSION}.zip && \
     unzip ${GEONATURE_VERSION}.zip && \
     mv GeoNature-${GEONATURE_VERSION} geonature && \
-    rm ${GEONATURE_VERSION}.zip```
+    rm ${GEONATURE_VERSION}.zip
+```
 
-télécharge le code source de GeoNature depuis GitHub.
-
-Dans un environnement RIE (Réseau Interministériel de l’État), ce téléchargement peut :
-
-prendre plusieurs minutes (débit souvent limité à quelques centaines de Ko/s),
-
-ou échouer avec une erreur exit code 4 si le proxy interrompt la connexion HTTPS avant la fin du transfert.
-
-🚀 Solution recommandée
-
-Pour éviter les lenteurs ou erreurs réseau, télécharger l’archive GitHub en dehors du Docker et la fournir directement au build.
-
+**Solution :**  
+Télécharger l’archive GitHub *en dehors* du Docker et la fournir localement au build.  
 Cette méthode :
+- fonctionne sans accès Internet dans le conteneur ;
+- évite les problèmes liés au proxy ou au débit ;
+- accélère fortement la compilation.
 
-fonctionne sans accès Internet dans le conteneur ;
+**Étapes à suivre :**
 
-évite tout problème lié au proxy ;
+1. Télécharger manuellement l’archive GeoNature (ne passe qu’une seule fois par le proxy RIE) :
+   ```bash
+   wget https://github.com/PnX-SI/GeoNature/archive/refs/tags/2.16.0.zip -O 2.16.0.zip
+   ```
 
-accélère fortement la compilation (l’étape devient quasi instantanée).
+2. Déplacer le fichier dans le répertoire du Dockerfile :
+   ```bash
+   mv 2.16.0.zip ~/geonature-docker/
+   ```
 
+3. Modifier le Dockerfile :  
+   Remplacer la ligne de téléchargement par une copie locale :
+   ```dockerfile
+   # Étape 4 – Copie locale du code GeoNature (pour éviter les téléchargements bloqués par le proxy)
+   COPY 2.16.0.zip /tmp/
+   RUN unzip /tmp/2.16.0.zip && \
+       mv GeoNature-2.16.0 geonature && \
+       rm /tmp/2.16.0.zip
+   ```
 
-🔧 Étapes à suivre
+4. Recompiler normalement :
+   ```bash
+   sudo docker build --no-cache \
+     --build-arg HTTP_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
+     --build-arg HTTPS_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
+     --build-arg NO_PROXY=localhost,127.0.0.1 \
+     -t geonature-full:2.16.0 .
+   ```
 
-Télécharger manuellement l’archive GeoNature :
+**Résultat :**
+- Le build n’a plus besoin d’accéder à GitHub.
+- Plus aucune dépendance au proxy ou au débit réseau.
+- L’étape de téléchargement passe de plusieurs minutes à moins de 5 secondes.
 
-wget https://github.com/PnX-SI/GeoNature/archive/refs/tags/2.16.0.zip -O 2.16.0.zip
-
-ceci ne passe qu’une seule fois par le proxy RIE)
-
-Déplacer le fichier dans le répertoire du Dockerfile :
-
-mv 2.16.0.zip ~/geonature-docker/
-
-Modifier le Dockerfile :
-Remplacer la ligne de téléchargement par une copie locale :
-
-
-# Étape 4 – Copie locale du code GeoNature (pour éviter les téléchargements bloqués par le proxy)
-COPY 2.16.0.zip /tmp/
-RUN unzip /tmp/2.16.0.zip && \
-    mv GeoNature-2.16.0 geonature && \
-    rm /tmp/2.16.0.zip
-
-
-Recompiler normalement :
-
-
-sudo docker build --no-cache \
-  --build-arg HTTP_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
-  --build-arg HTTPS_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080 \
-  --build-arg NO_PROXY=localhost,127.0.0.1 \
-  -t geonature-full:2.16.0 .
-
-
-✅ Résultat
-
-Le build n’a plus besoin d’accéder à GitHub.
-
-Aucune dépendance au proxy ou au débit réseau.
-
-L’étape de téléchargement passe de plusieurs minutes à moins de 5 secondes.
+---
 
 
 
