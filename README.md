@@ -231,19 +231,19 @@ Les étapes sont détaillées et commentées ci-dessous.
 FROM debian:12
 
 # ---------------------------------------------------
-# Desactivation du .bashrc automatique
+# Disable automatic .bashrc loading
 # ---------------------------------------------------
 ENV BASH_ENV=""
 
 # ---------------------------------------------------
-# Configuration de base du systeme
+# System base configuration
 # ---------------------------------------------------
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=fr_FR.UTF-8
 ENV LC_ALL=fr_FR.UTF-8
 
 # ---------------------------------------------------
-# Variables de proxy pour les environnements RIE
+# Proxy configuration (for RIE environments)
 # ---------------------------------------------------
 ARG HTTP_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080
 ARG HTTPS_PROXY=http://pfrie-std.proxy.e2.rie.gouv.fr:8080
@@ -254,10 +254,10 @@ ENV http_proxy=${HTTP_PROXY} \
     no_proxy=${NO_PROXY}
 
 LABEL maintainer="basile.andre"
-LABEL description="Image Docker GeoNature basee sur Debian 12 – compatible proxy RIE"
+LABEL description="GeoNature Docker image based on Debian 12 - compatible with RIE proxy"
 
 # ===================================================
-# Etape 1 – Installation du systeme de base
+# Step 1 – Install base system packages
 # ===================================================
 RUN apt-get update -qq && \
     apt-get install -yq --no-install-recommends \
@@ -273,7 +273,7 @@ RUN apt-get update -qq && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ===================================================
-# Etape 2 – Creation de l'utilisateur GeoNature
+# Step 2 – Create GeoNature user
 # ===================================================
 RUN useradd -ms /bin/bash geonature && \
     echo "geonature ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
@@ -282,7 +282,7 @@ USER geonature
 WORKDIR /home/geonature
 
 # ===================================================
-# Etape 3 – Environnement Python
+# Step 3 – Python virtual environment
 # ===================================================
 ENV VIRTUAL_ENV=/home/geonature/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
@@ -291,14 +291,31 @@ RUN python3 -m venv $VIRTUAL_ENV && \
     pip install --upgrade pip setuptools wheel
 
 # ===================================================
-# Etape 4 – Telechargement et configuration GeoNature
+# Step 4 – GeoNature source code
 # ===================================================
-ARG GEONATURE_VERSION=2.16.0
+# NOTE FOR RIE ENVIRONMENTS (restricted network access)
+# -----------------------------------------------------
+# The build can either download the GeoNature archive or use a local copy.
+#
+# Option 1 (default, requires Internet access):
+# RUN wget -q https://github.com/PnX-SI/GeoNature/archive/refs/tags/${GEONATURE_VERSION}.zip && \
+#     unzip ${GEONATURE_VERSION}.zip && \
+#     mv GeoNature-${GEONATURE_VERSION} geonature && \
+#     rm ${GEONATURE_VERSION}.zip
+#
+# Option 2 (recommended in RIE environment):
+#  1. Download manually once:
+#       wget https://github.com/PnX-SI/GeoNature/archive/refs/tags/2.16.0.zip -O 2.16.0.zip
+#  2. Place the file next to this Dockerfile.
+#  3. Use the COPY command below.
+# This avoids proxy issues and makes the build fully offline.
+# ===================================================
 
-RUN wget -q https://github.com/PnX-SI/GeoNature/archive/refs/tags/${GEONATURE_VERSION}.zip && \
-    unzip ${GEONATURE_VERSION}.zip && \
-    mv GeoNature-${GEONATURE_VERSION} geonature && \
-    rm ${GEONATURE_VERSION}.zip
+ARG GEONATURE_VERSION=2.16.0
+COPY 2.16.0.zip /tmp/
+RUN unzip /tmp/2.16.0.zip && \
+    mv GeoNature-2.16.0 geonature && \
+    rm /tmp/2.16.0.zip
 
 WORKDIR /home/geonature/geonature
 
@@ -309,7 +326,7 @@ RUN cp config/settings.ini.sample config/settings.ini && \
     sed -i "s|mode = .*|mode = dev|" config/settings.ini
 
 # ===================================================
-# Etape 5 – Installation backend et frontend
+# Step 5 – Install backend and frontend
 # ===================================================
 WORKDIR /home/geonature/geonature/install
 ENV NVM_DIR="/home/geonature/.nvm"
@@ -320,7 +337,7 @@ RUN ./00_install_nvm.sh && \
 RUN ./01_install_backend.sh
 
 # ===================================================
-# Etape 6 – Configuration PostgreSQL et patchs RIE
+# Step 6 – PostgreSQL configuration and RIE patches
 # ===================================================
 USER root
 
@@ -329,49 +346,49 @@ RUN /etc/init.d/postgresql start && sleep 5 && \
     sudo -u postgres createdb -O geonaturedb geonaturedb && \
     sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION IF NOT EXISTS postgis;' && \
     sudo -u postgres psql -d geonaturedb -c 'CREATE EXTENSION IF NOT EXISTS pg_trgm;' && \
-    echo "PostgreSQL pret et extensions activees" && \
+    echo "PostgreSQL ready and extensions installed" && \
     sed -i '/with open_remote_file(base_url, "HABREF_50.zip"/,/op.bulk_insert/d' \
     /home/geonature/geonature/backend/venv/lib/python3.11/site-packages/pypn_habref_api/migrations/versions/46e91e738845_insert_inpn_data_in_ref_habitats_schema.py && \
-    echo "Patch INPN applique" && \
+    echo "INPN patch applied" && \
     /home/geonature/geonature/backend/venv/bin/python3 - <<'EOF'
 import re, pathlib
 f = pathlib.Path("/home/geonature/geonature/backend/venv/lib/python3.11/site-packages/apptax/taxonomie/commands/taxref_v15_v16.py")
-print(f"Application du patch TAXREF sur : {f}")
+print(f"Applying TAXREF patch to: {f}")
 if f.exists():
     text = f.read_text()
     new = re.sub(
         r'with open_remote_file\(base_url, taxref_archive_name.*?op\.bulk_insert\(.*?\)\n',
-        '    logger.info("Telechargement TAXREF desactive (proxy RIE)")\n    return\n',
+        '    logger.info("TAXREF download disabled (proxy RIE)")\n    return\n',
         text,
         flags=re.S
     )
     f.write_text(new)
-    print("Patch TAXREF applique avec succes")
+    print("TAXREF patch applied successfully")
 else:
-    print("Fichier taxref_v15_v16.py introuvable")
+    print("File taxref_v15_v16.py not found")
 EOF
 
-RUN echo "Application du patch anti-TAXREF et du correctif contrainte..." && \
+RUN echo "Applying anti-TAXREF patch and constraint fix..." && \
     echo "ALTER TABLE IF EXISTS ref_nomenclatures.cor_taxref_nomenclature DROP CONSTRAINT IF EXISTS check_cor_taxref_nomenclature_isgroup2inpn;" \
         >> /home/geonature/geonature/install/03_create_db.sh && \
-    sed -i "s/geonature[[:space:]]\+taxref/echo 'Import TAXREF desactive (proxy RIE) # geonature taxref desactive'/g" \
+    sed -i "s/geonature[[:space:]]\+taxref/echo 'TAXREF import disabled (proxy RIE) # geonature taxref disabled'/g" \
         /home/geonature/geonature/install/03b_populate_db.sh && \
-    echo "Patch anti-taxref applique a 03b_populate_db.sh" && \
+    echo "Anti-TAXREF patch applied to 03b_populate_db.sh" && \
     /etc/init.d/postgresql restart && sleep 5 && \
     sudo -u geonature bash -c "cd /home/geonature/geonature/install && ./03_create_db.sh" && \
     /etc/init.d/postgresql stop && \
-    echo "Creation de la base GeoNature terminee sans import TAXREF"
+    echo "GeoNature database created without TAXREF import"
 
 # ===================================================
-# Etape 7 – Installation finale (modules et frontend)
+# Step 7 – Final installation (modules and frontend)
 # ===================================================
 RUN /etc/init.d/postgresql start && sleep 5 && \
     sudo -u geonature bash -c "cd /home/geonature/geonature/install && ./04_install_gn_modules.sh && ./05_install_frontend.sh" && \
     /etc/init.d/postgresql stop && \
-    echo "Installation complete de GeoNature terminee"
+    echo "GeoNature installation completed"
 
 # ===================================================
-# Etape 8 – Configuration Apache
+# Step 8 – Apache configuration
 # ===================================================
 RUN ./06_configure_apache.sh && \
     a2enmod ssl rewrite headers && \
@@ -380,13 +397,14 @@ RUN ./06_configure_apache.sh && \
 EXPOSE 80 443
 
 # ===================================================
-# Etape 9 – Healthcheck et demarrage
+# Step 9 – Healthcheck and startup
 # ===================================================
 HEALTHCHECK --interval=60s --timeout=10s --retries=3 CMD \
     pg_isready -U geonaturedb -d geonaturedb -h localhost > /dev/null 2>&1 && \
     curl -fs http://localhost/geonature/api/ > /dev/null 2>&1 || exit 1
 
 CMD ["bash", "-c", "service postgresql start && apache2ctl start && bash"]
+
 
 
 ```
