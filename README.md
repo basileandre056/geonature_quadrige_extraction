@@ -254,7 +254,7 @@ Dans ce mode, vous téléchargez l’archive `.zip` de GeoNature sur votre poste
 COPY 2.16.0.zip /tmp/
 RUN unzip /tmp/2.16.0.zip && \
     mv GeoNature-2.16.0 geonature && \
-    rm /tmp/2.16.0.zip
+    sudo rm -f /tmp/2.16.0.zip
 ```
 
 - Ce mode est recommandé si vous travaillez derrière un proxy ou sans accès Internet.
@@ -355,7 +355,7 @@ RUN python3 -m venv $VIRTUAL_ENV && \
 # RUN wget -q https://github.com/PnX-SI/GeoNature/archive/refs/tags/${GEONATURE_VERSION}.zip && \
 #     unzip ${GEONATURE_VERSION}.zip && \
 #     mv GeoNature-${GEONATURE_VERSION} geonature && \
-#     rm ${GEONATURE_VERSION}.zip
+#     sudo rm -f ${GEONATURE_VERSION}.zip
 #
 # Option 2 (recommended in RIE environment):
 #  1. Download manually once:
@@ -369,7 +369,7 @@ ARG GEONATURE_VERSION=2.16.0
 COPY 2.16.0.zip /tmp/
 RUN unzip /tmp/2.16.0.zip && \
     mv GeoNature-2.16.0 geonature && \
-    rm /tmp/2.16.0.zip
+    sudo rm -f /tmp/2.16.0.zip
 
 WORKDIR /home/geonature/geonature
 
