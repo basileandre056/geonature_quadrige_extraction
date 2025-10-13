@@ -1,17 +1,20 @@
 # ===================================================
 # GeoNature – Dockerfile Debian 12 (Bookworm)
+# Version : Standard (Internet access, no proxy)
+# Auteur : Basile André
 # ===================================================
+
 FROM debian:12
 
 LABEL maintainer="basile.andre"
-LABEL description="GeoNature Docker image based on Debian 12 (standard build, no proxy)"
+LABEL description="GeoNature Docker image based on Debian 12 – Standard (no proxy)"
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG=fr_FR.UTF-8
 ENV LC_ALL=fr_FR.UTF-8
 
 # ===================================================
-# Step 1 – Base system
+# Step 1 – Base system packages
 # ===================================================
 RUN apt-get update -qq && \
     apt-get install -yq --no-install-recommends \
@@ -27,7 +30,7 @@ RUN apt-get update -qq && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ===================================================
-# Step 2 – User
+# Step 2 – Create GeoNature user
 # ===================================================
 RUN useradd -ms /bin/bash geonature && \
     echo "geonature ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers
@@ -36,25 +39,23 @@ USER geonature
 WORKDIR /home/geonature
 
 # ===================================================
-# Step 3 – Python environment
+# Step 3 – Python virtual environment
 # ===================================================
 ENV VIRTUAL_ENV=/home/geonature/venv
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
-RUN python3 -m venv $VIRTUAL_ENV && \
-    pip install --upgrade pip setuptools wheel
+RUN python3 -m venv $VIRTUAL_ENV && pip install --upgrade pip setuptools wheel
 
 # ===================================================
-# Step 4 – GeoNature source
+# Step 4 – GeoNature source (auto-download)
 # ===================================================
 ARG GEONATURE_VERSION=2.16.0
 RUN wget -q https://github.com/PnX-SI/GeoNature/archive/refs/tags/${GEONATURE_VERSION}.zip && \
     unzip ${GEONATURE_VERSION}.zip && \
     mv GeoNature-${GEONATURE_VERSION} geonature && \
-    rm ${GEONATURE_VERSION}.zip
+    rm -f ${GEONATURE_VERSION}.zip
 
 WORKDIR /home/geonature/geonature
-
 RUN cp config/settings.ini.sample config/settings.ini && \
     sed -i "s|my_url = .*|my_url = http://localhost/|" config/settings.ini && \
     sed -i "s|user_pg = .*|user_pg = geonaturedb|" config/settings.ini && \
@@ -62,14 +63,15 @@ RUN cp config/settings.ini.sample config/settings.ini && \
     sed -i "s|mode = .*|mode = dev|" config/settings.ini
 
 # ===================================================
-# Step 5 – Backend and frontend
+# Step 5 – Backend and frontend installation
 # ===================================================
 WORKDIR /home/geonature/geonature/install
 ENV NVM_DIR="/home/geonature/.nvm"
 
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash && \
-    bash -i -c "source ~/.bashrc && nvm install 20 && npm install -g @angular/cli"
+    /bin/bash -c "source $HOME/.nvm/nvm.sh && nvm install 20 && npm install -g @angular/cli"
 
+RUN bash -i -c "source ~/.bashrc && nvm alias default 20 && nvm use default"
 RUN ./01_install_backend.sh
 
 # ===================================================
@@ -91,7 +93,7 @@ RUN /etc/init.d/postgresql start && sleep 5 && \
     /etc/init.d/postgresql stop
 
 # ===================================================
-# Step 8 – Apache config
+# Step 8 – Apache configuration
 # ===================================================
 RUN ./06_configure_apache.sh && \
     a2enmod ssl rewrite headers && \
