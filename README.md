@@ -221,7 +221,61 @@ nano Dockerfile
 Ce Dockerfile construit une image Debian 12 (bookworm) entièrement autonome pour GeoNature v2.16.0,
 adaptée à un environnement réseau RIE avec proxy et restrictions Internet.
 
-Les étapes sont détaillées et commentées ci-dessous.
+### 🐳 Construction de l’image Docker GeoNature – Deux modes possibles
+
+Le Dockerfile propose deux alternatives pour intégrer le code source GeoNature :  
+**1. Téléchargement automatique** (commande `wget` dans le Dockerfile)  
+**2. Copie locale** (commande `COPY` d’une archive téléchargée préalablement)
+
+---
+
+#### a) Téléchargement automatique avec `wget`
+
+Le Dockerfile télécharge directement l’archive GeoNature depuis GitHub lors du build :  
+```dockerfile
+# Option 1 – nécessite un accès Internet ou un proxy configuré
+RUN wget -q https://github.com/PnX-SI/GeoNature/archive/refs/tags/${GEONATURE_VERSION}.zip && \
+    unzip ${GEONATURE_VERSION}.zip && \
+    mv GeoNature-${GEONATURE_VERSION} geonature && \
+    rm ${GEONATURE_VERSION}.zip
+```
+
+- Ce mode est simple, mais il nécessite que Docker puisse accéder à Internet ou à GitHub via un proxy.
+- Il peut échouer si votre environnement réseau bloque les connexions sortantes.
+
+---
+
+#### b) Copie locale de l’archive avec `COPY` (recommandé en environnement restreint)
+
+Dans ce mode, vous téléchargez l’archive `.zip` de GeoNature sur votre poste, puis vous la copiez à côté du Dockerfile :
+
+```dockerfile
+# Option 2 – pour environnement sans accès Internet
+COPY 2.16.0.zip /tmp/
+RUN unzip /tmp/2.16.0.zip && \
+    mv GeoNature-2.16.0 geonature && \
+    rm /tmp/2.16.0.zip
+```
+
+- Ce mode est recommandé si vous travaillez derrière un proxy ou sans accès Internet.
+- Il suffit de télécharger une fois l’archive puis de la placer à côté du Dockerfile.
+
+---
+
+### 📝 Conseils d’utilisation
+
+- **Commentez la méthode que vous n’utilisez pas** dans le Dockerfile.
+- **Ne laissez jamais les deux non-commentées simultanément** (ça provoquerait une erreur de build).
+- Privilégiez la copie locale si vous êtes en environnement institutionnel, ou si des restrictions réseau sont en place.
+
+---
+
+| Mode             | Avantage                                 | Limite principale                         |
+|------------------|------------------------------------------|-------------------------------------------|
+| wget             | Automatique, toujours à jour             | Échoue si pas d’accès Internet/proxy      |
+| COPY             | Robuste, fonctionne hors ligne           | Nécessite de télécharger l’archive à part |
+
+---
 
 ```bash
 
