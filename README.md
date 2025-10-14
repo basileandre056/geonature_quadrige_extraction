@@ -181,7 +181,7 @@ Options recommandées :
 | Use the WSL 2 based engine | ✅ |
 | Add the *.docker.internal names to hosts file | ✅ |
 
-### 2️⃣ Configuration du proxy réseau
+### 2️⃣ si proxy : Configuration du proxy réseau
 
     Ouvrir Docker Desktop
 
@@ -195,7 +195,7 @@ No Proxy:    localhost,127.0.0.1
 
     Cliquer sur Apply & Restart
 
-### 3️⃣ Vérification du proxy dans WSL
+### 3️⃣  si proxy : Vérification du proxy dans WSL
 
 ```bash
 docker info | grep -i proxy
