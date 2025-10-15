@@ -51,13 +51,16 @@ export class Programmes {
         if (res?.status === 'ok' && res?.programmes?.length > 0) {
           this.programmes = res.programmes;
           console.log(`[FRONTEND] ✅ Liste initialisée depuis le backend (${this.programmes.length} programmes)`);
+          this.message = `Liste initialisée depuis le backend (${this.programmes.length} programmes)`;
         } else {
           console.warn("[FRONTEND] ⚠️ Aucun programme trouvé dans le backend, utilisation de la liste par défaut");
+          this.message = "Aucun programme trouvé dans le backend, utilisation de la liste par défaut";
         }
       },
       error: (err) => {
         console.error("[FRONTEND] ❌ Erreur backend :", err);
         console.warn("[FRONTEND] → Initialisation avec la liste par défaut");
+        this.message = "Erreur backend, initialisation avec la liste par défaut";
       }
     });
   }
@@ -102,6 +105,7 @@ export class Programmes {
   // 🔹 Quand le filtre de données est appliqué
   onDataFilterApplied(filterData: any) {
     console.log('[FRONTEND] 🎯 Filtre appliqué (données):', filterData);
+    this.message = 'filtre de données appliqué.';
     this.showDataFilter = false; // fermeture automatique
     const { monitoringLocation, ...filterWithoutLocation } = filterData;
     this.dataFilter = filterWithoutLocation;
@@ -110,6 +114,7 @@ export class Programmes {
   // 🔹 Quand le filtre de programmes est appliqué
   onProgramFilterApplied(filterData: any) {
     console.log('[FRONTEND] 📋 Filtre appliqué (programmes):', filterData);
+    this.message = 'filtre de programmes appliqué.';
     this.showProgramFilter = false; // fermeture automatique
     this.programFilter = filterData;
   }
@@ -139,7 +144,9 @@ export class Programmes {
           console.log('[FRONTEND] ⬅️ Réponse reçue (programmes filtrés):', res);
           if (res?.status === 'ok' && res?.fichiers_csv?.length > 0) {
             const csvUrl = res.fichiers_csv[0].url;
+            this.message = `extraction terminée, chargement des programmes..."`;
             this.chargerProgrammesDepuisCSV(csvUrl);
+            this.message = `✅ Extraction terminée (${res.fichiers_csv.length} fichiers CSV)`;
           } else {
             this.message = res?.message ?? 'Réponse inattendue du serveur';
           }
