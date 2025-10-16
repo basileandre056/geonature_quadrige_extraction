@@ -1,0 +1,11 @@
+Flask
+requests
+pandas
+gql
+pytest
+pytest-cov
+
+[tests]
+pytest
+pytest-cov
+coverage
