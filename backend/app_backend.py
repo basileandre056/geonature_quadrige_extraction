@@ -3,7 +3,7 @@ import requests
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from extraction_data import extract_ifremer_data
-from extraction_programs import extract_programs, nettoyer_csv, csv_to_programmes_json, sauvegarder_derniere_version
+from extraction_programs import extract_programs, nettoyer_csv, csv_to_programmes_json
 import json
 
 app = Flask(__name__)
@@ -12,17 +12,23 @@ CORS(app)
 # -------------------------
 # Dossiers robustes (toujours relatifs au fichier backend.py)
 # -------------------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # chemin du dossier "backend/"
-OUTPUT_DIR = os.path.join(BASE_DIR, "output_test")
-SAVE_DIR = os.path.join(BASE_DIR, "saved_programmes")
-LAST_FILTER_FILE = os.path.join(SAVE_DIR, "last_filter.json")
+
+# chemin du dossier "backend/"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+MEMORY_DIR = os.path.join(BASE_DIR, "memory")
+os.makedirs(MEMORY_DIR, exist_ok=True)
+LAST_FILTER_FILE = os.path.join(MEMORY_DIR, "last_filter.json")
+
+
 
 
 def sauvegarder_filtre(program_filter: dict):
-    os.makedirs(SAVE_DIR, exist_ok=True)
+    os.makedirs(MEMORY_DIR, exist_ok=True)
     with open(LAST_FILTER_FILE, "w", encoding="utf-8") as f:
         json.dump(program_filter, f)
     print(f"[BACKEND] 💾 Filtre sauvegardé dans {LAST_FILTER_FILE}")
+
 
 def charger_filtre() -> dict:
     if os.path.exists(LAST_FILTER_FILE):
@@ -56,29 +62,27 @@ def recevoir_program_extraction():
         sauvegarder_filtre(program_filter)
 
         # Étape 2 : télécharger le CSV brut
-        brut_path = os.path.join(OUTPUT_DIR, f"Programmes_{monitoring_location}_brut.csv")
+        brut_path = os.path.join(MEMORY_DIR, f"programmes_{monitoring_location}_brut.csv")
         r = requests.get(file_url)
         r.raise_for_status()
-        os.makedirs(OUTPUT_DIR, exist_ok=True)
+        os.makedirs(MEMORY_DIR, exist_ok=True)
         with open(brut_path, "wb") as f:
             f.write(r.content)
         print(f"[BACKEND] ✅ CSV brut sauvegardé : {brut_path}")
 
-        # Étape 3 : filtrer le CSV
-        filtre_path = os.path.join(OUTPUT_DIR, f"Programmes_{monitoring_location}_filtered.csv")
+        # Étape 3 : filtrer et sauvegarder le CSV
+        filtre_path = os.path.join(MEMORY_DIR, f"programmes_{monitoring_location}_filtered.csv")
         nettoyer_csv(brut_path, filtre_path, monitoring_location)
 
-        # Étape 4 : sauvegarde last_programmes.csv
-        sauvegarder_derniere_version(filtre_path, SAVE_DIR)
 
-        # Étape 5 : conversion JSON
+        # Étape 4 : conversion JSON
         programmes_json = csv_to_programmes_json(filtre_path)
 
     except Exception as e:
         print(f"[BACKEND] Erreur extraction/filtrage : {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
-    base_url = "http://localhost:5000/output_test"
+    base_url = "http://localhost:5000/memory"
 
     return jsonify({
         "status": "ok",
@@ -115,8 +119,8 @@ def relancer_filtrage():
         }), 400
 
     try:
-        brut_path = os.path.join(OUTPUT_DIR, f"Programmes_{monitoring_location}_brut.csv")
-        filtre_path = os.path.join(OUTPUT_DIR, f"Programmes_{monitoring_location}_filtered.csv")
+        brut_path = os.path.join(MEMORY_DIR, f"programmes_{monitoring_location}_brut.csv")
+        filtre_path = os.path.join(MEMORY_DIR, f"programmes_{monitoring_location}_filtered.csv")
 
         if not os.path.exists(brut_path):
             return jsonify({
@@ -126,8 +130,8 @@ def relancer_filtrage():
                 "message": "⚠️ Aucun CSV brut trouvé pour ce filtre. Veuillez d’abord extraire les programmes."
             }), 200
 
+        # Relancer le filtrage et sauvegarder
         nettoyer_csv(brut_path, filtre_path, monitoring_location)
-        sauvegarder_derniere_version(filtre_path, SAVE_DIR)
 
         programmes_json = csv_to_programmes_json(filtre_path)
 
@@ -137,7 +141,7 @@ def relancer_filtrage():
     return jsonify({
         "status": "ok",
         "fichiers_csv": [
-            {"file_name": f"Programmes_{monitoring_location}_filtered.csv", "url": f"http://localhost:5000/output_test/Programmes_{monitoring_location}_filtered.csv"}
+            {"file_name": f"Programmes_{monitoring_location}_filtered.csv", "url": f"http://localhost:5000/memory/programmes_{monitoring_location}_filtered.csv"}
         ],
         "programmes": programmes_json,
         "message": "Filtrage relancé avec succès"
@@ -210,51 +214,53 @@ def recevoir_data_extractions():
 
 
 # -------------------------
-# 4) Servir les fichiers générés
+# 4) Servir les fichiers sauvegardés
 # -------------------------
-@app.route('/output_test/<path:filename>', methods=['GET'])
-def download_output_file(filename):
-    return send_from_directory(OUTPUT_DIR, filename)
-
-
-# -------------------------
-# 5) Servir les fichiers sauvegardés
-# -------------------------
-@app.route('/saved_programmes/<path:filename>', methods=['GET'])
-def download_saved_file(filename):
-    return send_from_directory(SAVE_DIR, filename)
-
+@app.route('/memory/<path:filename>', methods=['GET'])
+def download_memory_file(filename):
+    return send_from_directory(MEMORY_DIR, filename)
 
 # -------------------------
-# 6) Récupérer la dernière liste de programmes en JSON
+# 5) Récupérer la dernière liste de programmes en JSON
 # -------------------------
 @app.route('/last-programmes', methods=['GET'])
 def get_last_programmes():
-    csv_path = os.path.join(SAVE_DIR, "last_programmes_updates.csv")
-    programmes = csv_to_programmes_json(csv_path)
-
-    # On récupère le dernier filtre enregistré pour afficher la localisation
     last_filter = charger_filtre()
     monitoring_location = last_filter.get("monitoringLocation", "")
+    base_url = "http://localhost:5000/memory"
 
-    if not programmes:
-        return jsonify({
-            "status": "empty",
-            "message": "Aucun programme sauvegardé",
-            "programmes": [],
-            "monitoringLocation": monitoring_location
-        }), 200
+    # chemins vers les fichiers
+    filtre_path = os.path.join(MEMORY_DIR, f"programmes_{monitoring_location}_filtered.csv")
+    brut_path = os.path.join(MEMORY_DIR, f"programmes_{monitoring_location}_brut.csv")
+
+    programmes = csv_to_programmes_json(filtre_path) if os.path.exists(filtre_path) else []
+
+    fichiers_csv = []
+    if os.path.exists(brut_path):
+        fichiers_csv.append({
+            "file_name": os.path.basename(brut_path),
+            "url": f"{base_url}/{os.path.basename(brut_path)}"
+        })
+    if os.path.exists(filtre_path):
+        fichiers_csv.append({
+            "file_name": os.path.basename(filtre_path),
+            "url": f"{base_url}/{os.path.basename(filtre_path)}"
+        })
+
+    status = "ok" if programmes else "empty"
+    message = "Aucun programme sauvegardé" if not programmes else f"{len(programmes)} programmes trouvés"
 
     return jsonify({
-        "status": "ok",
+        "status": status,
+        "message": message,
         "programmes": programmes,
-        "monitoringLocation": monitoring_location
+        "monitoringLocation": monitoring_location,
+        "fichiers_csv": fichiers_csv
     }), 200
 
-
-
+# -------------------------
+# Lancer le serveur Flask
 if __name__ == '__main__':
     print("➡️ BASE_DIR =", BASE_DIR)
-    print("➡️ OUTPUT_DIR =", OUTPUT_DIR)
-    print("➡️ SAVE_DIR =", SAVE_DIR)
+    print("➡️ MEMORY_DIR =", MEMORY_DIR)
     app.run(debug=True)

@@ -66,20 +66,21 @@ export class Programmes {
           this.programmes = res.programmes;
           this.monitoringLocation = res?.monitoringLocation || '';
           this.updateMonitoringLabel();
+          this.extractedProgramFiles = this.mapToExtractedLinks(res?.fichiers_csv || []);
 
-          console.log(`[FRONTEND] ✅ Liste initialisée depuis le backend (${this.programmes.length} programmes)`);
-          this.message = `Liste initialisée (${this.programmes.length} programmes pour ${this.monitoringLocation || 'lieu inconnu'})`;
+          this.message = `✅ ${this.programmes.length} programmes chargés (${this.monitoringLocation})`;
         } else {
-          console.warn("[FRONTEND] ⚠️ Aucun programme trouvé dans le backend");
-          this.message = "Aucun programme trouvé dans le backend";
+          this.extractedProgramFiles = this.mapToExtractedLinks(res?.fichiers_csv || []);
+          this.message = "Aucun programme sauvegardé.";
         }
       },
       error: (err) => {
         console.error("[FRONTEND] ❌ Erreur backend :", err);
-        this.message = "Erreur backend, initialisation avec la liste par défaut";
+        this.message = "Erreur lors du chargement des derniers programmes.";
       }
     });
-  }
+    }
+
 
 
 
