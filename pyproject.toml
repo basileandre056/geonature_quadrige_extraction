@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "geonature_quadrige_extraction"
+version = "0.1.0"
+description = "Module d'extraction Ifremer pour GeoNature"
+authors = [
+    { name = "Basile André" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "Flask",
+    "requests",
+    "pandas",
+    "gql",
+    "pytest",
+    "pytest-cov",
+]
+
+[project.optional-dependencies]
+tests = [
+    "pytest",
+    "pytest-cov",
+    "coverage",
+]
+
+[tool.setuptools.packages.find]
+where = ["backend"]
