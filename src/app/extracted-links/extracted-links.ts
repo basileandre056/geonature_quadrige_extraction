@@ -11,6 +11,7 @@ import { ExtractedLink } from '../models/extractedLinks';
 })
 export class ExtractedLinks {
   @Input() files: ExtractedLink[] = [];
+  @Input() title: string = 'Liens extraits'; //  Valeur par défaut
 
   // 🧠 Sélectionne une icône selon le type de fichier
   getFileIconClass(fileName: string): string {

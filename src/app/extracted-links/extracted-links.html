@@ -1,5 +1,5 @@
 <div class="card">
-  <h3>Liens extraits</h3>
+  <h3>{{ title }}</h3>
 
   <ul *ngIf="files.length > 0; else noFiles">
     <li *ngFor="let fichier of files">

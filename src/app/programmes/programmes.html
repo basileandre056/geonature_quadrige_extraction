@@ -103,10 +103,16 @@
 </table>
 
 <!-- 📊 Fichiers CSV des programmes -->
-<app-extracted-links [files]="extractedProgramFiles"></app-extracted-links>
+<app-extracted-links
+  [files]="extractedProgramFiles"
+  title="📊 Programmes extraits">
+</app-extracted-links>
 
 <!-- 📦 Fichiers ZIP des données -->
-<app-extracted-links [files]="extractedDataFiles"></app-extracted-links>
+<app-extracted-links
+  [files]="extractedDataFiles"
+  title="📦 Données des programmes extraits">
+</app-extracted-links>
 
 <!-- 🔁 Bouton relancer le filtrage seul -->
 <button (click)="relancerFiltrageSeul()" [disabled]="isLoading" class="maj_prgrm-btn">
