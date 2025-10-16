@@ -52,13 +52,18 @@ export class FrontendFilterComponent {
   }
 
   // ✅ Nouvelle validation simplifiée :
-  // Seuls "name" et "fields" sont obligatoires
-  isFormValid(): boolean {
-    const f = this.extraction_filter;
-    if (f.name.trim() === '') return false;
-    if (!Array.isArray(f.fields) || f.fields.length === 0) return false;
-    return true;
-  }
+isFormValid(): boolean {
+  const f = this.extraction_filter;
+
+  // Vérifie que le nom existe et fait plus de 3 caractères
+  if (!f.name || f.name.trim().length <= 3) return false;
+
+  // Vérifie que les champs à extraire existent
+  if (!Array.isArray(f.fields) || f.fields.length === 0) return false;
+
+  return true;
+}
+
 
   addField() {
     if (this.newField && !this.extraction_filter.fields.includes(this.newField)) {

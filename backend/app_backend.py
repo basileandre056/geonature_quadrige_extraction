@@ -21,6 +21,19 @@ os.makedirs(MEMORY_DIR, exist_ok=True)
 LAST_FILTER_FILE = os.path.join(MEMORY_DIR, "last_filter.json")
 
 
+def nettoyer_dossier_memory():
+    """
+    Supprime tous les anciens fichiers programmes dans MEMORY_DIR,
+    sauf le fichier de filtre JSON (last_filter.json).
+    """
+    try:
+        for fichier in os.listdir(MEMORY_DIR):
+            chemin = os.path.join(MEMORY_DIR, fichier)
+            if fichier != "last_filter.json" and os.path.isfile(chemin):
+                os.remove(chemin)
+                print(f"[BACKEND] 🧹 Fichier supprimé : {fichier}")
+    except Exception as e:
+        print(f"[BACKEND] ⚠️ Erreur nettoyage MEMORY_DIR : {e}")
 
 
 def sauvegarder_filtre(program_filter: dict):
@@ -61,7 +74,10 @@ def recevoir_program_extraction():
         # Sauvegarder le filtre utilisé
         sauvegarder_filtre(program_filter)
 
-        # Étape 2 : télécharger le CSV brut
+        # 🧹 Étape 2 : nettoyage de la mémoire (on garde uniquement last_filter.json)
+        nettoyer_dossier_memory()
+
+        # Étape 3 : télécharger le CSV brut
         brut_path = os.path.join(MEMORY_DIR, f"programmes_{monitoring_location}_brut.csv")
         r = requests.get(file_url)
         r.raise_for_status()
@@ -264,3 +280,4 @@ if __name__ == '__main__':
     print("➡️ BASE_DIR =", BASE_DIR)
     print("➡️ MEMORY_DIR =", MEMORY_DIR)
     app.run(debug=True)
+

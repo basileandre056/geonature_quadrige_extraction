@@ -61,7 +61,10 @@ onDocumentClick(event: MouseEvent) {
 
 
   isFormValid(): boolean {
-    return this.filter.name.trim() !== '' && this.filter.monitoringLocation.trim() !== '';
+    const f = this.filter;
+    if (!f.name || f.name.trim().length <= 3) return false;
+    return true;
+
   }
 
   applyFilter() {

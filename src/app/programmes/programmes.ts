@@ -42,7 +42,7 @@ export class Programmes {
   programFilter: any = null;   // filtre pour extraction de programmes
 
   monitoringLocation: string = '';  // lieu de surveillance courant
-    monitoringLabel: string = ''; //  libellé de la localisation
+  monitoringLabel: string = ''; //  libellé de la localisation
 
   private locationLabels = [
     { code: '126-', label: 'Réunion' },
