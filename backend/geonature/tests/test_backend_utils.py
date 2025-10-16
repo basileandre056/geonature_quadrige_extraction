@@ -60,7 +60,7 @@ def test_nettoyer_csv(tmp_path):
     assert len(filtered) == 1
 
     #Seule la ligne dont "Lieu : Mnémonique" commence par "126-" est conservée.
-    #assert "999-BBB" not in filtered["Lieu : Mnémonique"].values
+    assert "999-BBB" not in filtered["Lieu : Mnémonique"].values
     assert "P1" in filtered["Programme : Code"].values
 
 

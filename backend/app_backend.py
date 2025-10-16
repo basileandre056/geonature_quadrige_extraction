@@ -230,17 +230,24 @@ def get_last_programmes():
     csv_path = os.path.join(SAVE_DIR, "last_programmes_updates.csv")
     programmes = csv_to_programmes_json(csv_path)
 
+    # On récupère le dernier filtre enregistré pour afficher la localisation
+    last_filter = charger_filtre()
+    monitoring_location = last_filter.get("monitoringLocation", "")
+
     if not programmes:
         return jsonify({
             "status": "empty",
             "message": "Aucun programme sauvegardé",
-            "programmes": []
+            "programmes": [],
+            "monitoringLocation": monitoring_location
         }), 200
 
     return jsonify({
         "status": "ok",
-        "programmes": programmes
+        "programmes": programmes,
+        "monitoringLocation": monitoring_location
     }), 200
+
 
 
 if __name__ == '__main__':

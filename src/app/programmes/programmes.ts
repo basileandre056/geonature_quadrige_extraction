@@ -41,6 +41,20 @@ export class Programmes {
   dataFilter: any = null;      // filtre pour extraction de données
   programFilter: any = null;   // filtre pour extraction de programmes
 
+  monitoringLocation: string = '';  // lieu de surveillance courant
+    monitoringLabel: string = ''; //  libellé de la localisation
+
+  private locationLabels = [
+    { code: '126-', label: 'Réunion' },
+    { code: '145-', label: 'Mayotte' },
+    { code: '048-', label: 'Maurice' },
+    { code: '153-', label: 'Île Tromelin' },
+    { code: '152-', label: 'Îles Glorieuses' },
+    { code: '154-', label: 'Île Juan de Nova' },
+    { code: '155-', label: 'Île Bassas da India' },
+    { code: '156-', label: 'Île Europa' },
+  ];
+
   constructor(private http: HttpClient) {
     this.initialiserProgrammes();
   }
@@ -50,20 +64,31 @@ export class Programmes {
       next: (res) => {
         if (res?.status === 'ok' && res?.programmes?.length > 0) {
           this.programmes = res.programmes;
+          this.monitoringLocation = res?.monitoringLocation || '';
+          this.updateMonitoringLabel();
+
           console.log(`[FRONTEND] ✅ Liste initialisée depuis le backend (${this.programmes.length} programmes)`);
-          this.message = `Liste initialisée depuis le backend (${this.programmes.length} programmes)`;
+          this.message = `Liste initialisée (${this.programmes.length} programmes pour ${this.monitoringLocation || 'lieu inconnu'})`;
         } else {
-          console.warn("[FRONTEND] ⚠️ Aucun programme trouvé dans le backend, utilisation de la liste par défaut");
-          this.message = "Aucun programme trouvé dans le backend, utilisation de la liste par défaut";
+          console.warn("[FRONTEND] ⚠️ Aucun programme trouvé dans le backend");
+          this.message = "Aucun programme trouvé dans le backend";
         }
       },
       error: (err) => {
         console.error("[FRONTEND] ❌ Erreur backend :", err);
-        console.warn("[FRONTEND] → Initialisation avec la liste par défaut");
         this.message = "Erreur backend, initialisation avec la liste par défaut";
       }
     });
   }
+
+
+
+   private updateMonitoringLabel(): void {
+    const found = this.locationLabels.find(l => this.monitoringLocation.startsWith(l.code));
+    this.monitoringLabel = found ? found.label : '';
+  }
+
+
 
   private mapToExtractedLinks(raw: any): ExtractedLink[] {
     if (!Array.isArray(raw)) return [];
@@ -123,43 +148,48 @@ export class Programmes {
   //  EXTRACTION DES PROGRAMMES
   // -----------------------------------------------------
   extractPrograms() {
-    console.log('➡️ clic sur extractPrograms()');
+  console.log('➡️ clic sur extractPrograms()');
+  this.showDataFilter = false;
+  this.showProgramFilter = false;
 
-    // Fermer les fenêtres avant extraction
-    this.showDataFilter = false;
-    this.showProgramFilter = false;
-
-    if (!this.programFilter) {
-      this.message = 'Veuillez définir un filtre d’extraction de programmes.';
-      return;
-    }
-
-    this.isLoading = true;
-    this.message = 'Extraction et filtrage des programmes en cours...';
-
-    this.http
-      .post<ProgramExtractionResponse>('http://localhost:5000/program-extraction', { filter: this.programFilter })
-      .subscribe({
-        next: (res) => {
-          console.log('[FRONTEND] ⬅️ Réponse reçue (programmes filtrés):', res);
-          if (res?.status === 'ok' && res?.fichiers_csv?.length > 0) {
-            const csvUrl = res.fichiers_csv[0].url;
-            this.message = `extraction terminée, chargement des programmes..."`;
-            this.chargerProgrammesDepuisCSV(csvUrl);
-            this.message = `✅ Extraction terminée (${res.fichiers_csv.length} fichiers CSV)`;
-          } else {
-            this.message = res?.message ?? 'Réponse inattendue du serveur';
-          }
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error('[FRONTEND] ❌ Erreur HTTP (programmes):', err);
-          this.message = err?.error?.message ?? 'Erreur serveur inattendue';
-          this.isLoading = false;
-        }
-      });
+  if (!this.programFilter) {
+    this.message = 'Veuillez définir un filtre d’extraction de programmes.';
+    return;
   }
 
+  this.isLoading = true;
+  this.message = 'Extraction et filtrage des programmes en cours...';
+
+  this.http
+    .post<ProgramExtractionResponse>('http://localhost:5000/program-extraction', { filter: this.programFilter })
+    .subscribe({
+      next: (res) => {
+        console.log('[FRONTEND] ⬅️ Réponse reçue (programmes filtrés):', res);
+
+        //  Récupère la localisation depuis le filtre courant
+        this.monitoringLocation = this.programFilter?.monitoringLocation || '';
+        this.updateMonitoringLabel();
+
+        if (res?.status === 'ok' && res?.fichiers_csv?.length > 0) {
+          const csvUrl = res.fichiers_csv[0].url;
+          this.chargerProgrammesDepuisCSV(csvUrl);
+          this.message = `✅ Extraction terminée (${res.fichiers_csv.length} fichiers CSV)`;
+        } else {
+          this.message = res?.message ?? 'Réponse inattendue du serveur';
+        }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('[FRONTEND] ❌ Erreur HTTP (programmes):', err);
+        this.message = err?.error?.message ?? 'Erreur serveur inattendue';
+        this.isLoading = false;
+      }
+    });
+}
+
+  // -----------------------------------------------------
+  //  RELANCER LE FILTRAGE SEUL (sur le CSV déjà extrait)
+  // -----------------------------------------------------
   relancerFiltrageSeul() {
     console.log("➡️ clic sur relancerFiltrageSeul()");
     this.isLoading = true;
@@ -184,6 +214,9 @@ export class Programmes {
       });
   }
 
+  // -----------------------------------------------------
+  //  CHARGER LA LISTE DES PROGRAMMES DEPUIS UN CSV FILTRÉ
+  // -----------------------------------------------------
   private chargerProgrammesDepuisCSV(csvUrl: string) {
     console.log("[FRONTEND] 📥 Téléchargement du CSV filtré :", csvUrl);
 

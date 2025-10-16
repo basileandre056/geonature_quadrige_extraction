@@ -52,8 +52,24 @@
   </app-program-extraction-filter>
 </div>
 
+<!--message affiché pour débug et suivi des taches-->
 <p>{{ message }}</p>
 
+<!-- 🌍 Bandeau d'information sur la localisation -->
+<div *ngIf="monitoringLocation" class="monitoring-banner">
+  <div class="icon">📍</div>
+  <div class="text">
+    <strong>Programmes correspondant au lieu de surveillance :</strong><br />
+    <span class="code">{{ monitoringLocation }}</span>
+    <span *ngIf="monitoringLabel" class="label">({{ monitoringLabel }})</span>
+  </div>
+</div>
+
+
+
+
+
+<!-- 📋 Tableau des programmes avec cases à cocher -->
 <table class="programmes-table">
   <thead>
     <tr>

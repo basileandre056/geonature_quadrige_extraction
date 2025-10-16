@@ -1,10 +1,37 @@
+/* --- Effets généraux --- */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Effet appliqué à tous les blocs visuels */
+.card,
+.monitoring-banner,
+.programmes-table {
+  animation: fadeIn 0.6s ease-in-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover,
+.monitoring-banner:hover {
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+/* --- Carte principale --- */
 .card {
   border: 1px solid #ccc;
   padding: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.2rem;
   border-radius: 8px;
   width: 100%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  background: #fff;
 }
 
 /* Barre de recherche */
@@ -25,11 +52,10 @@
   margin-bottom: 1rem;
 }
 
-
 /* Spinner rond animé */
 .loader {
-  border: 3px solid #f3f3f3; /* fond clair */
-  border-top: 3px solid #3498db; /* couleur principale */
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #3498db;
   border-radius: 50%;
   width: 16px;
   height: 16px;
@@ -39,12 +65,10 @@
   margin-right: 6px;
 }
 
-/* Animation de rotation */
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-
 
 /* Boutons */
 button {
@@ -52,41 +76,15 @@ button {
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  transition: transform 0.15s ease, background-color 0.3s;
 }
 
-/* Émojis animés */
-.emoji {
-  display: inline-block;
-  font-size: 1.2em;
-  vertical-align: middle;
-  transition: transform 0.3s ease;
+button:hover {
+  transform: translateY(-1px);
 }
 
-.emoji.spin {
-  display: inline-block;
-  animation: spin 1.5s linear infinite;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-/* Bouton Extraire Données (bleu) */
-.extract-data-btn {
-  padding: 0.6rem 1.2rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-.extract-data-btn:hover {
-  background-color: #0056b3;
-}
-
-/* Bouton Extraire Programmes (bleu aussi pour homogénéité) */
+/* Boutons principaux */
+.extract-data-btn,
 .extract-prog-btn {
   padding: 0.6rem 1.2rem;
   background-color: #007bff;
@@ -94,27 +92,14 @@ button {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s;
 }
+.extract-data-btn:hover,
 .extract-prog-btn:hover {
   background-color: #0056b3;
 }
 
-/* Bouton Filtre personnalisé (vert) */
-.data-filter-btn {
-  padding: 0.6rem 1.2rem;
-  background-color: #139e0f;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s;
-}
-.data-filter-btn:hover {
-  background-color: #08693c;
-}
-
-/* Bouton mise à jour programmes (vert aussi) */
+/* Boutons verts */
+.data-filter-btn,
 .maj_prgrm-btn {
   padding: 0.6rem 1.2rem;
   background-color: #139e0f;
@@ -122,17 +107,65 @@ button {
   border: none;
   border-radius: 6px;
   cursor: pointer;
-  transition: background-color 0.3s;
 }
+.data-filter-btn:hover,
 .maj_prgrm-btn:hover {
   background-color: #08693c;
 }
 
-/* Tableau programmes */
+/* 🌍 Bandeau d'information sur la localisation */
+.monitoring-banner {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background-color: #f5f5f5;
+  border: 2px solid #007bff;
+  border-radius: 8px;
+  padding: 0.9rem 1.3rem;
+  margin-bottom: 1.6rem;
+}
+
+.monitoring-banner .icon {
+  font-size: 1.8rem;
+  color: #007bff;
+  opacity: 0.9;
+}
+
+.monitoring-banner .text {
+  font-size: 1rem;
+  line-height: 1.25;
+  color: #333;
+}
+
+.monitoring-banner .text strong {
+  color: #004080;
+  font-size: 1.05rem;
+  display: block;
+  margin-bottom: 0.15rem;
+}
+
+.monitoring-banner .code {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #000;
+  margin-right: 0.4rem;
+}
+
+.monitoring-banner .label {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #0056b3;
+}
+
+/* --- Tableau programmes --- */
 .programmes-table {
   width: 100%;
   border-collapse: collapse;
   margin-bottom: 1rem;
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .programmes-table th {
@@ -147,6 +180,10 @@ button {
   border: 1px solid #ddd;
   padding: 0.75rem;
   text-align: left;
+}
+
+.programmes-table tr:nth-child(even) {
+  background-color: #fafafa;
 }
 
 .programmes-table th:first-child,
@@ -169,8 +206,4 @@ button {
 .programmes-table th:nth-child(6),
 .programmes-table td:nth-child(6) {
   width: 30%;
-}
-
-.programmes-table tr:nth-child(even) {
-  background-color: #fafafa;
 }

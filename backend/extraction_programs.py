@@ -106,15 +106,18 @@ def download_csv(file_url: str, name="Programmes", output_dir="output_test") -> 
 
 def nettoyer_csv(input_path, output_path, monitoring_location_prefix: str):
     """
-    Nettoie le CSV pour ne garder que :
-      - les lignes où Lieu : Mnémonique commence par monitoring_location_prefix
-      - uniquement les colonnes utiles
-      - suppression des doublons basés sur Programme : Code
-    """
-    import pandas as pd
+    Nettoie le CSV extrait depuis Ifremer pour ne garder que :
+      - les lignes où 'Lieu : Mnémonique' commence par le préfixe monitoring_location_prefix
+      - les colonnes importantes pour le frontend
+      - une seule occurrence de chaque 'Programme : Code' (suppression des doublons)
 
+    Le CSV final conserve 'Lieu : Mnémonique' pour traçabilité,
+    mais cette colonne n’est pas renvoyée dans le JSON côté frontend.
+    """
+    # Lecture du CSV brut en chaine de caractères
     df = pd.read_csv(input_path, sep=";", dtype=str)
 
+    # Vérification de la présence des colonnes requises
     colonnes_requises = [
         "Lieu : Mnémonique",
         "Programme : Code",
@@ -130,16 +133,21 @@ def nettoyer_csv(input_path, output_path, monitoring_location_prefix: str):
     # Filtrage dynamique sur la base du monitoring location
     df_filtre = df[df["Lieu : Mnémonique"].str.startswith(monitoring_location_prefix, na=False)]
 
+    # Selection des colonnes d’intérêt
     df_reduit = df_filtre[[
+        "Lieu : Mnémonique",
         "Programme : Code",
         "Programme : Libellé",
         "Programme : Etat",
         "Programme : Date de création",
         "Programme : Droit : Personne : Responsable : NOM Prénom : Liste"
     ]]
+    # Suppression des doublons sur "Programme : Code"
     df_unique = df_reduit.drop_duplicates(subset=["Programme : Code"])
 
+    # Sauvegarde du CSV nettoyé
     df_unique.to_csv(output_path, sep=";", index=False)
+
     print(f"[extract_programs] ✅ CSV filtré enregistré : {output_path}")
 
 
