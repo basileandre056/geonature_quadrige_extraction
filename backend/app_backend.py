@@ -5,6 +5,9 @@ from flask_cors import CORS
 from extraction_data import extract_ifremer_data
 from extraction_programs import extract_programs, nettoyer_csv, csv_to_programmes_json
 import json
+import datetime
+from urllib.parse import unquote
+import shutil
 
 app = Flask(__name__)
 CORS(app)
@@ -19,6 +22,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MEMORY_DIR = os.path.join(BASE_DIR, "memory")
 os.makedirs(MEMORY_DIR, exist_ok=True)
 LAST_FILTER_FILE = os.path.join(MEMORY_DIR, "last_filter.json")
+OUTPUT_DATA_DIR = os.path.join(BASE_DIR, "output_data")
+os.makedirs(OUTPUT_DATA_DIR, exist_ok=True)
+
+#-------------------------
 
 
 def nettoyer_dossier_memory():
@@ -34,6 +41,57 @@ def nettoyer_dossier_memory():
                 print(f"[BACKEND] 🧹 Fichier supprimé : {fichier}")
     except Exception as e:
         print(f"[BACKEND] ⚠️ Erreur nettoyage MEMORY_DIR : {e}")
+
+
+
+def nettoyer_output_data():
+    """
+    Supprime tous les fichiers du dossier output_data/ avant une nouvelle extraction.
+    """
+    try:
+        for f in os.listdir(OUTPUT_DATA_DIR):
+            path = os.path.join(OUTPUT_DATA_DIR, f)
+            if os.path.isfile(path):
+                os.remove(path)
+                print(f"[BACKEND] 🧹 Fichier supprimé : {f}")
+    except Exception as e:
+        print(f"[BACKEND] ⚠️ Erreur nettoyage output_data : {e}")
+
+
+
+def name_extraction_data(programmes, download_links, filter_data, monitoring_location):
+    """
+    Télécharge et renomme les fichiers ZIP d'extraction de données.
+    Format : <programme_code>_<monitoring_location>_<filter_name>_<date>.zip
+    """
+    os.makedirs(OUTPUT_DATA_DIR, exist_ok=True)
+
+    filter_name = filter_data.get("name", "filtre").replace(" ", "_")
+    timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+
+    renamed_files = []
+
+    for prog, url in zip(programmes, download_links):
+        try:
+            filename = f"{prog}_{monitoring_location}_{filter_name}_{timestamp}.zip"
+            safe_filename = filename.replace("/", "_").replace("\\", "_")
+            file_path = os.path.join(OUTPUT_DATA_DIR, safe_filename)
+
+            r = requests.get(url)
+            r.raise_for_status()
+            with open(file_path, "wb") as f:
+                f.write(r.content)
+
+            renamed_files.append({
+                "file_name": safe_filename,
+                "url": f"http://localhost:5000/output_data/{safe_filename}"
+            })
+            print(f"[BACKEND] 💾 Fichier sauvegardé : {safe_filename}")
+
+        except Exception as e:
+            print(f"[BACKEND] ⚠️ Erreur téléchargement {prog}: {e}")
+
+    return renamed_files
 
 
 def sauvegarder_filtre(program_filter: dict):
@@ -206,7 +264,12 @@ def recevoir_data_extractions():
 
     # 4️⃣ Lancer l’extraction
     try:
+        # 🧹 Nettoyage du dossier avant d’extraire les nouvelles données
+        nettoyer_output_data()
+
+        # Extraction des données depuis Ifremer
         download_links = extract_ifremer_data(programmes, filter_data)
+
     except Exception as e:
         print(f"[BACKEND] ❌ Erreur lors de l’extraction des données : {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
@@ -219,14 +282,17 @@ def recevoir_data_extractions():
             "message": "Les programmes sélectionnés ne correspondent pas aux critères du filtre"
         }), 404
 
+    # 6️⃣ Télécharger et renommer les fichiers ZIP dans output_data/
+    renamed_files = name_extraction_data(programmes, download_links, filter_data, monitoring_location)
+
+    # 7️⃣ Réponse au frontend
     return jsonify({
         "status": "ok",
         "programmes_recus": programmes,
         "filtre_utilise": filter_data,
-        "fichiers_zip": [
-            {"file_name": p, "url": url} for p, url in zip(programmes, download_links)
-        ]
+        "fichiers_zip": renamed_files
     }), 200
+
 
 
 # -------------------------
@@ -235,6 +301,14 @@ def recevoir_data_extractions():
 @app.route('/memory/<path:filename>', methods=['GET'])
 def download_memory_file(filename):
     return send_from_directory(MEMORY_DIR, filename)
+
+
+
+@app.route('/output_data/<path:filename>', methods=['GET'])
+def download_output_data(filename):
+    return send_from_directory(OUTPUT_DATA_DIR, filename)
+
+
 
 # -------------------------
 # 5) Récupérer la dernière liste de programmes en JSON

@@ -84,7 +84,7 @@ export class Programmes {
 
 
 
-   private updateMonitoringLabel(): void {
+  private updateMonitoringLabel(): void {
     const found = this.locationLabels.find(l => this.monitoringLocation.startsWith(l.code));
     this.monitoringLabel = found ? found.label : '';
   }
