@@ -171,9 +171,14 @@ export class Programmes {
         this.updateMonitoringLabel();
 
         if (res?.status === 'ok' && res?.fichiers_csv?.length > 0) {
-          const csvUrl = res.fichiers_csv[0].url;
-          this.chargerProgrammesDepuisCSV(csvUrl);
-          this.message = `✅ Extraction terminée (${res.fichiers_csv.length} fichiers CSV)`;
+          const csvUrl = res.fichiers_csv[res.fichiers_csv.length - 1].url;
+        this.message = `Extraction terminée (${res.fichiers_csv.length} fichiers CSV)`;
+
+        //  1️⃣ On met à jour la liste des liens extraits (brut + filtré)
+        this.extractedProgramFiles = this.mapToExtractedLinks(res.fichiers_csv);
+
+        //  2️⃣ On charge le dernier CSV (filtré)
+        this.chargerProgrammesDepuisCSV(csvUrl);
         } else {
           this.message = res?.message ?? 'Réponse inattendue du serveur';
         }

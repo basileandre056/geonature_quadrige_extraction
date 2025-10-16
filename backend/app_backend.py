@@ -78,10 +78,13 @@ def recevoir_program_extraction():
         print(f"[BACKEND] Erreur extraction/filtrage : {e}")
         return jsonify({"status": "error", "message": str(e)}), 500
 
+    base_url = "http://localhost:5000/output_test"
+
     return jsonify({
         "status": "ok",
         "fichiers_csv": [
-            {"file_name": f"Programmes_{monitoring_location}_filtered.csv", "url": f"http://localhost:5000/output_test/Programmes_{monitoring_location}_filtered.csv"}
+            {"file_name": f"Programmes_{monitoring_location}_brut.csv", "url": f"{base_url}/Programmes_{monitoring_location}_brut.csv"},
+            {"file_name": f"Programmes_{monitoring_location}_filtered.csv", "url": f"{base_url}/Programmes_{monitoring_location}_filtered.csv"}
         ],
         "programmes": programmes_json
     }), 200
