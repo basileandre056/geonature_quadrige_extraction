@@ -1,121 +1,129 @@
-<div class="card">
-  <h3>Programmes disponibles</h3>
+<div class="container">
+  <div class="card p-4 mb-4 shadow-sm">
+    <h3 class="mb-3">Programmes disponibles</h3>
 
-  <input
-    type="text"
-    [(ngModel)]="searchText"
-    placeholder="Rechercher un programme..."
-    class="form-control search-bar"
-  />
+    <!-- 🔍 Barre de recherche -->
+    <mat-form-field appearance="outline" class="w-100 mb-3">
+      <mat-label>Rechercher un programme</mat-label>
+      <input matInput [(ngModel)]="searchText" placeholder="Nom du programme" />
+    </mat-form-field>
 
-  <div class="button-row">
+    <!-- 🎛️ Ligne de boutons -->
+    <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
 
+      <!-- 🟦 Extraction de données -->
+      <button mat-raised-button color="primary"
+              (click)="extractData()"
+              [disabled]="isLoading">
+        <mat-icon>cloud_download</mat-icon>
+        Extraire les données
+      </button>
 
-        <!-- 🟦 Extraction de données -->
-    <button (click)="extractData()" [disabled]="isLoading" class="extract-data-btn">
-      <span *ngIf="isLoading" class="loader"></span>
-      {{ isLoading ? 'Extraction en cours...' : '🌐 Extraire les données' }}
-    </button>
+      <!-- 🧩 Filtre pour extraction de données -->
+      <button mat-raised-button class="button-success"
+              (click)="openDataFilter()"
+              [disabled]="isLoading">
+        <mat-icon>tune</mat-icon>
+        Filtre extraction données
+      </button>
 
-    <!-- 🔧 Ajout d’un filtre personnalisé pour les données -->
-    <button (click)="openDataFilter()" [disabled]="isLoading" class="data-filter-btn">
-      <span *ngIf="isLoading" class="loader"></span>
-      {{ isLoading ? 'Extraction en cours...' : '🔧 Filtre personnalisé pour extraction des données' }}
-    </button>
+      <!-- 🟩 Extraction de programmes -->
+      <button mat-raised-button color="primary"
+              (click)="extractPrograms()"
+              [disabled]="isLoading">
+        <mat-icon>download</mat-icon>
+        Extraire les programmes
+      </button>
 
-    <!-- 🟩 Extraction de programmes -->
-    <button (click)="extractPrograms()" [disabled]="isLoading" class="extract-prog-btn">
-      <span *ngIf="isLoading" class="loader"></span>
-      {{ isLoading ? 'Extraction en cours...' : '🌐 Extraire les programmes' }}
-    </button>
+      <!-- 🧭 Filtre pour mise à jour de programmes -->
+      <button mat-raised-button class="button-success"
+              (click)="openProgramFilter()"
+              [disabled]="isLoading">
+        <mat-icon>filter_alt</mat-icon>
+        Filtre programmes
+      </button>
+    </div>
 
-    <!-- 🔧 Filtre de Mise à jour de la liste des programmes -->
-    <button (click)="openProgramFilter()" [disabled]="isLoading" class="maj_prgrm-btn">
-      <span *ngIf="isLoading" class="loader"></span>
-      {{ isLoading ? 'Extraction en cours...' : '🔧 Filtre personnalisé pour la mise à jour des programmes' }}
-    </button>
+    <!-- 🌐 Filtres -->
+    <app-frontend-filter
+      *ngIf="showDataFilter"
+      (apply)="onDataFilterApplied($event)"
+      (close)="showDataFilter = false">
+    </app-frontend-filter>
 
+    <app-program-extraction-filter
+      *ngIf="showProgramFilter"
+      (apply)="onProgramFilterApplied($event)"
+      (close)="showProgramFilter = false">
+    </app-program-extraction-filter>
   </div>
 
-  <!-- 🌐 Fenêtre filtre données -->
-  <app-frontend-filter
-    *ngIf="showDataFilter"
-    (apply)="onDataFilterApplied($event)"
-    (close)="showDataFilter = false">
-  </app-frontend-filter>
+  <!-- 🪄 Message d’état -->
+  <p class="text-center text-muted mb-3">{{ message }}</p>
 
-  <!-- 🧭 Fenêtre filtre programmes -->
-  <app-program-extraction-filter
-    *ngIf="showProgramFilter"
-    (apply)="onProgramFilterApplied($event)"
-    (close)="showProgramFilter = false">
-  </app-program-extraction-filter>
-</div>
+  <!-- 🌍 Bandeau d'information sur la localisation -->
+  <div *ngIf="monitoringLocation" class="monitoring-banner mb-4">
+    <mat-icon color="primary">place</mat-icon>
+    <div>
+      <strong>Lieu de surveillance :</strong><br />
+      <span class="code">{{ monitoringLocation }}</span>
+      <span *ngIf="monitoringLabel" class="label">({{ monitoringLabel }})</span>
+    </div>
+  </div>
 
-<!--message affiché pour débug et suivi des taches-->
-<p>{{ message }}</p>
+  <!-- 📋 Tableau des programmes -->
+  <div class="table-responsive mb-4">
+    <table class="table table-bordered table-striped align-middle">
+      <thead class="table-light text-center">
+        <tr>
+          <th>
+            <input type="checkbox"
+                   [(ngModel)]="allSelected"
+                   (change)="toggleAll()" />
+            Tout sélectionner
+          </th>
+          <th>Programme</th>
+          <th>Libellé</th>
+          <th>Date de début</th>
+          <th>État</th>
+          <th>Responsables</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let prog of filteredProgrammes">
+          <td class="text-center">
+            <input type="checkbox"
+                   [(ngModel)]="prog.checked"
+                   name="{{ prog.name }}" />
+          </td>
+          <td>{{ prog.name }}</td>
+          <td>{{ prog.libelle }}</td>
+          <td>{{ prog.startDate || '' }}</td>
+          <td>{{ prog.etat || '' }}</td>
+          <td>{{ prog.responsable || '' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-<!-- 🌍 Bandeau d'information sur la localisation -->
-<div *ngIf="monitoringLocation" class="monitoring-banner">
-  <div class="icon">📍</div>
-  <div class="text">
-    <strong>Programmes correspondant au lieu de surveillance :</strong><br />
-    <span class="code">{{ monitoringLocation }}</span>
-    <span *ngIf="monitoringLabel" class="label">({{ monitoringLabel }})</span>
+  <!-- 📊 Liens de fichiers extraits -->
+  <app-extracted-links
+    [files]="extractedProgramFiles"
+    title="Programmes extraits">
+  </app-extracted-links>
+
+  <app-extracted-links
+    [files]="extractedDataFiles"
+    title="Données extraites">
+  </app-extracted-links>
+
+  <!-- 🔁 Relancer le filtrage seul -->
+  <div class="text-center mt-4">
+    <button mat-raised-button color="primary"
+            (click)="relancerFiltrageSeul()"
+            [disabled]="isLoading">
+      <mat-icon>autorenew</mat-icon>
+      Relancer uniquement le filtrage
+    </button>
   </div>
 </div>
-
-
-
-
-
-<!-- 📋 Tableau des programmes avec cases à cocher -->
-<table class="programmes-table">
-  <thead>
-    <tr>
-      <th>
-        <input
-          type="checkbox"
-          [(ngModel)]="allSelected"
-          (change)="toggleAll()"
-        />
-        Tout sélectionner
-      </th>
-      <th>Programme</th>
-      <th>Libellé</th>
-      <th>Date de début</th>
-      <th>État</th>
-      <th>Responsables</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let prog of filteredProgrammes">
-      <td>
-        <input type="checkbox" [(ngModel)]="prog.checked" name="{{ prog.name }}" />
-      </td>
-      <td>{{ prog.name }}</td>
-      <td>{{ prog.libelle }}</td>
-      <td>{{ prog.startDate || '' }}</td>
-      <td>{{ prog.etat || '' }}</td>
-      <td>{{ prog.responsable || '' }}</td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- 📊 Fichiers CSV des programmes -->
-<app-extracted-links
-  [files]="extractedProgramFiles"
-  title="Programmes extraits">
-</app-extracted-links>
-
-<!-- 📦 Fichiers ZIP des données -->
-<app-extracted-links
-  [files]="extractedDataFiles"
-  title="Données des programmes extraits">
-</app-extracted-links>
-
-<!-- 🔁 Bouton relancer le filtrage seul -->
-<button (click)="relancerFiltrageSeul()" [disabled]="isLoading" class="maj_prgrm-btn">
-  <span *ngIf="isLoading" class="loader"></span>
-  {{ isLoading ? 'Filtrage...' : '📊 Relancer uniquement le filtrage' }}
-</button>

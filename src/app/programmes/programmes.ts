@@ -3,10 +3,16 @@ import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 
+// ✅ Angular Material
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 import { Programme } from '../models/programmes';
 import { ExtractedLink } from '../models/extractedLinks';
 import { ExtractedLinks } from '../extracted-links/extracted-links';
-
 import { ExtractionResponse } from '../models/extraction-response';
 import { ProgramExtractionResponse } from '../models/program-extraction-response';
 import { FrontendFilterComponent } from '../frontend-filter/frontend-filter';
@@ -18,6 +24,11 @@ import { ProgramExtractionFilterComponent } from '../program-extraction-filter/p
   imports: [
     CommonModule,
     FormsModule,
+    MatButtonModule,
+    MatIconModule,
+    MatFormFieldModule,
+    MatInputModule,
+    MatProgressSpinnerModule,
     ExtractedLinks,
     FrontendFilterComponent,
     ProgramExtractionFilterComponent
@@ -180,7 +191,9 @@ export class Programmes {
 
         //  2️⃣ On charge le dernier CSV (filtré)
         this.chargerProgrammesDepuisCSV(csvUrl);
-        } else {
+        }
+
+        else {
           this.message = res?.message ?? 'Réponse inattendue du serveur';
         }
         this.isLoading = false;

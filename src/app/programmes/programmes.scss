@@ -1,4 +1,7 @@
-/* --- Effets généraux --- */
+/* -------------------------------------------------- */
+/* 🌟 Effets généraux et animations */
+/* -------------------------------------------------- */
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -10,200 +13,191 @@
   }
 }
 
-/* Effet appliqué à tous les blocs visuels */
 .card,
 .monitoring-banner,
-.programmes-table {
-  animation: fadeIn 0.6s ease-in-out;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+.table {
+  animation: fadeIn 0.5s ease-in-out;
   transition: box-shadow 0.3s ease;
+  border-radius: 8px;
 }
 
 .card:hover,
 .monitoring-banner:hover {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
-/* --- Carte principale --- */
+/* -------------------------------------------------- */
+/* 📦 Carte principale */
+/* -------------------------------------------------- */
+
 .card {
-  border: 1px solid #ccc;
-  padding: 1rem;
-  margin-bottom: 1.2rem;
-  border-radius: 8px;
-  width: 100%;
-  background: #fff;
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
 }
 
-/* Barre de recherche */
-.search-bar {
-  display: block;
-  width: 400px;
-  max-width: 100%;
-  margin-bottom: 2rem;
+h3 {
+  font-weight: 500;
+  color: #2a2a2a;
 }
 
-/* Conteneur des boutons */
-.button-row {
-  display: flex;
-  justify-content: center;
+/* -------------------------------------------------- */
+/* 🟢 Boutons et actions */
+/* -------------------------------------------------- */
+
+/* Bouton de validation (non natif dans Material) */
+.button-success {
+  background-color: #28a745 !important;
+  color: white !important;
+}
+
+.button-success:hover {
+  background-color: #218838 !important;
+}
+
+/* Harmonisation des boutons Material */
+button[mat-raised-button] {
+  display: inline-flex;
   align-items: center;
-  gap: 1.5rem;
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+  gap: 0.4rem;
+  text-transform: none;
+  font-weight: 500;
+  border-radius: 6px;
+  transition: transform 0.15s ease;
 }
 
-/* Spinner rond animé */
-.loader {
-  border: 3px solid #f3f3f3;
-  border-top: 3px solid #3498db;
-  border-radius: 50%;
-  width: 16px;
-  height: 16px;
-  animation: spin 1s linear infinite;
-  display: inline-block;
-  vertical-align: middle;
-  margin-right: 6px;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-/* Boutons */
-button {
-  font-size: 0.95rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: transform 0.15s ease, background-color 0.3s;
-}
-
-button:hover {
+button[mat-raised-button]:hover {
   transform: translateY(-1px);
 }
 
-/* Boutons principaux */
-.extract-data-btn,
-.extract-prog-btn {
-  padding: 0.6rem 1.2rem;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.extract-data-btn:hover,
-.extract-prog-btn:hover {
-  background-color: #0056b3;
+/* Centrage harmonieux des icônes Material */
+mat-icon {
+  font-size: 20px;
+  vertical-align: middle;
 }
 
-/* Boutons verts */
-.data-filter-btn,
-.maj_prgrm-btn {
-  padding: 0.6rem 1.2rem;
-  background-color: #139e0f;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.data-filter-btn:hover,
-.maj_prgrm-btn:hover {
-  background-color: #08693c;
+/* -------------------------------------------------- */
+/* 🔍 Barre de recherche */
+/* -------------------------------------------------- */
+
+mat-form-field {
+  max-width: 450px;
 }
 
+mat-form-field input {
+  font-size: 0.95rem;
+}
+
+/* -------------------------------------------------- */
 /* 🌍 Bandeau d'information sur la localisation */
+/* -------------------------------------------------- */
+
 .monitoring-banner {
   display: flex;
   align-items: center;
   gap: 1rem;
-  background-color: #f5f5f5;
-  border: 2px solid #007bff;
+  background-color: #f9fafc;
+  border: 2px solid #2196f3;
   border-radius: 8px;
-  padding: 0.9rem 1.3rem;
-  margin-bottom: 1.6rem;
+  padding: 1rem 1.3rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
 
-.monitoring-banner .icon {
+.monitoring-banner mat-icon {
   font-size: 1.8rem;
-  color: #007bff;
+  color: #1976d2;
   opacity: 0.9;
 }
 
-.monitoring-banner .text {
-  font-size: 1rem;
-  line-height: 1.25;
-  color: #333;
-}
-
-.monitoring-banner .text strong {
-  color: #004080;
-  font-size: 1.05rem;
-  display: block;
-  margin-bottom: 0.15rem;
-}
-
 .monitoring-banner .code {
-  display: inline-block;
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   color: #000;
   margin-right: 0.4rem;
 }
 
 .monitoring-banner .label {
-  font-weight: 700;
-  font-size: 1.2rem;
-  color: #0056b3;
+  font-weight: 600;
+  color: #1565c0;
 }
 
-/* --- Tableau programmes --- */
-.programmes-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-bottom: 1rem;
+/* -------------------------------------------------- */
+/* 📊 Tableau des programmes */
+/* -------------------------------------------------- */
+
+.table {
   background-color: #fff;
   border-radius: 8px;
   overflow: hidden;
 }
 
-.programmes-table th {
+.table th {
   background-color: #f5f5f5;
-  font-weight: bold;
+  font-weight: 600;
   text-align: center;
-  padding: 0.75rem;
-  border: 1px solid #ddd;
+  color: #333;
 }
 
-.programmes-table td {
-  border: 1px solid #ddd;
-  padding: 0.75rem;
-  text-align: left;
+.table td {
+  font-size: 0.92rem;
 }
 
-.programmes-table tr:nth-child(even) {
-  background-color: #fafafa;
+.table tr:hover {
+  background-color: #f0f8ff;
+  transition: background-color 0.2s ease;
 }
 
-.programmes-table th:first-child,
-.programmes-table td:first-child {
-  width: 9%;
+/* Case à cocher centrée */
+.table th:first-child,
+.table td:first-child {
   text-align: center;
+  width: 7%;
+}
+
+/* Largeurs personnalisées */
+.table th:nth-child(2),
+.table td:nth-child(2) {
+  width: 25%;
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  width: 25%;
+}
+
+.table th:nth-child(6),
+.table td:nth-child(6) {
+  width: 30%;
+}
+
+/* -------------------------------------------------- */
+/* 🔁 États et messages */
+/* -------------------------------------------------- */
+
+p.text-muted {
+  font-style: italic;
+  color: #666 !important;
+}
+
+/* -------------------------------------------------- */
+/* 🔄 Spinner de chargement */
+/* -------------------------------------------------- */
+
+.loader {
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #2196f3;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  animation: spin 1s linear infinite;
+  display: inline-block;
   vertical-align: middle;
 }
 
-.programmes-table th:nth-child(2),
-.programmes-table td:nth-child(2) {
-  width: 25%;
-}
-
-.programmes-table th:nth-child(3),
-.programmes-table td:nth-child(3) {
-  width: 25%;
-}
-
-.programmes-table th:nth-child(6),
-.programmes-table td:nth-child(6) {
-  width: 30%;
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }

@@ -16,14 +16,24 @@ CORS(app)
 # Dossiers robustes (toujours relatifs au fichier backend.py)
 # -------------------------
 
-# chemin du dossier "backend/"
+# Chemin absolu du répertoire backend (ce fichier)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+# 🔹 (Optionnel) Tu peux forcer un chemin absolu si tu veux t'assurer du bon dossier :
+# BASE_DIR = "/home/basileandre/projets/geonature/geonature_quadrige_extraction/backend"
+
 MEMORY_DIR = os.path.join(BASE_DIR, "memory")
-os.makedirs(MEMORY_DIR, exist_ok=True)
-LAST_FILTER_FILE = os.path.join(MEMORY_DIR, "last_filter.json")
 OUTPUT_DATA_DIR = os.path.join(BASE_DIR, "output_data")
+
+os.makedirs(MEMORY_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DATA_DIR, exist_ok=True)
+
+LAST_FILTER_FILE = os.path.join(MEMORY_DIR, "last_filter.json")
+
+print("\n[BACKEND] 🚀 Initialisation")
+print(f"[BACKEND] BASE_DIR        = {BASE_DIR}")
+print(f"[BACKEND] MEMORY_DIR      = {MEMORY_DIR}")
+print(f"[BACKEND] OUTPUT_DATA_DIR = {OUTPUT_DATA_DIR}\n")
 
 #-------------------------
 
