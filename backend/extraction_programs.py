@@ -88,20 +88,20 @@ def extract_programs(filter_data: dict,
     return file_url
 
 
-def download_csv(file_url: str, name="Programmes", output_dir="output_test") -> str:
-    """
-    Télécharge le CSV brut depuis l’URL Ifremer.
-    """
-    os.makedirs(output_dir, exist_ok=True)
-    file_path = os.path.join(output_dir, f"{name}_brut.csv")
-
-    r = requests.get(file_url)
-    r.raise_for_status()
-    with open(file_path, "wb") as f:
-        f.write(r.content)
-
-    print(f"[extract_programs] ✅ CSV brut téléchargé : {file_path}")
-    return file_path
+#def download_csv(file_url: str, name="Programmes", output_dir="output_test") -> str:
+#    """
+#    Télécharge le CSV brut depuis l’URL Ifremer.
+#    """
+#    os.makedirs(output_dir, exist_ok=True)
+#    file_path = os.path.join(output_dir, f"{name}_brut.csv")
+#
+#    r = requests.get(file_url)
+#    r.raise_for_status()
+#    with open(file_path, "wb") as f:
+#        f.write(r.content)
+#
+#    print(f"[extract_programs] ✅ CSV brut téléchargé : {file_path}")
+#    return file_path
 
 
 def nettoyer_csv(input_path, output_path, monitoring_location_prefix: str):

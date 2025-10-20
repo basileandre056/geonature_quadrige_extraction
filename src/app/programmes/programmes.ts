@@ -173,29 +173,36 @@ export class Programmes {
   this.message = 'Extraction et filtrage des programmes en cours...';
 
   this.http
-    .post<ProgramExtractionResponse>('http://localhost:5000/program-extraction', { filter: this.programFilter })
+    .post<ProgramExtractionResponse>('http://localhost:5000/program-extraction', {
+      filter: this.programFilter
+    })
     .subscribe({
       next: (res) => {
         console.log('[FRONTEND] ⬅️ Réponse reçue (programmes filtrés):', res);
 
-        //  Récupère la localisation depuis le filtre courant
         this.monitoringLocation = this.programFilter?.monitoringLocation || '';
         this.updateMonitoringLabel();
 
-        if (res?.status === 'ok' && res?.fichiers_csv?.length > 0) {
-          const csvUrl = res.fichiers_csv[res.fichiers_csv.length - 1].url;
-        this.message = `Extraction terminée (${res.fichiers_csv.length} fichiers CSV)`;
+        if (res?.status === 'ok') {
+          // ✅ Met à jour les liens CSV
+          this.extractedProgramFiles = this.mapToExtractedLinks(res.fichiers_csv);
 
-        //  1️⃣ On met à jour la liste des liens extraits (brut + filtré)
-        this.extractedProgramFiles = this.mapToExtractedLinks(res.fichiers_csv);
+          // ✅ Met à jour directement la liste des programmes depuis le backend
+          if (Array.isArray(res.programmes)) {
+            this.programmes = res.programmes.map(p => ({
+              ...p,
+              checked: false
+            }));
+            console.log(`[FRONTEND] ✅ ${this.programmes.length} programmes reçus depuis le backend.`);
+          } else {
+            console.warn('[FRONTEND] ⚠️ Aucun tableau "programmes" reçu du backend.');
+          }
 
-        //  2️⃣ On charge le dernier CSV (filtré)
-        this.chargerProgrammesDepuisCSV(csvUrl);
-        }
-
-        else {
+          this.message = `✅ Extraction terminée (${this.programmes.length} programmes, ${res.fichiers_csv?.length || 0} fichiers CSV)`;
+        } else {
           this.message = res?.message ?? 'Réponse inattendue du serveur';
         }
+
         this.isLoading = false;
       },
       error: (err) => {
@@ -206,72 +213,79 @@ export class Programmes {
     });
 }
 
+
   // -----------------------------------------------------
   //  RELANCER LE FILTRAGE SEUL (sur le CSV déjà extrait)
   // -----------------------------------------------------
   relancerFiltrageSeul() {
-    console.log("➡️ clic sur relancerFiltrageSeul()");
-    this.isLoading = true;
-    this.http.post<any>('http://localhost:5000/filtrage_seul', { filter: this.programFilter || {} })
-      .subscribe({
-        next: (res) => {
-          if (res?.status === 'ok' && res?.fichiers_csv?.length > 0) {
-            const csvUrl = res.fichiers_csv[0].url;
-            this.chargerProgrammesDepuisCSV(csvUrl);
-          } else if (res?.status === 'ok' && (!res?.fichiers_csv || res.fichiers_csv.length === 0)) {
-            this.message = "⚠️ Aucun CSV à filtrer, extrayez d’abord la liste des programmes.";
+  console.log("➡️ clic sur relancerFiltrageSeul()");
+  this.isLoading = true;
+
+  this.http.post<any>('http://localhost:5000/filtrage_seul', { filter: this.programFilter || {} })
+    .subscribe({
+      next: (res) => {
+        if (res?.status === 'ok') {
+          this.extractedProgramFiles = this.mapToExtractedLinks(res.fichiers_csv || []);
+
+          if (Array.isArray(res.programmes)) {
+            this.programmes = res.programmes.map((p: Programme) => ({ ...p, checked: false }));
+            this.message = `✅ Filtrage relancé (${this.programmes.length} programmes)`;
           } else {
-            this.message = res?.message ?? 'Erreur backend';
+            this.message = res?.message ?? 'Aucun programme trouvé';
           }
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error("[FRONTEND] ❌ Erreur HTTP (filtrage seul):", err);
-          this.message = "Erreur lors du filtrage seul.";
-          this.isLoading = false;
+        } else {
+          this.message = res?.message ?? 'Erreur backend';
         }
-      });
-  }
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error("[FRONTEND] ❌ Erreur HTTP (filtrage seul):", err);
+        this.message = "Erreur lors du filtrage seul.";
+        this.isLoading = false;
+      }
+    });
+}
+
 
   // -----------------------------------------------------
   //  CHARGER LA LISTE DES PROGRAMMES DEPUIS UN CSV FILTRÉ
   // -----------------------------------------------------
-  private chargerProgrammesDepuisCSV(csvUrl: string) {
-    console.log("[FRONTEND] 📥 Téléchargement du CSV filtré :", csvUrl);
-
-    this.http.get(csvUrl, { responseType: 'text' }).subscribe({
-      next: (csvData) => {
-        const lignes = csvData.split("\n").map(l => l.trim()).filter(l => l.length > 0);
-        const header = lignes[0].split(";");
-        const data = lignes.slice(1);
-
-        const idxCode = header.indexOf("Programme : Code");
-        const idxLibelle = header.indexOf("Programme : Libellé");
-        const idxEtat = header.indexOf("Programme : Etat");
-        const idxDate = header.indexOf("Programme : Date de création");
-        const idxResp = header.indexOf("Programme : Droit : Personne : Responsable : NOM Prénom : Liste");
-
-        const nouveauxProgrammes = data.map(ligne => {
-          const cols = ligne.split(";");
-          return {
-            name: cols[idxCode] ?? "",
-            checked: false,
-            libelle: idxLibelle !== -1 ? cols[idxLibelle] ?? "" : undefined,
-            etat: idxEtat !== -1 ? cols[idxEtat] ?? "" : undefined,
-            startDate: idxDate !== -1 ? cols[idxDate] ?? "" : undefined,
-            responsable: idxResp !== -1 ? (cols[idxResp]?.replaceAll("|", ", ") ?? "") : undefined
-          };
-        }).filter(p => p.name !== "");
-
-        this.programmes = nouveauxProgrammes;
-        this.message = `✅ Liste mise à jour (${this.programmes.length} programmes depuis CSV filtré)`;
-      },
-      error: (err) => {
-        console.error("[FRONTEND] ❌ Erreur téléchargement CSV filtré :", err);
-        this.message = "Erreur lors du téléchargement du CSV filtré.";
-      }
-    });
-  }
+  //private chargerProgrammesDepuisCSV(csvUrl: string) {
+  //  console.log("[FRONTEND] 📥 Téléchargement du CSV filtré :", csvUrl);
+//
+  //  this.http.get(csvUrl, { responseType: 'text' }).subscribe({
+  //    next: (csvData) => {
+  //      const lignes = csvData.split("\n").map(l => l.trim()).filter(l => l.length > 0);
+  //      const header = lignes[0].split(";");
+  //      const data = lignes.slice(1);
+//
+  //      const idxCode = header.indexOf("Programme : Code");
+  //      const idxLibelle = header.indexOf("Programme : Libellé");
+  //      const idxEtat = header.indexOf("Programme : Etat");
+  //      const idxDate = header.indexOf("Programme : Date de création");
+  //      const idxResp = header.indexOf("Programme : Droit : Personne : Responsable : NOM Prénom : Liste");
+//
+  //      const nouveauxProgrammes = data.map(ligne => {
+  //        const cols = ligne.split(";");
+  //        return {
+  //          name: cols[idxCode] ?? "",
+  //          checked: false,
+  //          libelle: idxLibelle !== -1 ? cols[idxLibelle] ?? "" : undefined,
+  //          etat: idxEtat !== -1 ? cols[idxEtat] ?? "" : undefined,
+  //          startDate: idxDate !== -1 ? cols[idxDate] ?? "" : undefined,
+  //          responsable: idxResp !== -1 ? (cols[idxResp]?.replaceAll("|", ", ") ?? "") : undefined
+  //        };
+  //      }).filter(p => p.name !== "");
+//
+  //      this.programmes = nouveauxProgrammes;
+  //      this.message = `✅ Liste mise à jour (${this.programmes.length} programmes depuis CSV filtré)`;
+  //    },
+  //    error: (err) => {
+  //      console.error("[FRONTEND] ❌ Erreur téléchargement CSV filtré :", err);
+  //      this.message = "Erreur lors du téléchargement du CSV filtré.";
+  //    }
+  //  });
+  //}
 
   // -----------------------------------------------------
   //  EXTRACTION DES DONNÉES
