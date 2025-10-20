@@ -1,55 +1,48 @@
-<div class="filter-card">
+<div class="filter-card mat-elevation-z4">
   <h2>Mettre à jour la liste des programmes</h2>
 
-  <!-- Nom du filtre -->
-  <div class="filter-field">
-    <label>Nom du filtre :</label>
+  <!-- 🧩 Nom du filtre -->
+  <mat-form-field appearance="outline" class="w-100 mb-3">
+    <mat-label>Nom du filtre</mat-label>
+    <input matInput [(ngModel)]="filter.name" placeholder="Nom du filtre" (keydown.enter)="applyFilter()" />
+    <mat-error *ngIf="filter.name.trim() === ''">
+      Ce champ est requis et doit faire plus de 3 caractères.
+    </mat-error>
+  </mat-form-field>
+
+  <!-- 📍 Code du lieu -->
+  <mat-form-field appearance="outline" class="w-100 mb-3">
+    <mat-label>Code du lieu d'observation</mat-label>
     <input
-      type="text"
-      [(ngModel)]="filter.name"
-      placeholder="Nom du filtre"
+      matInput
+      autocomplete="off"
+      [(ngModel)]="filter.monitoringLocation"
+      (focus)="openSuggestions()"
+      (click)="openSuggestions()"
+      (keydown.escape)="showSuggestions = false"
       (keydown.enter)="applyFilter()" />
-      <small *ngIf="filter.name.trim() === ''" class="error-msg">
-        Ce champ est requis et doit faire plus de 3 caractères.
-      </small>
-  </div>
 
-    <!-- Monitoring location -->
-<div class="filter-field">
-  <label>Code du lieu d'observation</label>
+    <!-- Suggestions -->
+    <ul *ngIf="showSuggestions" class="suggestions">
+      <li
+        *ngFor="let loc of sugested_locations"
+        (mousedown)="selectSuggestion(loc.code); $event.preventDefault()">
+        {{ loc.label }} : {{ loc.code }}
+      </li>
+    </ul>
 
-  <input
-    #locInput
-    type="text"
-    autocomplete="off"
-    [(ngModel)]="filter.monitoringLocation"
-    name="monitoringLocation"
-    (focus)="openSuggestions()"
-    (click)="openSuggestions()"
-    (keydown.escape)="showSuggestions = false"
-    (keydown.enter)="applyFilter()"
-  />
+    <mat-error *ngIf="submitted && filter.monitoringLocation.trim() === ''">
+      Ce champ est requis.
+    </mat-error>
+  </mat-form-field>
 
-  <!-- Liste des suggestions -->
-  <ul *ngIf="showSuggestions" #suggestionsPanel class="suggestions">
-    <li
-      *ngFor="let loc of sugested_locations"
-      (mousedown)="selectSuggestion(loc.code); $event.preventDefault()"
-    >
-      {{ loc.label }} : {{ loc.code }}
-    </li>
-  </ul>
-
-  <small *ngIf="submitted && filter.monitoringLocation.trim() === ''" class="error-msg">
-  Ce champ est requis
-</small>
-
-</div>
-
-
-  <!-- Actions -->
+  <!-- ✅ Actions -->
   <div class="filter-actions">
-    <button [disabled]="!isFormValid()" (click)="applyFilter()">Appliquer</button>
-    <button (click)="close.emit()">Fermer</button>
+    <button mat-raised-button color="primary" [disabled]="!isFormValid()" (click)="applyFilter()">
+      <mat-icon>check_circle</mat-icon> Appliquer
+    </button>
+    <button mat-raised-button color="warn" (click)="close.emit()">
+      <mat-icon>close</mat-icon> Fermer
+    </button>
   </div>
 </div>

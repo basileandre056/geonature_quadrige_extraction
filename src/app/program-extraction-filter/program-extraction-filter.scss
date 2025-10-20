@@ -4,107 +4,24 @@
   top: 100px;
   background: #fff;
   padding: 2rem;
-  border: 1px solid #ccc;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.25);
-  border-radius: 10px;
-  width: 450px;  /* largeur fixe de la fenêtre du filtre */
-  z-index: 1000; /* passe au-dessus des autres éléments */
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  width: 460px;
+  z-index: 1000;
+  animation: fadeIn 0.3s ease-in-out;
 
   h2 {
     margin-top: 0;
     margin-bottom: 1.5rem;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: #2a2a2a;
     text-align: center;
   }
 
-  /* Chaque champ de formulaire */
-  .filter-field {
-    position: relative; // <-- pour positionner le panneau par rapport au champ
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 1.2rem;
-
-    label {
-      margin-bottom: 0.3rem;
-      font-weight: 500;
-    }
-
-    input {
-      padding: 0.4rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-    }
-
-    /* Messages d'erreur sous les inputs */
-    .error-msg {
-      color: red;
-      font-size: 0.8rem;
-      margin-top: 0.2rem;
-    }
-  }
-
-  /* Ligne spéciale pour afficher deux inputs de dates côte à côte */
-  .period-row {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 1rem;
-
-    .date-input {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-
-      input[type="text"],
-      input[type="date"] {
-        padding: 0.4rem;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-      }
-
-      /* Surligne un input invalide en rouge */
-      input.invalid {
-        border-color: red;
-        background-color: #ffe6e6;
-      }
-
-      .error-msg {
-        color: red;
-        font-size: 0.8rem;
-        margin-top: 0.2rem;
-      }
-    }
-  }
-
-  /* Liste des champs déjà ajoutés (petits tags avec croix) */
-  .fields-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 0.5rem;
-
-    .field-item {
-      background: #f0f0f0;
-      padding: 0.3rem 0.6rem;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-
-      .remove-btn {
-        background: red;
-        color: white;
-        border: none;
-        border-radius: 50%;
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-        font-size: 0.8rem;
-        line-height: 1;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-    }
+  mat-form-field {
+    width: 100%;
   }
 
   .suggestions {
@@ -132,74 +49,22 @@
     }
   }
 
-
-
-
-  /* Zone pour ajouter un nouveau champ */
-  .field-input {
-    display: flex;
-    gap: 0.5rem;
-    flex-direction: column;
-
-    /* Input texte et select ont le même style */
-    input, select {
-      flex: 1;
-      padding: 0.4rem;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      background: #fff;
-    }
-
-    /* Bouton "Ajouter" */
-    button {
-      padding: 0.4rem 0.8rem;
-      border: none;
-      border-radius: 6px;
-      background-color: #007bff;
-      color: white;
-      cursor: pointer;
-
-      &:hover {
-        background-color: #0056b3;
-      }
-    }
-
-    .error-msg {
-      color: red;
-      font-size: 0.8rem;
-      margin-top: 0.2rem;
-    }
-  }
-
-  /* Petit bouton secondaire (style gris) */
-  .small-btn {
-    background-color: #6c757d;
-    margin-top: 0.5rem;
-    padding: 0.3rem 0.6rem;
-    font-size: 0.85rem;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    color: white;
-
-    &:hover {
-      background-color: #5a6268;
-    }
-  }
-
-  /* Actions en bas : Appliquer / Fermer */
   .filter-actions {
     display: flex;
     justify-content: space-between;
-    margin-top: 1.5rem;
+    margin-top: 2rem;
 
-    button {
+    button[mat-raised-button] {
       flex: 1;
       margin: 0 0.5rem;
-      padding: 0.6rem 1rem;
-      border-radius: 6px;
-      cursor: pointer;
-      border: none;
+      text-transform: none;
+      font-weight: 500;
     }
+  }
+
+  .error-msg {
+    color: red;
+    font-size: 0.85rem;
+    margin-top: 0.3rem;
   }
 }
