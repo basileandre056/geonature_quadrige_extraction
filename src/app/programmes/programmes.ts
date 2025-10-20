@@ -4,6 +4,9 @@ import { CommonModule } from '@angular/common';
 import { HttpClient } from '@angular/common/http';
 
 // ✅ Angular Material
+import { MatTableModule } from '@angular/material/table';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSortModule } from '@angular/material/sort';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -21,7 +24,9 @@ import { ProgramExtractionFilterComponent } from '../program-extraction-filter/p
 @Component({
   selector: 'app-programmes',
   standalone: true,
-  imports: [
+  imports: [MatTableModule,
+    MatCheckboxModule,
+    MatSortModule,
     CommonModule,
     FormsModule,
     MatButtonModule,
@@ -41,6 +46,7 @@ export class Programmes {
 
   extractedDataFiles: ExtractedLink[] = [];     // ZIP extraits (données)
   extractedProgramFiles: ExtractedLink[] = [];  // CSV extraits (programmes)
+  displayedColumns: string[] = ['select', 'name', 'libelle', 'startDate', 'etat', 'responsable'];
 
   message: string = '';
   isLoading: boolean = false;

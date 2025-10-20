@@ -71,40 +71,56 @@
     </div>
   </div>
 
-  <!-- 📋 Tableau des programmes -->
-  <div class="table-responsive mb-4">
-    <table class="table table-bordered table-striped align-middle">
-      <thead class="table-light text-center">
-        <tr>
-          <th>
-            <input type="checkbox"
-                   [(ngModel)]="allSelected"
-                   (change)="toggleAll()" />
-            Tout sélectionner
-          </th>
-          <th>Programme</th>
-          <th>Libellé</th>
-          <th>Date de début</th>
-          <th>État</th>
-          <th>Responsables</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let prog of filteredProgrammes">
-          <td class="text-center">
-            <input type="checkbox"
-                   [(ngModel)]="prog.checked"
-                   name="{{ prog.name }}" />
-          </td>
-          <td>{{ prog.name }}</td>
-          <td>{{ prog.libelle }}</td>
-          <td>{{ prog.startDate || '' }}</td>
-          <td>{{ prog.etat || '' }}</td>
-          <td>{{ prog.responsable || '' }}</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+  <!-- 📋 Tableau des programmes (version Angular Material) -->
+<div class="table-container mat-elevation-z2">
+  <table mat-table [dataSource]="filteredProgrammes" class="mat-elevation-z1" matSort>
+
+    <!-- Sélection -->
+    <ng-container matColumnDef="select">
+      <th mat-header-cell *matHeaderCellDef>
+        <mat-checkbox [(ngModel)]="allSelected" (change)="toggleAll()"></mat-checkbox>
+      </th>
+      <td mat-cell *matCellDef="let prog">
+        <mat-checkbox [(ngModel)]="prog.checked"></mat-checkbox>
+      </td>
+    </ng-container>
+
+    <!-- Nom -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Programme</th>
+      <td mat-cell *matCellDef="let prog">{{ prog.name }}</td>
+    </ng-container>
+
+    <!-- Libellé -->
+    <ng-container matColumnDef="libelle">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Libellé</th>
+      <td mat-cell *matCellDef="let prog">{{ prog.libelle }}</td>
+    </ng-container>
+
+    <!-- Date de création -->
+    <ng-container matColumnDef="startDate">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>Date de début</th>
+      <td mat-cell *matCellDef="let prog">{{ prog.startDate || '—' }}</td>
+    </ng-container>
+
+    <!-- État -->
+    <ng-container matColumnDef="etat">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>État</th>
+      <td mat-cell *matCellDef="let prog">{{ prog.etat || '' }}</td>
+    </ng-container>
+
+    <!-- Responsable -->
+    <ng-container matColumnDef="responsable">
+      <th mat-header-cell *matHeaderCellDef>Responsables</th>
+      <td mat-cell *matCellDef="let prog">{{ prog.responsable || '' }}</td>
+    </ng-container>
+
+    <!-- En-têtes et lignes -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+  </table>
+</div>
+
 
   <!-- 📊 Liens de fichiers extraits -->
   <app-extracted-links
