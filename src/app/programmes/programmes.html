@@ -9,40 +9,41 @@
     </mat-form-field>
 
     <!-- 🎛️ Ligne de boutons -->
-    <div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
+<div class="d-flex flex-wrap justify-content-center gap-3 mb-4">
 
-      <!-- 🟦 Extraction de données -->
-      <button mat-raised-button color="primary"
-              (click)="extractData()"
-              [disabled]="isLoading">
-        <mat-icon>cloud_download</mat-icon>
-        Extraire les données
-      </button>
+  <!-- 🟩 Extraction de données -->
+  <button mat-raised-button class="button-success"
+          (click)="extractData()"
+          [disabled]="isLoading">
+    <mat-icon>cloud_download</mat-icon>
+    Extraire les données
+  </button>
 
-      <!-- 🧩 Filtre pour extraction de données -->
-      <button mat-raised-button class="button-success"
-              (click)="openDataFilter()"
-              [disabled]="isLoading">
-        <mat-icon>tune</mat-icon>
-        Filtre extraction données
-      </button>
+  <!-- 🔵 Filtre pour extraction de données -->
+  <button mat-raised-button color="primary"
+          (click)="openDataFilter()"
+          [disabled]="isLoading">
+    <mat-icon>tune</mat-icon>
+    Filtre extraction données
+  </button>
 
-      <!-- 🟩 Extraction de programmes -->
-      <button mat-raised-button color="primary"
-              (click)="extractPrograms()"
-              [disabled]="isLoading">
-        <mat-icon>download</mat-icon>
-        Extraire les programmes
-      </button>
+  <!-- 🟩 Extraction de programmes -->
+  <button mat-raised-button class="button-success"
+          (click)="extractPrograms()"
+          [disabled]="isLoading">
+    <mat-icon>download</mat-icon>
+    Extraire les programmes
+  </button>
 
-      <!-- 🧭 Filtre pour mise à jour de programmes -->
-      <button mat-raised-button class="button-success"
-              (click)="openProgramFilter()"
-              [disabled]="isLoading">
-        <mat-icon>filter_alt</mat-icon>
-        Filtre programmes
-      </button>
-    </div>
+  <!-- 🔵 Filtre pour mise à jour de programmes -->
+  <button mat-raised-button color="primary"
+          (click)="openProgramFilter()"
+          [disabled]="isLoading">
+    <mat-icon>filter_alt</mat-icon>
+    Filtre programmes
+  </button>
+</div>
+
 
     <!-- 🌐 Filtres -->
     <app-frontend-filter
