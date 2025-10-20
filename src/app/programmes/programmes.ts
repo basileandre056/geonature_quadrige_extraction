@@ -247,45 +247,6 @@ export class Programmes {
 }
 
 
-  // -----------------------------------------------------
-  //  CHARGER LA LISTE DES PROGRAMMES DEPUIS UN CSV FILTRÉ
-  // -----------------------------------------------------
-  //private chargerProgrammesDepuisCSV(csvUrl: string) {
-  //  console.log("[FRONTEND] 📥 Téléchargement du CSV filtré :", csvUrl);
-//
-  //  this.http.get(csvUrl, { responseType: 'text' }).subscribe({
-  //    next: (csvData) => {
-  //      const lignes = csvData.split("\n").map(l => l.trim()).filter(l => l.length > 0);
-  //      const header = lignes[0].split(";");
-  //      const data = lignes.slice(1);
-//
-  //      const idxCode = header.indexOf("Programme : Code");
-  //      const idxLibelle = header.indexOf("Programme : Libellé");
-  //      const idxEtat = header.indexOf("Programme : Etat");
-  //      const idxDate = header.indexOf("Programme : Date de création");
-  //      const idxResp = header.indexOf("Programme : Droit : Personne : Responsable : NOM Prénom : Liste");
-//
-  //      const nouveauxProgrammes = data.map(ligne => {
-  //        const cols = ligne.split(";");
-  //        return {
-  //          name: cols[idxCode] ?? "",
-  //          checked: false,
-  //          libelle: idxLibelle !== -1 ? cols[idxLibelle] ?? "" : undefined,
-  //          etat: idxEtat !== -1 ? cols[idxEtat] ?? "" : undefined,
-  //          startDate: idxDate !== -1 ? cols[idxDate] ?? "" : undefined,
-  //          responsable: idxResp !== -1 ? (cols[idxResp]?.replaceAll("|", ", ") ?? "") : undefined
-  //        };
-  //      }).filter(p => p.name !== "");
-//
-  //      this.programmes = nouveauxProgrammes;
-  //      this.message = `✅ Liste mise à jour (${this.programmes.length} programmes depuis CSV filtré)`;
-  //    },
-  //    error: (err) => {
-  //      console.error("[FRONTEND] ❌ Erreur téléchargement CSV filtré :", err);
-  //      this.message = "Erreur lors du téléchargement du CSV filtré.";
-  //    }
-  //  });
-  //}
 
   // -----------------------------------------------------
   //  EXTRACTION DES DONNÉES
