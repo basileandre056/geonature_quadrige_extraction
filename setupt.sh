@@ -4,6 +4,69 @@ set -e  # stoppe le script dès qu'une erreur survient
 echo "🚀 Initialisation complète du projet GeoNature Quadrige Extraction"
 
 # -------------------------------------------------------------------
+# ✅ VÉRIFICATION DES PRÉREQUIS
+# -------------------------------------------------------------------
+echo "🔍 Vérification des dépendances système..."
+
+# --- Node.js ---
+if ! command -v node &> /dev/null; then
+  echo "❌ Node.js n'est pas installé. Veuillez installer Node.js (>= 18)."
+  exit 1
+fi
+
+NODE_VERSION=$(node -v | sed 's/v//')
+NODE_MAJOR=$(echo "$NODE_VERSION" | cut -d. -f1)
+if [ "$NODE_MAJOR" -lt 18 ]; then
+  echo "❌ Version de Node.js trop ancienne : $NODE_VERSION (minimum requis : 18.x)"
+  exit 1
+fi
+echo "✅ Node.js version $NODE_VERSION détectée"
+
+# --- npm ---
+if ! command -v npm &> /dev/null; then
+  echo "❌ npm n'est pas installé. Veuillez l’installer avec Node.js."
+  exit 1
+fi
+
+NPM_VERSION=$(npm -v)
+NPM_MAJOR=$(echo "$NPM_VERSION" | cut -d. -f1)
+if [ "$NPM_MAJOR" -lt 9 ]; then
+  echo "❌ Version de npm trop ancienne : $NPM_VERSION (minimum requis : 9.x)"
+  exit 1
+fi
+echo "✅ npm version $NPM_VERSION détectée"
+
+# --- Angular CLI ---
+if ! command -v ng &> /dev/null; then
+  echo "⚠️ Angular CLI non détecté globalement."
+  echo "   → Il sera installé localement dans le projet si nécessaire."
+else
+  NG_VERSION=$(ng version | grep 'Angular CLI:' | awk '{print $3}')
+  echo "✅ Angular CLI détecté : version $NG_VERSION"
+fi
+
+# --- Python ---
+if ! command -v python3 &> /dev/null; then
+  echo "❌ Python3 n'est pas installé. Veuillez installer Python 3.9 ou plus."
+  exit 1
+fi
+
+PY_VERSION=$(python3 -V | awk '{print $2}')
+PY_MAJOR=$(echo "$PY_VERSION" | cut -d. -f1)
+PY_MINOR=$(echo "$PY_VERSION" | cut -d. -f2)
+
+if [ "$PY_MAJOR" -lt 3 ] || ([ "$PY_MAJOR" -eq 3 ] && [ "$PY_MINOR" -lt 9 ]); then
+  echo "❌ Version de Python trop ancienne : $PY_VERSION (minimum requis : 3.9)"
+  exit 1
+fi
+echo "✅ Python version $PY_VERSION détectée"
+
+echo ""
+echo "✅ Toutes les dépendances système sont compatibles"
+echo "------------------------------------------"
+sleep 1
+
+# -------------------------------------------------------------------
 # 🐍 BACKEND
 # -------------------------------------------------------------------
 echo "🐍 Création de l'environnement virtuel Python..."
@@ -28,7 +91,6 @@ echo "✅ Backend Python installé avec succès"
 # -------------------------------------------------------------------
 echo "🌐 Installation du frontend Angular..."
 
-# Vérifie la présence du dossier frontend
 if [ ! -d "frontend" ]; then
   echo "❌ Erreur : dossier 'frontend' introuvable à la racine du projet."
   echo "💡 Assurez-vous que le code Angular est dans ./frontend/"
