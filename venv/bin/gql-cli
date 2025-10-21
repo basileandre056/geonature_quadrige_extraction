@@ -1,8 +1,7 @@
-#!/mnt/c/Users/basile.andre/Documents/Basile/projet_quadrige/angular_v1/geonature_quadrige_extraction/venv/bin/python3
-# -*- coding: utf-8 -*-
-import re
+#!/home/baan/project/geonature/geonature_quadrige_extraction/venv/bin/python3
 import sys
 from gql.cli import gql_cli
 if __name__ == '__main__':
-    sys.argv[0] = re.sub(r'(-script\.pyw|\.exe)?$', '', sys.argv[0])
+    if sys.argv[0].endswith('.exe'):
+        sys.argv[0] = sys.argv[0][:-4]
     sys.exit(gql_cli())

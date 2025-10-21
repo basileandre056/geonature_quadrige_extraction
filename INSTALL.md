@@ -1,183 +1,229 @@
-⚙️ Installation du projet GeoNature Quadrige Extraction
+# ⚙️ Installation — GeoNature Quadrige Extraction
 
-Ce guide explique toutes les étapes nécessaires pour installer et exécuter le projet GeoNature Quadrige Extraction — depuis le clonage du dépôt jusqu’au lancement du backend (Flask) et du frontend (Angular).
+Ce guide décrit les étapes pour cloner, installer et lancer le projet GeoNature Quadrige Extraction (backend Flask + frontend Angular). Les commandes fournies sont destinées à un environnement UNIX-like (Linux / macOS). Pour Windows, on peut utiliser WSL, Git Bash ou adapter les commandes PowerShell équivalentes.
 
-🚀 1. Prérequis système
+---
 
-Avant toute chose, assurez-vous d’avoir installé les outils suivants :
+## 🚀 1. Prérequis système
+
+Avant de commencer, installez ces outils :
 
 | Outil                        | Version minimale     | Vérification        |
-| ---------------------------- | -------------------- | ------------------- |
+| ---------------------------: | -------------------: | ------------------- |
 | 🐍 Python                    | **3.9+**             | `python3 --version` |
 | 🌐 Node.js                   | **18+**              | `node -v`           |
 | 📦 npm                       | **9+**               | `npm -v`            |
 | 🧱 Angular CLI *(optionnel)* | **15+ (recommandé)** | `ng version`        |
 
-🔧 Mise à jour des dépendances système
-🐍 Mettre à jour Python (Linux / macOS)
+---
 
+## 🔧 2. Installer / mettre à jour les dépendances système
+
+Mettre à jour les paquets (Debian/Ubuntu) :
+
+```bash
 sudo apt update
-sudo apt install -y python3 python3-venv python3-pip
+sudo apt install -y python3 python3-venv python3-pip curl git
+```
 
-🌐 Mettre à jour Node.js et npm
+Installer nvm, Node.js LTS et npm :
 
-Utiliser nvm (Node Version Manager) — c’est la méthode la plus propre :
-
-# Installer NVM (si non présent)
+```bash
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
+```
+ puis dans le même terminal
+```bash
 
-# Charger NVM dans le terminal courant
 source ~/.bashrc
-
-# Installer la dernière version LTS de Node.js
 nvm install --lts
-
-# Vérifier les versions
 node -v
 npm -v
+```
 
+Installer Angular CLI (optionnel) :
 
-Si nvm n’est pas possible, on00** peut aussi utiliser :
-
-🧱 Installer / Mettre à jour Angular CLI (optionnel mais utile)
-
+```bash
 npm install -g @angular/cli
-ng version
+ng version || true
+```
 
+---
 
+## 📥 3. Cloner le dépôt
 
+Remplacez `<votre-utilisateur>` si vous avez forké le projet ; sinon clonez directement :
 
-📥 2. Cloner le dépôt Git
+```bash
+git clone https://github.com/basileandre056/geonature_quadrige_extraction.git
+cd geonature_quadrige_extraction
+```
 
-git clone https://github.com/<ton-utilisateur>/<ton-repo>.git
-cd <ton-repo>
+---
 
+## 🧰 4. Installation automatique (recommandée)
 
-🧰 3. Lancer l’installation complète
-Tout est automatisé grâce au script setup.sh.
+Le projet fournit un script `setup.sh` pour automatiser l'installation. Rendre le script exécutable et l'exécuter :
 
-Sous Linux / macOS :
-
+```bash
 chmod +x setup.sh
 ./setup.sh
+```
 
+Que fait `setup.sh` (résumé) :
+- Vérifie les versions de Python / Node / npm
+- Crée un environnement virtuel `venv/`
+- Installe les dépendances Python depuis `requirements_backend.txt`
+- Installe les dépendances frontend dans `frontend/` (`npm install`)
+- Prépare les assets Angular si nécessaire
 
-Sous Windows (PowerShell) :
+Si l'exécution du script échoue, on peut suivre les étapes manuelles décrites ci‑dessous.
 
-bash setup.sh
+---
 
+## 🐍 5. Installation manuelle (backend)
 
-Ce script effectue automatiquement :
+Créer et activer l'environnement virtuel, puis installer les dépendances :
 
-✅ Vérification des versions de Python, Node, npm, et Angular CLI
+```bash
+python3 -m venv venv
+source venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements_backend.txt
+```
 
-🐍 Création d’un environnement virtuel venv/ pour le backend Flask
+Sous Windows (PowerShell) avec Git Bash / WSL, l'activation peut être :
 
-📦 Installation des dépendances Python depuis requirements_backend.txt
+```bash
+# Git Bash / WSL
+source venv/bin/activate
 
-🌐 Installation du frontend Angular (dans frontend/)
+# PowerShell (si on utilise PowerShell natif)
+# .\venv\Scripts\Activate.ps1
+```
 
-💄 Installation d’Angular Material, MatTable, MatCheckbox, MatSort
+Lancer le backend :
 
-✅ Vérification de compatibilité entre les versions
-
-Aucune dépendance globale n’est modifiée : tout est installé localement au projet.
-
-🧩 4. Lancer le backend Flask
-
-Une fois l’installation terminée :
-
+```bash
 source venv/bin/activate
 python backend/app_backend.py
+```
 
-Le backend démarre par défaut sur :
+Par défaut, le backend écoute sur : http://localhost:5000
 
-http://localhost:5000
+---
 
-Vous pouvez vérifier le bon fonctionnement en ouvrant cette URL dans votre navigateur.
+## 🌐 6. Installation manuelle (frontend)
 
-💻 5. Lancer le frontend Angular
+Depuis la racine du projet :
 
-Dans un autre terminal :
-
+```bash
+cd frontend
+npm install
+# si on utilise Angular CLI et qu'on veut le live-reload
 ng serve --poll=2000
+# ou via le script npm défini dans package.json
+npm start
+```
 
-Le frontend s’exécute sur :
+Le frontend par défaut : http://localhost:4200
 
-http://localhost:4200
+Veillez à démarrer le backend avant d’utiliser le frontend.
 
-Assurez-vous que le backend Flask est démarré avant d’interagir avec le frontend.
+---
 
-📂 6. Structure du projet
+## 🧭 7. Vérifications rapides
 
+Vérifier que le backend répond :
+
+```bash
+curl -sS http://localhost:5000 | jq . || echo "no JSON response"
+```
+
+Ouvrir le frontend dans un navigateur : http://localhost:4200
+
+---
+
+## 🗂️ 8. Structure du projet
+
+Arborescence principale :
+
+```bash
 geonature_quadrige_extraction/
 ├── backend/                     # API Flask
 │   ├── app_backend.py           # Point d'entrée du backend
 │   ├── extraction_data.py
 │   ├── extraction_programs.py
 │   └── ...
-│
 ├── frontend/                    # Application Angular
 │   ├── src/
 │   ├── package.json
 │   └── angular.json
-│
-├── requirements_backend.txt     # Dépendances Python
-├── requirements_frontend.txt    # Dépendances Angular listées
-├── setup.sh                     # Script d'installation automatique
+├── requirements_backend.txt
+├── requirements_frontend.txt
+├── setup.sh
 └── README.md / INSTALL.md
+```
 
-🧪 7. Vérification rapide
+---
 
+## 🔄 9. Mettre à jour le projet
 
-| Élément              | Commande                              | Résultat attendu                           |
-| -------------------- | ------------------------------------- | ------------------------------------------ |
-| Backend Flask        | `curl http://localhost:5000`          | Retour JSON `{"status":"ok"}` ou similaire |
-| Frontend Angular     | Naviguer vers `http://localhost:4200` | Interface affichée                         |
-| Liste des programmes | Cliquez sur “Extraire les programmes” | Table visible                              |
+Pour récupérer les dernières modifications et réexécuter l'installation :
 
-
-
-🔄 8. Mise à jour du projet
-
-Pour mettre à jour votre version locale :
-
-
-git pull
+```bash
+git pull --rebase
 ./setup.sh
+```
 
-Cela supprimera et recréera les dépendances locales si nécessaire (sans toucher vos données).
+---
 
+## 🧹 10. Nettoyer l'environnement
 
-🧹 9. Nettoyer le projet (optionnel)
+Supprimer les dépendances locales et recommencer proprement :
 
-Pour repartir de zéro :
-
-
+```bash
 rm -rf venv frontend/node_modules
+./setup.sh
+```
 
+---
 
-Puis relancez :
+## 🛠️ 11. Dépannage courant
 
+- Ports occupés : vérifier avec `lsof -i :5000 -P -n` ou `lsof -i :4200 -P -n`
+- Erreur pip : mettre pip à jour `python -m pip install --upgrade pip`
+- Erreur node-gyp / build : installer dépendances système (build-essential, python3-dev, etc.)
+- Logs : consulter la sortie du terminal backend / frontend pour obtenir des détails
+
+---
+
+## ✅ Résumé rapide
+
+```bash
+# Cloner
+git clone https://github.com/basileandre056/geonature_quadrige_extraction.git
+cd geonature_quadrige_extraction
+
+# Installation automatique
+chmod +x setup.sh
 ./setup.sh
 
+# Démarrer backend
+source venv/bin/activate
+python backend/app_backend.py
 
-✅ Résumé rapide
+# Démarrer frontend (dans un autre terminal)
+cd frontend
+ng serve --poll=2000
+# ou
+npm start
+```
 
-| Étape                 | Commande                                                    |
-| --------------------- | ----------------------------------------------------------- |
-| Cloner le dépôt       | `git clone ... && cd geonature_quadrige_extraction`         |
-| Lancer l’installation | `./setup.sh`                                                |
-| Démarrer le backend   | `source venv/bin/activate && python backend/app_backend.py` |
-| Démarrer le frontend  | `cd frontend && npm start`                                  |
+---
 
+## 💬 Support / contact
 
-💬 Support
-
-En cas de problème :
-
-Vérifiez vos versions : node -v, npm -v, python3 --version
-
-Assurez-vous que les ports 5000 et 4200 ne sont pas déjà utilisés
-
-Consultez les logs console du backend et du frontend
+Si un problème persiste :
+- Partagez les logs du terminal (backend et frontend)
+- Indiquez l'OS et les versions : `uname -a`, `python3 --version`, `node -v`, `npm -v`
+- Si vous le souhaitez, je peux préparer une branche et ouvrir une PR avec ce fichier mis à jour.
