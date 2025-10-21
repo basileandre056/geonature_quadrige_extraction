@@ -13,6 +13,39 @@ Avant toute chose, assurez-vous d’avoir installé les outils suivants :
 | 📦 npm                       | **9+**               | `npm -v`            |
 | 🧱 Angular CLI *(optionnel)* | **15+ (recommandé)** | `ng version`        |
 
+🔧 Mise à jour des dépendances système
+🐍 Mettre à jour Python (Linux / macOS)
+
+sudo apt update
+sudo apt install -y python3 python3-venv python3-pip
+
+🌐 Mettre à jour Node.js et npm
+
+Utiliser nvm (Node Version Manager) — c’est la méthode la plus propre :
+
+# Installer NVM (si non présent)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash
+
+# Charger NVM dans le terminal courant
+source ~/.bashrc
+
+# Installer la dernière version LTS de Node.js
+nvm install --lts
+
+# Vérifier les versions
+node -v
+npm -v
+
+
+Si nvm n’est pas possible, on00** peut aussi utiliser :
+
+🧱 Installer / Mettre à jour Angular CLI (optionnel mais utile)
+
+npm install -g @angular/cli
+ng version
+
+
+
 
 📥 2. Cloner le dépôt Git
 
