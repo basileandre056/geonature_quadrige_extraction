@@ -1,0 +1,25 @@
+# --- Core Flask ---
+Flask==3.0.3
+Flask-Cors==4.0.0
+
+# --- HTTP Requests ---
+requests==2.32.3
+requests-toolbelt==1.0.0
+
+# --- GraphQL client ---
+gql[requests]==3.5.0
+
+# --- Data manipulation ---
+pandas==2.2.3
+
+# --- Testing ---
+pytest==8.3.3
+
+# --- Utils ---
+python-dateutil==2.9.0.post0
+urllib3==2.2.3
+
+# --- Optionnel mais recommandé pour fiabilité Flask ---
+Werkzeug==3.0.4
+Jinja2==3.1.4
+itsdangerous==2.2.0
