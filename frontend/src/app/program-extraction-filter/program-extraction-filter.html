@@ -42,9 +42,10 @@
 
   <!-- ✅ Actions -->
   <div class="filter-actions">
-    <button mat-raised-button color="primary" [disabled]="!isFormValid()" (click)="applyFilter()">
-      <mat-icon>check_circle</mat-icon> Appliquer
+    <button mat-raised-button class="button-success" [disabled]="!isFormValid()" (click)="applyFilter()">
+      <mat-icon>check_circle</mat-icon> Valider
     </button>
+
     <button mat-raised-button color="warn" (click)="close.emit()">
       <mat-icon>close</mat-icon> Fermer
     </button>

@@ -1,71 +1,7 @@
-.filter-card {
-  position: absolute;
-  right: 20px;
-  top: 100px;
-  background: #fff;
-  padding: 2rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  width: 460px;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-in-out;
-
-  h2 {
-    margin-top: 0;
-    margin-bottom: 1.5rem;
-    font-size: 1.3rem;
-    font-weight: 500;
-    color: #2a2a2a;
-    text-align: center;
-  }
-
-  mat-form-field {
-    width: 100%;
-    position: relative; /* ✅ pour que la liste s’ancre correctement */
-    z-index: 1200; /* ✅ remonte le champ au-dessus du reste */
-  }
-
-  /* 🔘 Boutons d’action */
-  .filter-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 2rem;
-
-    button[mat-raised-button] {
-      flex: 1;
-      margin: 0 0.5rem;
-      text-transform: none;
-      font-weight: 500;
-    }
-  }
-
-  /* ⚠️ Messages d’erreur */
-  .error-msg {
-    color: red;
-    font-size: 0.85rem;
-    margin-top: 0.3rem;
-  }
+/* Styles spécifiques au composant si besoin */
+:host {
+  display: block;
 }
 
-.code {
-  color: #1976d2;
-  font-weight: 600;
-  margin-left: 0.3rem;
-}
-
-
-  /* -------------------------------------------------- */
-  /* ✨ Animation d’apparition */
-  /* -------------------------------------------------- */
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
+/* Tous les styles de .filter-card, .code, etc.
+   viennent déjà de src/styles.scss */

@@ -1,11 +1,8 @@
-
-// Include theming for Angular Material with `mat.theme()`.
-// This Sass mixin will define CSS variables that are used for styling Angular Material
-// components according to the Material 3 design spec.
-// Learn more about theming and how to use it for your application's
-// custom components at https://material.angular.dev/guide/theming
 @use '@angular/material' as mat;
 
+/* =====================================================
+   🎨 Thème principal Angular Material (Material 3)
+   ===================================================== */
 html {
   @include mat.theme((
     color: (
@@ -17,23 +14,189 @@ html {
   ));
 }
 
+/* =====================================================
+   🌗 Mode clair (par défaut)
+   ===================================================== */
 body {
-  // Default the application to a light color theme. This can be changed to
-  // `dark` to enable the dark color theme, or to `light dark` to defer to the
-  // user's system settings.
   color-scheme: light;
-
-  // Set a default background, font and text colors for the application using
-  // Angular Material's system-level CSS variables. Learn more about these
-  // variables at https://material.angular.dev/guide/system-variables
   background-color: var(--mat-sys-surface);
   color: var(--mat-sys-on-surface);
   font: var(--mat-sys-body-medium);
-
-  // Reset the user agent margin.
   margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
 }
-/* You can add global styles to this file, and also import other style files */
 
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+/* =====================================================
+   🌍 Règles globales GeoNature UI
+   ===================================================== */
+
+/* ----- Dimensions et layout ----- */
+html, body {
+  height: 100%;
+}
+
+.container {
+  padding: 1.5rem 2rem;
+}
+
+/* =====================================================
+   🔘 Boutons GeoNature
+   ===================================================== */
+
+/* Bouton principal d’action */
+button[mat-raised-button] {
+  border-radius: 6px;
+  font-weight: 500;
+  text-transform: none;
+  transition: transform 0.15s ease;
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+
+  mat-icon {
+    margin-right: 0.3rem;
+  }
+}
+
+/* 🟢 Bouton de validation */
+.button-success {
+  background-color: #43a047 !important;
+  color: #fff !important;
+
+  &:hover {
+    background-color: #388e3c !important;
+  }
+}
+
+/* 🔴 Bouton d’avertissement */
+button[mat-raised-button][color="warn"] {
+  background-color: #e53935 !important;
+  color: #fff !important;
+}
+
+/* 🔵 Bouton d’action standard */
+button[mat-raised-button][color="primary"] {
+  background-color: #1976d2 !important;
+  color: #fff !important;
+}
+
+/* =====================================================
+   🧩 Cartes / Filtres GeoNature
+   ===================================================== */
+
+.filter-card {
+  position: absolute;
+  right: 20px;
+  top: 100px;
+  background: #fff;
+  padding: 2rem 2.5rem;
+  border: 1px solid #dcdcdc;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  width: 480px;
+  z-index: 2000;
+  animation: fadeIn 0.3s ease-in-out;
+
+  h2 {
+    margin: 0 0 1.5rem 0;
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: #2a2a2a;
+    text-align: center;
+  }
+
+  mat-form-field {
+    width: 100%;
+    position: relative;
+    z-index: 1200;
+  }
+
+  .filter-field {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1.5rem;
+  }
+
+  .error-msg {
+    color: #d32f2f;
+    font-size: 0.9rem;
+    margin-top: 0.4rem;
+    font-style: italic;
+  }
+
+  .filter-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+
+    button {
+      flex: 1;
+      margin: 0 0.5rem;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+/* =====================================================
+   🧱 Spécifiques aux filtres
+   ===================================================== */
+
+/* — Program extraction filter — */
+.code {
+  color: #1976d2;
+  font-weight: 600;
+  margin-left: 0.3rem;
+}
+
+/* — Frontend filter — */
+mat-chip-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 0.3rem;
+  min-height: 40px;
+}
+
+mat-chip-row {
+  background: #e9f5ff;
+  color: #0a2a3a;
+  font-weight: 500;
+  border-radius: 6px;
+  padding: 0.25rem 0.5rem;
+
+  button[matChipRemove] {
+    color: #1565c0;
+    margin-left: 0.2rem;
+  }
+}
+
+.period-row {
+  display: flex;
+  gap: 1rem;
+
+  mat-form-field {
+    flex: 1;
+  }
+}
+
+/* =====================================================
+   ⚙️ Correction d’empilement des overlays Material
+   ===================================================== */
+
+/* Force tous les menus, autocomplétions, calendriers à passer au-dessus des filtres */
+.cdk-overlay-container,
+.cdk-overlay-pane {
+  z-index: 3000 !important;
+}
+
