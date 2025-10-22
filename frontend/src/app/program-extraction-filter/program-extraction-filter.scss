@@ -6,7 +6,7 @@
   padding: 2rem;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   width: 460px;
   z-index: 1000;
   animation: fadeIn 0.3s ease-in-out;
@@ -22,8 +22,11 @@
 
   mat-form-field {
     width: 100%;
+    position: relative; /* ✅ pour que la liste s’ancre correctement */
+    z-index: 1200; /* ✅ remonte le champ au-dessus du reste */
   }
 
+  /* 🔽 Liste déroulante de suggestions */
   .suggestions {
     position: absolute;
     left: 0;
@@ -32,23 +35,37 @@
     margin: 0;
     padding: 0;
     list-style: none;
+
+    background: #fff; /* ✅ fond totalement opaque */
     border: 1px solid #ccc;
     border-radius: 6px;
-    background: #fff;
-    max-height: 180px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); /* ✅ ajoute de la profondeur */
+    max-height: 200px;
     overflow-y: auto;
-    z-index: 1100;
+
+    z-index: 5000 !important; /* ✅ force au-dessus de tout, même Material */
+    opacity: 1; /* ✅ plus de transparence */
+    pointer-events: auto; /* ✅ cliquable */
+    isolation: isolate; /* ✅ crée un nouveau contexte visuel propre */
 
     li {
       padding: 0.45rem 0.6rem;
       cursor: pointer;
+      transition: background 0.15s ease;
 
       &:hover {
         background: #f0f0f0;
       }
+
+      .code {
+        color: #1976d2;
+        font-weight: 600;
+        margin-left: 0.3rem;
+      }
     }
   }
 
+  /* 🔘 Boutons d’action */
   .filter-actions {
     display: flex;
     justify-content: space-between;
@@ -62,6 +79,7 @@
     }
   }
 
+  /* ⚠️ Messages d’erreur */
   .error-msg {
     color: red;
     font-size: 0.85rem;

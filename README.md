@@ -79,6 +79,7 @@ ou,
 Lancer le frontend avec un polling toutes les 2 secondes :
 
 ```bash
+cd frontend
 ng serve --poll=2000
 ```
 

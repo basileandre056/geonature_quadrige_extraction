@@ -4,7 +4,11 @@
   <!-- 🧩 Nom du filtre -->
   <mat-form-field appearance="outline" class="w-100 mb-3">
     <mat-label>Nom du filtre</mat-label>
-    <input matInput [(ngModel)]="filter.name" placeholder="Nom du filtre" (keydown.enter)="applyFilter()" />
+    <input
+      matInput
+      [(ngModel)]="filter.name"
+      placeholder="Nom du filtre"
+      (keydown.enter)="applyFilter()" />
     <mat-error *ngIf="filter.name.trim() === ''">
       Ce champ est requis et doit faire plus de 3 caractères.
     </mat-error>
@@ -14,20 +18,25 @@
   <mat-form-field appearance="outline" class="w-100 mb-3">
     <mat-label>Code du lieu d'observation</mat-label>
     <input
+      #locInput
       matInput
       autocomplete="off"
       [(ngModel)]="filter.monitoringLocation"
       (focus)="openSuggestions()"
       (click)="openSuggestions()"
       (keydown.escape)="showSuggestions = false"
+      (input)="openSuggestions()"
       (keydown.enter)="applyFilter()" />
 
-    <!-- Suggestions -->
-    <ul *ngIf="showSuggestions" class="suggestions">
+    <!-- ✅ Liste filtrée des suggestions -->
+    <ul
+      *ngIf="showSuggestions"
+      #suggestionsPanel
+      class="suggestions">
       <li
-        *ngFor="let loc of sugested_locations"
+        *ngFor="let loc of filteredLocations"
         (mousedown)="selectSuggestion(loc.code); $event.preventDefault()">
-        {{ loc.label }} : {{ loc.code }}
+        {{ loc.label }} — <span class="code">{{ loc.code }}</span>
       </li>
     </ul>
 
