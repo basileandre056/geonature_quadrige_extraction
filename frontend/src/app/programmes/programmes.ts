@@ -130,6 +130,12 @@ export class Programmes {
     );
   }
 
+  isSearchActive(): boolean {
+    return this.searchText.trim().length > 0;
+  }
+
+
+
   toggleAll() {
     this.programmes.forEach(p => (p.checked = this.allSelected));
   }
