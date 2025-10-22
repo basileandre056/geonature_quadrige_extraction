@@ -88,13 +88,37 @@ export class FrontendFilterComponent {
   }
 
   /** ✅ Vérifie la validité du formulaire */
-  isFormValid(): boolean {
-    const { name, fields, startDate, endDate } = this.filterForm.value;
-    if (!name || name.trim().length <= 3) return false;
-    if (!Array.isArray(fields) || fields.length === 0) return false;
-    if (startDate && endDate && startDate > endDate) return false;
-    return true;
+isFormValid(): boolean {
+  const { name, fields, startDate, endDate } = this.filterForm.value;
+
+  // Nom du filtre : requis + longueur minimale
+  const nameValid = name && name.trim().length >= 3;
+
+  // Champs à extraire : au moins un
+  const fieldsValid = Array.isArray(fields) && fields.length > 0;
+
+  // Période : facultative, mais si une date existe, il faut les deux et start ≤ end
+  let periodValid = true;
+  if (startDate || endDate) {
+    periodValid = !!(startDate && endDate && startDate <= endDate);
   }
+
+  return nameValid && fieldsValid && periodValid;
+}
+
+/** ✅ Indique si la section “Champs à extraire” est invalide */
+get fieldsInvalid(): boolean {
+  const fields: string[] = (this.filterForm.value.fields as string[]) || [];
+  return fields.length === 0;
+}
+
+/** ✅ Indique si la période est invalide */
+get dateRangeInvalid(): boolean {
+  const { startDate, endDate } = this.filterForm.value;
+  if (!startDate && !endDate) return false; // pas de période => OK
+  if (!startDate || !endDate) return true;  // une seule date => erreur
+  return startDate > endDate;               // ordre incorrect
+}
 
   /** ✅ Ajoute un champ sélectionné */
   addField(field: string): void {
@@ -114,16 +138,25 @@ export class FrontendFilterComponent {
   }
 
   /** ✅ Envoi du filtre au parent */
-  applyFilter(): void {
-    if (!this.isFormValid()) return;
+applyFilter(): void {
+  if (!this.isFormValid()) return;
 
-    const filterData = {
-      name: this.filterForm.value.name,
-      fields: this.filterForm.value.fields,
-      startDate: this.filterForm.value.startDate,
-      endDate: this.filterForm.value.endDate
-    };
+  const formatDate = (d: Date | null): string | null => {
+    if (!d) return null;
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
 
-    this.apply.emit(filterData);
-  }
+  const filterData = {
+    name: this.filterForm.value.name,
+    fields: this.filterForm.value.fields,
+    startDate: formatDate(this.filterForm.value.startDate),
+    endDate: formatDate(this.filterForm.value.endDate)
+  };
+
+  this.apply.emit(filterData);
+}
+
 }

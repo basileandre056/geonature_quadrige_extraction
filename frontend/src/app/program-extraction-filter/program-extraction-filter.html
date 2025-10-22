@@ -1,4 +1,4 @@
-<div class="filter-card mat-elevation-z4">
+<div class="filter-card mat-elevation-z4" [formGroup]="filterForm">
   <h2>Mettre à jour la liste des programmes</h2>
 
   <!-- 🧩 Nom du filtre -->
@@ -6,36 +6,35 @@
     <mat-label>Nom du filtre</mat-label>
     <input
       matInput
-      [(ngModel)]="filter.name"
+      formControlName="name"
       placeholder="Nom du filtre"
-      (keydown.enter)="applyFilter()" />
-    <mat-error *ngIf="filter.name.trim() === ''">
-      Ce champ est requis et doit faire plus de 3 caractères.
+      (blur)="filterForm.get('name')?.markAsTouched()" />
+
+    <mat-error *ngIf="filterForm.get('name')?.touched && filterForm.get('name')?.hasError('required')">
+      Le nom du filtre est requis.
+    </mat-error>
+    <mat-error *ngIf="filterForm.get('name')?.touched && filterForm.get('name')?.hasError('minlength')">
+      Le nom du filtre doit faire au moins 3 caractères.
     </mat-error>
   </mat-form-field>
 
-  <!-- 📍 Code du lieu d'observation -->
+  <!-- 📍 Lieu -->
   <mat-form-field appearance="outline" class="w-100 mb-3">
     <mat-label>Code du lieu d'observation</mat-label>
     <input
       type="text"
       matInput
-      [formControl]="locationControl"
+      formControlName="monitoringLocation"
       [matAutocomplete]="auto"
       placeholder="Ex: 145- ou Mayotte" />
 
-    <!-- ✅ Menu déroulant d’autocomplétion -->
-    <mat-autocomplete
-      #auto="matAutocomplete"
-      (optionSelected)="onLocationSelected($event.option.value)">
-      <mat-option
-        *ngFor="let loc of filteredLocations$ | async"
-        [value]="loc.code">
+    <mat-autocomplete #auto="matAutocomplete">
+      <mat-option *ngFor="let loc of filteredLocations$ | async" [value]="loc.code">
         {{ loc.label }} — <span class="code">{{ loc.code }}</span>
       </mat-option>
     </mat-autocomplete>
 
-    <mat-error *ngIf="!filter.monitoringLocation && filter.name.trim().length > 3">
+    <mat-error *ngIf="filterForm.get('monitoringLocation')?.touched && filterForm.get('monitoringLocation')?.hasError('required')">
       Sélectionnez un lieu dans la liste.
     </mat-error>
   </mat-form-field>

@@ -4,9 +4,17 @@
   <!-- 🧩 Nom du filtre -->
   <mat-form-field appearance="outline" class="w-100 mb-3">
     <mat-label>Nom du filtre</mat-label>
-    <input matInput formControlName="name" placeholder="Nom du filtre" />
-    <mat-error *ngIf="filterForm.get('name')?.invalid && filterForm.get('name')?.touched">
-      Ce champ est requis et doit faire plus de 3 caractères.
+    <input
+      matInput
+      formControlName="name"
+      placeholder="Nom du filtre"
+      (blur)="filterForm.get('name')?.markAsTouched()"
+    />
+    <mat-error *ngIf="filterForm.get('name')?.touched && filterForm.get('name')?.hasError('required')">
+      Le nom du filtre est requis.
+    </mat-error>
+    <mat-error *ngIf="filterForm.get('name')?.touched && filterForm.get('name')?.hasError('minlength')">
+      Le nom du filtre doit faire au moins 3 caractères.
     </mat-error>
   </mat-form-field>
 
@@ -16,16 +24,13 @@
 
     <mat-form-field appearance="outline" class="w-100 mb-3">
       <mat-chip-grid #chipList aria-label="Liste des champs sélectionnés">
-        <mat-chip-row
-          *ngFor="let field of filterForm.value.fields"
-          (removed)="removeField(field)">
+        <mat-chip-row *ngFor="let field of filterForm.value.fields" (removed)="removeField(field)">
           {{ field }}
           <button matChipRemove>
             <mat-icon>cancel</mat-icon>
           </button>
         </mat-chip-row>
 
-        <!-- Champ de recherche + autocomplétion -->
         <input
           placeholder="Ajouter un champ"
           matInput
@@ -41,12 +46,9 @@
       </mat-autocomplete>
     </mat-form-field>
 
-    <mat-hint *ngIf="(filterForm.value.fields?.length || 0) === 0" class="error-msg">
-      Au moins un champ est requis.
-    </mat-hint>
-    <mat-hint *ngIf="remainingFields.length === 0" class="error-msg">
-      Tous les champs disponibles ont été ajoutés.
-    </mat-hint>
+    <mat-error *ngIf="fieldsInvalid" class="error-msg">
+      Veuillez choisir au moins un champ à extraire.
+    </mat-error>
   </div>
 
   <!-- 📆 Période (optionnelle) -->
@@ -68,9 +70,9 @@
       </mat-form-field>
     </div>
 
-    <mat-hint *ngIf="filterForm.value.startDate && filterForm.value.endDate && filterForm.value.startDate > filterForm.value.endDate" class="error-msg">
-      ⚠️ La date de début doit être antérieure à la date de fin.
-    </mat-hint>
+    <mat-error *ngIf="dateRangeInvalid" class="error-msg">
+      Entrez une période valide 
+    </mat-error>
   </div>
 
   <!-- ✅ Actions -->

@@ -112,41 +112,79 @@ button[mat-raised-button][color="primary"] {
     z-index: 1200;
   }
 
-  .filter-field {
+  /* =====================================================
+     ❌ Champs invalides : bordure rouge + halo doux
+     ===================================================== */
+  mat-form-field.mat-form-field-invalid .mat-mdc-text-field-wrapper {
+    border: 1px solid #d32f2f !important;
+    border-radius: 6px;
+    box-shadow: 0 0 0 2px rgba(211, 47, 47, 0.15);
+    transition: box-shadow 0.2s ease, border 0.2s ease;
+  }
+
+  /* =====================================================
+     ✅ Champs valides : halo vert doux
+     ===================================================== */
+  mat-form-field.mat-form-field-should-float:not(.mat-form-field-invalid)
+    .mat-mdc-text-field-wrapper {
+    border: 1px solid #43a04766;
+    border-radius: 6px;
+    box-shadow: 0 0 0 2px rgba(67, 160, 71, 0.15);
+    transition: box-shadow 0.2s ease, border 0.2s ease;
+  }
+
+    .filter-field {
     display: flex;
     flex-direction: column;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.8rem; /* ↑ augmenté pour éviter chevauchement */
   }
 
-  .error-msg {
-    color: #d32f2f;
+  /* Ajoute un espacement vertical cohérent entre les form-fields */
+  mat-form-field {
+    margin-bottom: 1rem; /* espace sous chaque champ */
+  }
+
+  /* =====================================================
+     ⚠️ Messages d’erreur animés
+     ===================================================== */
+  .error-msg,
+mat-error {
+    color: #d32f2f !important;
     font-size: 0.9rem;
-    margin-top: 0.4rem;
+    margin-top: 0.35rem;
+    margin-bottom: 0.25rem; 
     font-style: italic;
+    line-height: 1.3;
+    animation: fadeError 0.25s ease-in-out;
   }
 
-  .filter-actions {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 2rem;
 
-    button {
-      flex: 1;
-      margin: 0 0.5rem;
-    }
-  }
-
-  @keyframes fadeIn {
+  @keyframes fadeError {
     from {
       opacity: 0;
-      transform: translateY(8px);
+      transform: translateY(-3px);
     }
     to {
       opacity: 1;
       transform: translateY(0);
     }
   }
+
+  /* =====================================================
+     🧭 Actions (boutons)
+     ===================================================== */
+  .filter-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2.2rem;
+
+    button {
+      flex: 1;
+      margin: 0 0.5rem;
+    }
+  }
 }
+
 
 /* =====================================================
    🧱 Spécifiques aux filtres
