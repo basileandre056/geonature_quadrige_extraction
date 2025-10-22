@@ -1,13 +1,10 @@
 import {
   Component,
   EventEmitter,
-  Output,
-  HostListener,
-  ElementRef,
-  ViewChild
+  Output
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule, FormControl } from '@angular/forms';
 
 // ✅ Angular Material imports
 import { MatButtonModule } from '@angular/material/button';
@@ -15,6 +12,11 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+
+// ✅ RxJS imports
+import { Observable } from 'rxjs';
+import { map, startWith } from 'rxjs/operators';
 
 @Component({
   selector: 'app-program-extraction-filter',
@@ -22,11 +24,13 @@ import { MatIconModule } from '@angular/material/icon';
   imports: [
     CommonModule,
     FormsModule,
+    ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
-    MatIconModule
+    MatIconModule,
+    MatAutocompleteModule
   ],
   templateUrl: './program-extraction-filter.html',
   styleUrls: ['./program-extraction-filter.scss']
@@ -40,60 +44,56 @@ export class ProgramExtractionFilterComponent {
     monitoringLocation: ''
   };
 
-  // 🌍 Liste des localisations suggérées
+  // ✅ Liste statique des lieux
   sugested_locations = [
     { code: '126-', label: 'Réunion' },
     { code: '145-', label: 'Mayotte' },
     { code: '048-', label: 'Maurice' },
-    { code: '153-', label: 'Ile Tromelin' },
-    { code: '152-', label: 'Iles Glorieuses' },
-    { code: '154-', label: 'Ile Juan De Nova' },
-    { code: '155-', label: 'Ile Bassas Da India' },
-    { code: '156-', label: 'Ile Europa' },
+    { code: '153-', label: 'Île Tromelin' },
+    { code: '152-', label: 'Îles Glorieuses' },
+    { code: '154-', label: 'Île Juan De Nova' },
+    { code: '155-', label: 'Île Bassas Da India' },
+    { code: '156-', label: 'Île Europa' },
   ];
 
-  // 🔍 Filtrage dynamique
-  get filteredLocations() {
-    const input = this.filter.monitoringLocation.toLowerCase();
+  // ✅ Contrôle réactif pour l’autocomplete
+  locationControl = new FormControl('');
+  filteredLocations$: Observable<{ code: string; label: string }[]>;
+
+  constructor() {
+    // Met à jour la liste filtrée à chaque frappe
+    this.filteredLocations$ = this.locationControl.valueChanges.pipe(
+      startWith(''),
+      map(value => this.filterLocations(value || ''))
+    );
+
+    // Synchronisation du champ avec le filtre principal
+    this.locationControl.valueChanges.subscribe(value => {
+      this.filter.monitoringLocation = value || '';
+    });
+  }
+
+  private filterLocations(value: string) {
+    const filterValue = value.toLowerCase();
     return this.sugested_locations.filter(loc =>
-      loc.label.toLowerCase().includes(input) || loc.code.toLowerCase().includes(input)
+      loc.label.toLowerCase().includes(filterValue) ||
+      loc.code.toLowerCase().includes(filterValue)
     );
   }
 
-  submitted = false;
-  showSuggestions = false;
-
-  // Références sur input et panneau
-  @ViewChild('locInput') locInput?: ElementRef<HTMLInputElement>;
-  @ViewChild('suggestionsPanel') suggestionsPanel?: ElementRef<HTMLElement>;
-
-  openSuggestions() {
-    this.showSuggestions = true;
-  }
-
-  selectSuggestion(code: string) {
+  onLocationSelected(code: string) {
     this.filter.monitoringLocation = code;
-    this.showSuggestions = false;
-  }
-
-  // Ferme les suggestions si clic en dehors
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: MouseEvent) {
-    const target = event.target as Node;
-    const inInput = this.locInput?.nativeElement.contains(target);
-    const inPanel = this.suggestionsPanel?.nativeElement.contains(target);
-    if (!inInput && !inPanel) {
-      this.showSuggestions = false;
-    }
+    this.locationControl.setValue(code, { emitEvent: false });
   }
 
   isFormValid(): boolean {
     const f = this.filter;
-    return f.name.trim().length > 3;
+    return f.name.trim().length > 3 && !!this.filter.monitoringLocation;
   }
 
   applyFilter() {
-    this.submitted = true;
+    // Synchronisation finale avant émission
+    this.filter.monitoringLocation = this.locationControl.value || '';
     if (!this.isFormValid()) return;
     this.apply.emit(this.filter);
   }

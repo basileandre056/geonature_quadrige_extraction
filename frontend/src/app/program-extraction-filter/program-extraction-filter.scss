@@ -26,45 +26,6 @@
     z-index: 1200; /* ✅ remonte le champ au-dessus du reste */
   }
 
-  /* 🔽 Liste déroulante de suggestions */
-  .suggestions {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: calc(100% + 4px);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-
-    background: #fff; /* ✅ fond totalement opaque */
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25); /* ✅ ajoute de la profondeur */
-    max-height: 200px;
-    overflow-y: auto;
-
-    z-index: 5000 !important; /* ✅ force au-dessus de tout, même Material */
-    opacity: 1; /* ✅ plus de transparence */
-    pointer-events: auto; /* ✅ cliquable */
-    isolation: isolate; /* ✅ crée un nouveau contexte visuel propre */
-
-    li {
-      padding: 0.45rem 0.6rem;
-      cursor: pointer;
-      transition: background 0.15s ease;
-
-      &:hover {
-        background: #f0f0f0;
-      }
-
-      .code {
-        color: #1976d2;
-        font-weight: 600;
-        margin-left: 0.3rem;
-      }
-    }
-  }
-
   /* 🔘 Boutons d’action */
   .filter-actions {
     display: flex;
@@ -85,4 +46,10 @@
     font-size: 0.85rem;
     margin-top: 0.3rem;
   }
+}
+
+.code {
+  color: #1976d2;
+  font-weight: 600;
+  margin-left: 0.3rem;
 }

@@ -14,34 +14,29 @@
     </mat-error>
   </mat-form-field>
 
-  <!-- 📍 Code du lieu -->
+  <!-- 📍 Code du lieu d'observation -->
   <mat-form-field appearance="outline" class="w-100 mb-3">
     <mat-label>Code du lieu d'observation</mat-label>
     <input
-      #locInput
+      type="text"
       matInput
-      autocomplete="off"
-      [(ngModel)]="filter.monitoringLocation"
-      (focus)="openSuggestions()"
-      (click)="openSuggestions()"
-      (keydown.escape)="showSuggestions = false"
-      (input)="openSuggestions()"
-      (keydown.enter)="applyFilter()" />
+      [formControl]="locationControl"
+      [matAutocomplete]="auto"
+      placeholder="Ex: 145- ou Mayotte" />
 
-    <!-- ✅ Liste filtrée des suggestions -->
-    <ul
-      *ngIf="showSuggestions"
-      #suggestionsPanel
-      class="suggestions">
-      <li
-        *ngFor="let loc of filteredLocations"
-        (mousedown)="selectSuggestion(loc.code); $event.preventDefault()">
+    <!-- ✅ Menu déroulant d’autocomplétion -->
+    <mat-autocomplete
+      #auto="matAutocomplete"
+      (optionSelected)="onLocationSelected($event.option.value)">
+      <mat-option
+        *ngFor="let loc of filteredLocations$ | async"
+        [value]="loc.code">
         {{ loc.label }} — <span class="code">{{ loc.code }}</span>
-      </li>
-    </ul>
+      </mat-option>
+    </mat-autocomplete>
 
-    <mat-error *ngIf="submitted && filter.monitoringLocation.trim() === ''">
-      Ce champ est requis.
+    <mat-error *ngIf="!filter.monitoringLocation && filter.name.trim().length > 3">
+      Sélectionnez un lieu dans la liste.
     </mat-error>
   </mat-form-field>
 
