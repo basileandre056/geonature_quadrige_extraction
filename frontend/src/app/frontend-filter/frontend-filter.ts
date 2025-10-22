@@ -1,30 +1,37 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import {
+  ReactiveFormsModule,
+  FormBuilder,
+  FormGroup,
+  FormControl,
+  Validators
+} from '@angular/forms';
 
 // ✅ Angular Material imports
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
-
 
 @Component({
   selector: 'app-frontend-filter',
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
+    ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatSelectModule,
     MatIconModule,
-  MatNativeDateModule,
-  MatDatepickerModule
+    MatAutocompleteModule,
+    MatChipsModule,
+    MatDatepickerModule,
+    MatNativeDateModule
   ],
   templateUrl: './frontend-filter.html',
   styleUrls: ['./frontend-filter.scss']
@@ -33,71 +40,90 @@ export class FrontendFilterComponent {
   @Output() apply = new EventEmitter<any>();
   @Output() close = new EventEmitter<void>();
 
-  extraction_filter = {
-    name: '',
-    fields: [] as string[],
-    startDate: '',
-    endDate: '',
-    commentaire: ''
-  };
+  /** ✅ Formulaire principal */
+  filterForm: FormGroup;
 
-  newField = '';
-
-  //  Liste complète des champs possibles
+  /** ✅ Liste complète des champs disponibles */
   availableFields: string[] = [
-    "MONITORING_LOCATION_ORDER_ITEM_TYPE_ID",
-    "MONITORING_LOCATION_ORDER_ITEM_TYPE_NAME",
-    "MONITORING_LOCATION_ORDER_ITEM_LABEL",
-    "MONITORING_LOCATION_ORDER_ITEM_NAME",
-    "MONITORING_LOCATION_ID",
-    "MONITORING_LOCATION_LABEL",
-    "MONITORING_LOCATION_NAME",
-    "SURVEY_LABEL",
-    "SURVEY_DATE",
-    "SURVEY_COMMENT",
-    "SURVEY_NB_INDIVIDUALS",
-    "SAMPLE_LABEL",
-    "SAMPLE_MATRIX_NAME",
-    "SAMPLE_TAXON_NAME",
-    "SAMPLE_SIZE",
-    "MEASUREMENT_NUMERICAL_VALUE",
-    "MEASUREMENT_UNIT_SYMBOL",
-    "MEASUREMENT_METHOD_NAME",
-    "MEASUREMENT_COMMENT"
+    'MONITORING_LOCATION_ORDER_ITEM_TYPE_ID',
+    'MONITORING_LOCATION_ORDER_ITEM_TYPE_NAME',
+    'MONITORING_LOCATION_ORDER_ITEM_LABEL',
+    'MONITORING_LOCATION_ORDER_ITEM_NAME',
+    'MONITORING_LOCATION_ID',
+    'MONITORING_LOCATION_LABEL',
+    'MONITORING_LOCATION_NAME',
+    'SURVEY_LABEL',
+    'SURVEY_DATE',
+    'SURVEY_COMMENT',
+    'SURVEY_NB_INDIVIDUALS',
+    'SAMPLE_LABEL',
+    'SAMPLE_MATRIX_NAME',
+    'SAMPLE_TAXON_NAME',
+    'SAMPLE_SIZE',
+    'MEASUREMENT_NUMERICAL_VALUE',
+    'MEASUREMENT_UNIT_SYMBOL',
+    'MEASUREMENT_METHOD_NAME',
+    'MEASUREMENT_COMMENT'
   ];
 
-  //  Liste des champs restants à choisir
-  get remainingFields(): string[] {
-    return this.availableFields.filter(f => !this.extraction_filter.fields.includes(f));
+  constructor(private fb: FormBuilder) {
+    this.filterForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(3)]],
+      fields: [[]],
+      fieldInput: new FormControl(''),
+      startDate: new FormControl<Date | null>(null),
+      endDate: new FormControl<Date | null>(null)
+    });
   }
 
-  // ✅ Nouvelle validation simplifiée :
-isFormValid(): boolean {
-  const f = this.extraction_filter;
+  /** ✅ Getter pour le champ d’ajout (pour éviter les erreurs TS) */
+  get fieldInputControl(): FormControl {
+    return this.filterForm.get('fieldInput') as FormControl;
+  }
 
-  // Vérifie que le nom existe et fait plus de 3 caractères
-  if (!f.name || f.name.trim().length <= 3) return false;
+  /** ✅ Getter pour les champs restants à ajouter */
+  get remainingFields(): string[] {
+    const selected: string[] = (this.filterForm.value.fields as string[]) || [];
+    return this.availableFields.filter((f: string) => !selected.includes(f));
+  }
 
-  // Vérifie que les champs à extraire existent
-  if (!Array.isArray(f.fields) || f.fields.length === 0) return false;
+  /** ✅ Vérifie la validité du formulaire */
+  isFormValid(): boolean {
+    const { name, fields, startDate, endDate } = this.filterForm.value;
+    if (!name || name.trim().length <= 3) return false;
+    if (!Array.isArray(fields) || fields.length === 0) return false;
+    if (startDate && endDate && startDate > endDate) return false;
+    return true;
+  }
 
-  return true;
-}
-
-
-  addField() {
-    if (this.newField && !this.extraction_filter.fields.includes(this.newField)) {
-      this.extraction_filter.fields.push(this.newField);
-      this.newField = '';
+  /** ✅ Ajoute un champ sélectionné */
+  addField(field: string): void {
+    if (!field) return;
+    const fields: string[] = (this.filterForm.value.fields as string[]) || [];
+    if (!fields.includes(field)) {
+      this.filterForm.patchValue({ fields: [...fields, field], fieldInput: '' });
     }
   }
 
-  removeField(index: number) {
-    this.extraction_filter.fields.splice(index, 1);
+  /** ✅ Supprime un champ */
+  removeField(field: string): void {
+    const fields: string[] = (this.filterForm.value.fields as string[]) || [];
+    this.filterForm.patchValue({
+      fields: fields.filter((f: string) => f !== field)
+    });
   }
 
-  applyFilter() {
+  /** ✅ Envoi du filtre au parent */
+  applyFilter(): void {
     if (!this.isFormValid()) return;
-    this.apply.emit(this.extraction_filter);
+
+    const filterData = {
+      name: this.filterForm.value.name,
+      fields: this.filterForm.value.fields,
+      startDate: this.filterForm.value.startDate,
+      endDate: this.filterForm.value.endDate
+    };
+
+    this.apply.emit(filterData);
   }
 }

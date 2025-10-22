@@ -5,16 +5,16 @@
   background: #fff;
   padding: 2rem;
   border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  width: 460px;
-  z-index: 1000;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+  width: 480px;
+  z-index: 2000; /* ✅ reste au-dessus des autres panneaux */
   animation: fadeIn 0.3s ease-in-out;
 
   h2 {
     margin-top: 0;
     margin-bottom: 1.5rem;
-    font-size: 1.3rem;
+    font-size: 1.4rem;
     font-weight: 500;
     color: #2a2a2a;
     text-align: center;
@@ -22,7 +22,13 @@
 
   mat-form-field {
     width: 100%;
+    position: relative;
+    z-index: 1200; /* ✅ s'assure que les autocomplétions sont visibles */
   }
+
+  /* -------------------------------------------------- */
+  /* 🧩 Champs à extraire */
+  /* -------------------------------------------------- */
 
   .filter-field {
     display: flex;
@@ -30,44 +36,50 @@
     margin-bottom: 1.5rem;
   }
 
-  .fields-list {
+  mat-chip-grid {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
-    margin-bottom: 0.8rem;
+    margin-top: 0.3rem;
+    min-height: 40px;
+  }
 
-    .field-item {
-      background: #e9f5ff;
-      border-radius: 6px;
-      padding: 0.25rem 0.6rem;
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      font-size: 0.9rem;
+  mat-chip-row {
+    background: #e9f5ff;
+    color: #0a2a3a;
+    font-weight: 500;
+    border-radius: 6px;
+    padding: 0.25rem 0.5rem;
 
-      button[mat-icon-button] {
-        width: 20px;
-        height: 20px;
-      }
+    button[matChipRemove] {
+      color: #1565c0;
+      margin-left: 0.2rem;
     }
   }
 
+  /* -------------------------------------------------- */
+  /* 📅 Période */
+  /* -------------------------------------------------- */
+
   .period-row {
-  display: flex;
-  gap: 1rem;
+    display: flex;
+    gap: 1rem;
 
-  mat-form-field {
-    flex: 1;
+    mat-form-field {
+      flex: 1;
+    }
+
+    .error-msg {
+      color: red;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      text-align: center;
+    }
   }
 
-  .error-msg {
-    color: red;
-    font-size: 0.85rem;
-    margin-top: 0.5rem;
-    text-align: center;
-  }
-}
-
+  /* -------------------------------------------------- */
+  /* 🔘 Actions */
+  /* -------------------------------------------------- */
 
   .filter-actions {
     display: flex;
@@ -79,12 +91,38 @@
       margin: 0 0.5rem;
       text-transform: none;
       font-weight: 500;
+      border-radius: 6px;
+      transition: transform 0.15s ease;
+
+      &:hover {
+        transform: translateY(-1px);
+      }
     }
   }
 
+  /* -------------------------------------------------- */
+  /* ⚠️ Messages d’erreur */
+  /* -------------------------------------------------- */
+
   .error-msg {
-    color: red;
-    font-size: 0.85rem;
-    margin-top: 0.3rem;
+    color: #d32f2f;
+    font-size: 0.9rem;
+    margin-top: 0.4rem;
+    font-style: italic;
+  }
+
+  /* -------------------------------------------------- */
+  /* ✨ Animation d’apparition */
+  /* -------------------------------------------------- */
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }
