@@ -112,11 +112,12 @@ npm install
 echo "📦 Installation d'Angular Material et des modules nécessaires..."
 npm install @angular/material@~20.2.9 \
             @angular/cdk@~20.2.9 \
-            @angular/animations@^20.3.0 \
-            @angular/forms@^20.3.0 \
-            @angular/core@^20.3.0 \
-            @angular/common@^20.3.0 \
-            @angular/router@^20.3.0 --save
+            @angular/animations@~20.3.6 \
+            @angular/forms@~20.3.6 \
+            @angular/core@~20.3.6 \
+            @angular/common@~20.3.6 \
+            @angular/router@~20.3.6 --save --legacy-peer-deps
+
 
 cd ..
 

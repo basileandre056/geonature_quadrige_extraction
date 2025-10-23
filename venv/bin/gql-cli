@@ -1,4 +1,4 @@
-#!/home/baan/project/geonature/geonature_quadrige_extraction/venv/bin/python3
+#!/home/basileandre/projets/geonature/geonature_quadrige_extraction/venv/bin/python3
 import sys
 from gql.cli import gql_cli
 if __name__ == '__main__':

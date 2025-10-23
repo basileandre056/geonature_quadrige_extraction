@@ -22,29 +22,20 @@ Projet combinant un **frontend Angular** et un **backend Flask** pour extraire e
 
 ## 🚀 Installation
 
-### 1️⃣ Cloner le projet
-
-```bash
-git clone https://github.com/<ton-utilisateur>/<ton-repo>.git
-cd geonature_quadrige_extraction
-```
+voir INSTALL.md
 
 ---
 
-### 2️⃣ Backend (Flask)
+### 1️⃣ Backend (Flask)
 
-Créer un environnement virtuel et installer les dépendances :
+le venv doit être démarré pour éxécuter les commandes ci dessous
 
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-```
 
-Lancer le backend :
+#### Lancer le backend :
+
 
 ```bash
-python backend/backend.py
+python3 -m backend.app_backend.py
 ```
 
 Le backend est accessible sur :
@@ -52,21 +43,30 @@ Le backend est accessible sur :
 
 ---
 
+
+
+#### Lancer les tests pytest :
+
+```bash
+pytest -v backend/geonature/tests
+```
+
+---
+
+
+#### Lancer les tests benchmarks :
+
+tests de performances des fonctions utilitaires et des routes
+
+```bash
+pytest --benchmark-only backend/geonature/tests/benchmarks
+```
+
+---
+
 ### 3️⃣ Frontend (Angular)
 
-Installer Node.js et Angular CLI (si non installés) :
 
-```bash
-sudo apt install nodejs npm -y
-npm install -g @angular/cli
-```
-
-Installer les dépendances Angular :
-
-```bash
-cd frontend
-npm install
-```
 
 Lancer le frontend :
 
@@ -93,23 +93,55 @@ Le frontend est accessible sur :
 
 ```
 geonature_quadrige_extraction/
-│── backend/             # Backend Flask
-│   ├── backend.py
-│   ├── extraction_programs.py
-│   ├── extraction_data.py
-│   ├── build_query.py
+│
+│── backend/                                  # 🧠 Backend Flask (API & logique métier)
+│   ├── __pycache__/                          # Cache Python
+│   │
+│   ├── app_backend.py                        # Serveur Flask principal (routes, logique)
+│   ├── extraction_programs.py                # Extraction et filtrage des programmes CSV
+│   ├── extraction_data.py                    # Extraction des données ZIP via GraphQL
+│   ├── build_query.py                        # Générateur de requêtes GraphQL
+│   ├── brouillon.py                          # (optionnel) fichier de travail temporaire
+│   │
+│   ├── geonature/                            # Dossier dédié aux tests unitaires et perf
+│   │   ├── __init__.py
+│   │   │
+│   │   ├── tests/
+│   │   │   ├── __init__.py
+│   │   │   ├── conftest.py                   # Configuration Pytest + fixtures globales
+│   │   │   ├── test_backend_errors.py        # Tests des cas d’erreur backend
+│   │   │   ├── test_backend_routes.py        # Tests des routes Flask (mockées)
+│   │   │   ├── test_backend_utils.py         # Tests unitaires sur les fonctions utilitaires
+│   │   │   │
+│   │   │   ├── benchmarks/                   # Benchmarks (pytest-benchmark)
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── test_backend_benchmarks.py          # Tests de perf CSV/JSON
+│   │   │   │   ├── test_backend_benchmarks_routes.py   # Benchmarks des routes mockées
+│   │   │   │   ├── test_backend_benchmarks_real.py     # Benchmarks réels Ifremer 🌐
+│   │   │   │
+│   │   │   └── __pycache__/                  # Cache des tests
+│   │
+│   ├── memory/                               # 🧩 Données temporaires
+│   │   ├── last_filter.json                  # Sauvegarde du dernier filtre appliqué
+│   │   ├── programmes_126-_brut.csv          # Exemple de CSV brut téléchargé
+│   │   └── programmes_126-_filtered.csv      # Exemple de CSV filtré localement
+│   │
+│   ├── output_data/                          # 📦 Données d’extraction ZIP
 │
 │── frontend/            # Frontend Angular
 │   ├── src/
 │   ├── angular.json
 │   ├── package.json
 │
-│── output_test/         # Fichiers CSV et ZIP générés
-│── saved_programmes/    # Sauvegardes des programmes et filtres
 │── venv/                # Environnement virtuel Python
-│── requirements.txt     # Dépendances Python
+│── requirements_backend.txt     # Dépendances Python
 │── .gitignore
 │── README.md
+│── INSTALL.md
+│── README.md
+│── setup.sh
+
+
 ```
 
 ---
