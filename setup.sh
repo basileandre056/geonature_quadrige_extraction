@@ -97,6 +97,7 @@ if [ ! -d "frontend" ]; then
   exit 1
 fi
 
+
 cd frontend
 
 if [ -d "node_modules" ]; then
@@ -118,6 +119,10 @@ npm install @angular/material@~20.2.9 \
             @angular/common@~20.3.6 \
             @angular/router@~20.3.6 --save --legacy-peer-deps
 
+
+echo "🧪 Installation de Cypress pour les tests E2E..."
+npm install --save-dev cypress
+echo "✅ Cypress installé avec succès"
 
 cd ..
 

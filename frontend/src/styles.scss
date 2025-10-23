@@ -58,12 +58,14 @@ button[mat-raised-button] {
     margin-right: 0.3rem;
   }
 }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /* 🟢 Bouton de validation */
-.button-success {
-  background-color: #43a047 !important;
-  color: #fff !important;
 
+.button-success {
+  background-color: #43a047 !important; //
+  color: #fff !important;
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   &:hover {
     background-color: #388e3c !important;
   }
@@ -152,7 +154,7 @@ mat-error {
     color: #d32f2f !important;
     font-size: 0.9rem;
     margin-top: 0.35rem;
-    margin-bottom: 0.25rem; 
+    margin-bottom: 0.25rem;
     font-style: italic;
     line-height: 1.3;
     animation: fadeError 0.25s ease-in-out;
