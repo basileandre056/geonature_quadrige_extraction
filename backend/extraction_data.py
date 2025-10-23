@@ -3,7 +3,7 @@ import time
 import requests
 from gql import gql, Client
 from gql.transport.requests import RequestsHTTPTransport
-from build_query import build_extraction_query
+from backend.build_query import build_extraction_query
 
 
 def extract_ifremer_data(programmes, filter_data):

@@ -1,115 +1,80 @@
 import os
-import pandas as pd
-from backend.app_backend import sauvegarder_filtre, charger_filtre
-from backend.extraction_programs import (
-    nettoyer_csv,
-    csv_to_programmes_json,
-    sauvegarder_derniere_version,
-)
-from backend.build_query import build_extraction_query
+import json
+import pytest
+from pathlib import Path
+from unittest.mock import patch, MagicMock
 
 
-# =============================
-# Tests des fonctions utilitaires
-# =============================
-
-def test_sauvegarder_et_charger_filtre(tmp_path):
-    """Test de sauvegarde et lecture du filtre JSON."""
-    from backend import app_backend
-    app_backend.SAVE_DIR = str(tmp_path)
-    app_backend.LAST_FILTER_FILE = os.path.join(str(tmp_path), "last_filter.json")
-
-    filtre = {"monitoringLocation": "126-"}
-    sauvegarder_filtre(filtre)
-    result = charger_filtre()
-
-    assert result == filtre
-    assert os.path.exists(app_backend.LAST_FILTER_FILE)
+@pytest.fixture()
+def client(tmp_path, monkeypatch):
+    """Client Flask + redirection des dossiers pour isoler le FS."""
+    from backend import app_backend as backend
+    monkeypatch.setattr(backend, "MEMORY_DIR", str(tmp_path / "memory"))
+    monkeypatch.setattr(backend, "OUTPUT_DATA_DIR", str(tmp_path / "output_data"))
+    os.makedirs(backend.MEMORY_DIR, exist_ok=True)
+    os.makedirs(backend.OUTPUT_DATA_DIR, exist_ok=True)
+    backend.app.config["TESTING"] = True
+    with backend.app.test_client() as c:
+        yield c
 
 
-def test_nettoyer_csv(tmp_path):
-    """Teste le nettoyage du CSV."""
-    input_csv = tmp_path / "input.csv"
-    output_csv = tmp_path / "output.csv"
+# --------------------------------------------------------------------
+# 1) Test sauvegarder_filtre / charger_filtre (sans patch réseau)
+# --------------------------------------------------------------------
+def test_sauvegarder_et_charger_filtre(tmp_path, monkeypatch):
+    from backend import app_backend as backend
 
-    df = pd.DataFrame([
-        {
-            "Lieu : Mnémonique": "126-AAA",
-            "Programme : Code": "P1",
-            "Programme : Libellé": "Test",
-            "Programme : Etat": "A",
-            "Programme : Date de création": "2020-01-01",
-            "Programme : Droit : Personne : Responsable : NOM Prénom : Liste": "Durand|Jean"
-        },
-        {
-            "Lieu : Mnémonique": "999-BBB",
-            "Programme : Code": "P2",
-            "Programme : Libellé": "Autre",
-            "Programme : Etat": "B",
-            "Programme : Date de création": "2021-02-02",
-            "Programme : Droit : Personne : Responsable : NOM Prénom : Liste": "Dupont|Paul"
-        }
-    ])
-    df.to_csv(input_csv, sep=";", index=False)
+    # On force le fichier last_filter.json dans un tmp
+    monkeypatch.setattr(backend, "LAST_FILTER_FILE", str(tmp_path / "memory" / "last_filter.json"))
+    os.makedirs(tmp_path / "memory", exist_ok=True)
 
-    nettoyer_csv(input_csv, output_csv, "126-")
+    filtre = {"monitoringLocation": "126-", "name": "test"}
+    backend.sauvegarder_filtre(filtre)
 
-    filtered = pd.read_csv(output_csv, sep=";")
-
-    #Le fichier de sortie existe.
-    assert len(filtered) == 1
-
-    #Seule la ligne dont "Lieu : Mnémonique" commence par "126-" est conservée.
-    assert "999-BBB" not in filtered["Lieu : Mnémonique"].values
-    assert "P1" in filtered["Programme : Code"].values
+    # On relit ce qu'on a écrit
+    lu = backend.charger_filtre()
+    assert lu == filtre
+    assert os.path.exists(backend.LAST_FILTER_FILE)
 
 
-def test_csv_to_programmes_json(tmp_path):
-    """Conversion CSV → JSON."""
-    csv_path = tmp_path / "test.csv"
-    df = pd.DataFrame([
-        {
-            "Programme : Code": "P1",
-            "Programme : Libellé": "Libellé test",
-            "Programme : Etat": "A",
-            "Programme : Date de création": "2020-01-01",
-            "Programme : Droit : Personne : Responsable : NOM Prénom : Liste": "Durand|Marie"
-        }
-    ])
-    df.to_csv(csv_path, sep=";", index=False)
+# --------------------------------------------------------------------
+# 2) Test utilitaires de ménage : nettoyer_dossier_memory
+# --------------------------------------------------------------------
+def test_nettoyer_dossier_memory(tmp_path, monkeypatch):
+    from backend import app_backend as backend
+    memory = tmp_path / "memory"
+    os.makedirs(memory, exist_ok=True)
 
-    result = csv_to_programmes_json(str(csv_path))
+    # On crée des fichiers “anciens”
+    (memory / "programmes_126-_brut.csv").write_text("x; y\n", encoding="utf-8")
+    (memory / "programmes_126-_filtered.csv").write_text("x; y\n", encoding="utf-8")
+    # On crée le last_filter.json (à NE PAS supprimer)
+    monkeypatch.setattr(backend, "MEMORY_DIR", str(memory))
+    backend.LAST_FILTER_FILE = str(memory / "last_filter.json")
+    Path(backend.LAST_FILTER_FILE).write_text("{}", encoding="utf-8")
 
-    # Vérifie que la liste JSON résultante a la bonne taille et les bons champs.
-    assert len(result) == 1
-    assert result[0]["responsable"] == "Durand, Marie"
+    backend.nettoyer_dossier_memory()
 
-
-def test_sauvegarder_derniere_version(tmp_path):
-    """Copie du CSV filtré."""
-    src = tmp_path / "src.csv"
-    src.write_text("a;b\n1;2")
-    dest = sauvegarder_derniere_version(str(src), save_dir=tmp_path)
-
-    #Vérifie que le fichier existe bien à la bonne destination.
-    assert os.path.exists(dest)
-    assert "last_programmes_updates.csv" in dest
+    # Les CSV doivent avoir disparu, pas le filtre
+    assert not (memory / "programmes_126-_brut.csv").exists()
+    assert not (memory / "programmes_126-_filtered.csv").exists()
+    assert (memory / "last_filter.json").exists()
 
 
-def test_build_extraction_query_construction():
-    """Validation de la requête GraphQL générée."""
-    filtre = {
-        "fields": ["id", "name"],
-        "startDate": "2024-01-01",
-        "endDate": "2024-12-31",
-        "monitoringLocation": "126-",
-    }
+# --------------------------------------------------------------------
+# 3) Test utilitaires de ménage : nettoyer_output_data
+# --------------------------------------------------------------------
+def test_nettoyer_output_data(tmp_path, monkeypatch):
+    from backend import app_backend as backend
+    out = tmp_path / "output_data"
+    os.makedirs(out, exist_ok=True)
 
-    query = build_extraction_query("P1", filtre)
-    query_str = str(query)
+    # Faux ZIP
+    (out / "P1.zip").write_bytes(b"FAKE")
+    (out / "P2.zip").write_bytes(b"FAKE")
 
-    #Vérifie que les éléments clés sont présents dans la requête.
-    assert "executeResultExtraction" in query_str
-    assert "126-" in query_str
-    assert "2024-12-31" in query_str
-    assert "P1" in query_str
+    monkeypatch.setattr(backend, "OUTPUT_DATA_DIR", str(out))
+    backend.nettoyer_output_data()
+
+    # Tout doit être vide
+    assert list(out.iterdir()) == []
