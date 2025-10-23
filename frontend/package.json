@@ -6,7 +6,10 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "cypress:open": "cypress open",
+    "e2e:ci": "cypress run",
+    "e2e:coverage": "echo 'Coverage not implemented yet'"
   },
   "prettier": {
     "printWidth": 100,

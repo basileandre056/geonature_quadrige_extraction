@@ -97,7 +97,6 @@ if [ ! -d "frontend" ]; then
   exit 1
 fi
 
-
 cd frontend
 
 if [ -d "node_modules" ]; then
@@ -119,10 +118,21 @@ npm install @angular/material@~20.2.9 \
             @angular/common@~20.3.6 \
             @angular/router@~20.3.6 --save --legacy-peer-deps
 
-
 echo "🧪 Installation de Cypress pour les tests E2E..."
 npm install --save-dev cypress
 echo "✅ Cypress installé avec succès"
+
+# Ajout automatique des scripts de test dans package.json
+echo "🛠️ Mise à jour du fichier package.json avec les scripts Cypress..."
+
+npx json -I -f package.json -e '
+if (!this.scripts) this.scripts = {};
+this.scripts["cypress:open"] = "cypress open";
+this.scripts["e2e:ci"] = "cypress run";
+this.scripts["e2e:coverage"] = "echo '\''Coverage not implemented yet'\''";
+'
+
+echo "✅ Scripts Cypress ajoutés à package.json"
 
 cd ..
 
@@ -143,5 +153,9 @@ echo ""
 echo "💻 Pour lancer le frontend :"
 echo "     cd frontend"
 echo "     npm start   # ou ng serve --poll=2000"
+echo ""
+echo "🧪 Pour lancer Cypress :"
+echo "     cd frontend"
+echo "     npm run cypress:open"
 echo ""
 echo "✅ Installation terminée avec succès 🎉"
