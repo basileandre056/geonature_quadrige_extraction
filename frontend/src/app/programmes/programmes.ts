@@ -96,7 +96,7 @@ export class Programmes {
         this.message = "Erreur lors du chargement des derniers programmes.";
       }
     });
-    }
+  }
 
 
 
