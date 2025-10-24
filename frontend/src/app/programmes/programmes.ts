@@ -272,13 +272,13 @@ export class Programmes {
 
     const selectedPrograms = this.programmes.filter(p => p.checked).map(p => p.name);
 
-    if (selectedPrograms.length === 0) {
-      this.message = 'Veuillez sélectionner au moins un programme.';
+    if (!this.dataFilter) {
+      this.message = 'Veuillez définir un filtre avant de lancer une extraction.';
       return;
     }
 
-    if (!this.dataFilter) {
-      this.message = 'Veuillez définir un filtre avant de lancer une extraction.';
+    if (selectedPrograms.length === 0) {
+      this.message = 'Veuillez sélectionner au moins un programme.';
       return;
     }
 

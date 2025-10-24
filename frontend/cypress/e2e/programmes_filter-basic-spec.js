@@ -1,6 +1,6 @@
 // frontend/cypress/e2e/programmes/programmes-basic-spec.js
 
-describe('Programmes module - extraction behavior without filter', () => {
+describe('Programmes module - extraction programmes behavior without filter', () => {
 
   //
   // Avant chaque test : on visite la page principale du module
