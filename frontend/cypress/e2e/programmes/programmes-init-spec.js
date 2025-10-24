@@ -8,29 +8,50 @@ describe('Programmes module - initialisation de la liste de programmes', () => {
       statusCode: 200,
       body: {
         status: 'ok',
-        monitoringLocation: '048-001',
+        monitoringLocation: '126-001',
         programmes: [
-          { name: 'Reef Monitoring', libelle: 'Surveillance récifale', startDate: '2023-05-01', etat: 'Terminé', responsable: 'Dr. Blue' },
-          { name: 'CoralWatch', libelle: 'Observation corallienne', startDate: '2024-01-15', etat: 'En cours', responsable: 'Pr. Marine' }
+          {
+            name: 'DECHETS_FLOTTANTS_MICROPLASTIQUE_REUNION',
+            libelle: 'Programme de surveillance Microplastiques Flottants à la Réunion',
+            startDate: '2022-01-07',
+            etat: 'Actif',
+            responsable: 'DUVAL Magali, MAUREL Laurence, TURQUET Jean'
+          },
+          {
+            name: 'DECHETS_FLOTTANTS_REUNION',
+            libelle: 'Programme de surveillance Macrodéchets Flottants à la Réunion',
+            startDate: '2023-09-19',
+            etat: 'Actif',
+            responsable: 'DUVAL Magali, MAUREL Laurence'
+          }
         ],
         fichiers_csv: [
-          { file_name: 'programmes.csv', url: '/files/programmes.csv' }
+          { file_name: 'programmes_reunion.csv', url: '/files/programmes_reunion.csv' }
         ]
       }
     }).as('getLastProgrammes');
 
+    // 🖥️ Charger la page
     cy.visit('/programmes');
     cy.wait('@getLastProgrammes');
 
-    // ✅ Vérifie que le message est correct
+    // ✅ Vérifier le message de succès
     cy.get('p.text-center.text-muted', { timeout: 8000 })
-      .should('contain.text', '✅ 2 programmes chargés (048-001)');
+      .should('contain.text', '✅ 2 programmes chargés (126-001)');
 
-    // ✅ Vérifie que la table contient bien 2 lignes
+    // ✅ Vérifier la table Angular Material
     cy.get('table tr.mat-mdc-row').should('have.length', 2);
 
-    // ✅ Vérifie la présence du premier programme
-    cy.contains('td', 'Reef Monitoring').should('be.visible');
+    // ✅ Vérifier que les deux programmes apparaissent bien
+    cy.contains('td', 'DECHETS_FLOTTANTS_MICROPLASTIQUE_REUNION').should('be.visible');
+    cy.contains('td', 'DECHETS_FLOTTANTS_REUNION').should('be.visible');
+
+    // ✅ Vérifier les libellés correspondants
+    cy.contains('td', 'Programme de surveillance Microplastiques Flottants à la Réunion').should('be.visible');
+    cy.contains('td', 'Programme de surveillance Macrodéchets Flottants à la Réunion').should('be.visible');
+
+    // ✅ Vérifier que le responsable est affiché
+    cy.contains('td', 'DUVAL Magali').should('be.visible');
   });
 
 
@@ -42,7 +63,7 @@ describe('Programmes module - initialisation de la liste de programmes', () => {
       statusCode: 200,
       body: {
         status: 'ok',
-        monitoringLocation: '145-001',
+        monitoringLocation: '126-001',
         programmes: [],
         fichiers_csv: []
       }
@@ -51,6 +72,7 @@ describe('Programmes module - initialisation de la liste de programmes', () => {
     cy.visit('/programmes');
     cy.wait('@getEmptyProgrammes');
 
+    // ✅ Vérifier le message affiché
     cy.get('p.text-center.text-muted', { timeout: 8000 })
       .should('contain.text', 'Aucun programme sauvegardé.');
   });
@@ -68,6 +90,7 @@ describe('Programmes module - initialisation de la liste de programmes', () => {
     cy.visit('/programmes');
     cy.wait('@getError');
 
+    // ✅ Vérifier le message d’erreur affiché
     cy.get('p.text-center.text-muted', { timeout: 8000 })
       .should('contain.text', 'Erreur lors du chargement des derniers programmes.');
   });
