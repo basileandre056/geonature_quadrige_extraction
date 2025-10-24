@@ -4,8 +4,20 @@ set -e  # stoppe le script dès qu'une erreur survient
 echo "🚀 Initialisation complète du projet GeoNature Quadrige Extraction"
 
 # -------------------------------------------------------------------
+# ⚙️ QUESTION : INSTALLER CYPRESS ?
+# -------------------------------------------------------------------
+read -p "🧪 Souhaitez-vous installer Cypress (tests frontend) ? (y/n) " install_cypress
+
+case "$install_cypress" in
+  y|Y ) INSTALL_CYPRESS=true ;;
+  n|N ) INSTALL_CYPRESS=false ;;
+  * ) echo "Réponse invalide. Installation de Cypress ignorée."; INSTALL_CYPRESS=false ;;
+esac
+
+# -------------------------------------------------------------------
 # ✅ VÉRIFICATION DES PRÉREQUIS
 # -------------------------------------------------------------------
+echo ""
 echo "🔍 Vérification des dépendances système..."
 
 # --- Node.js ---
@@ -67,6 +79,41 @@ echo "------------------------------------------"
 sleep 1
 
 # -------------------------------------------------------------------
+# 🧩 DÉPENDANCES SYSTÈME POUR CYPRESS (Ubuntu 24.04)
+# -------------------------------------------------------------------
+if [ "$INSTALL_CYPRESS" = true ]; then
+  echo "🧱 Installation des dépendances système nécessaires à Cypress..."
+
+  sudo apt update && sudo apt install -y \
+    libasound2t64 \
+    libatk1.0-0t64 \
+    libatk-bridge2.0-0t64 \
+    libcups2t64 \
+    libdrm2 \
+    libgtk-3-0t64 \
+    libnss3 \
+    libgbm1 \
+    libxss1 \
+    libx11-xcb1 \
+    libxcomposite1 \
+    libxdamage1 \
+    libxrandr2 \
+    libxtst6 \
+    libxkbcommon0 \
+    libpango-1.0-0 \
+    libpangocairo-1.0-0 \
+    libatspi2.0-0t64 \
+    libwayland-client0 \
+    libwayland-cursor0 \
+    libwayland-egl1 \
+    libxshmfence1 \
+    libglu1-mesa -y
+
+  echo "✅ Librairies système installées pour Cypress"
+  sleep 1
+fi
+
+# -------------------------------------------------------------------
 # 🐍 BACKEND
 # -------------------------------------------------------------------
 echo "🐍 Création de l'environnement virtuel Python..."
@@ -118,21 +165,22 @@ npm install @angular/material@~20.2.9 \
             @angular/common@~20.3.6 \
             @angular/router@~20.3.6 --save --legacy-peer-deps
 
-echo "🧪 Installation de Cypress pour les tests E2E..."
-npm install --save-dev cypress
-echo "✅ Cypress installé avec succès"
+if [ "$INSTALL_CYPRESS" = true ]; then
+  echo "🧪 Installation de Cypress pour les tests E2E..."
+  npm install --save-dev cypress
+  echo "✅ Cypress installé avec succès"
 
-# Ajout automatique des scripts de test dans package.json
-echo "🛠️ Mise à jour du fichier package.json avec les scripts Cypress..."
-
-npx json -I -f package.json -e '
-if (!this.scripts) this.scripts = {};
-this.scripts["cypress:open"] = "cypress open";
-this.scripts["e2e:ci"] = "cypress run";
-this.scripts["e2e:coverage"] = "echo '\''Coverage not implemented yet'\''";
-'
-
-echo "✅ Scripts Cypress ajoutés à package.json"
+  echo "🛠️ Mise à jour du fichier package.json avec les scripts Cypress..."
+  npx json -I -f package.json -e '
+  if (!this.scripts) this.scripts = {};
+  this.scripts["cypress:open"] = "cypress open";
+  this.scripts["e2e:ci"] = "cypress run";
+  this.scripts["e2e:coverage"] = "echo '\''Coverage not implemented yet'\''";
+  '
+  echo "✅ Scripts Cypress ajoutés à package.json"
+else
+  echo "🚫 Installation de Cypress ignorée (choix utilisateur)"
+fi
 
 cd ..
 
@@ -154,8 +202,12 @@ echo "💻 Pour lancer le frontend :"
 echo "     cd frontend"
 echo "     npm start   # ou ng serve --poll=2000"
 echo ""
-echo "🧪 Pour lancer Cypress :"
-echo "     cd frontend"
-echo "     npm run cypress:open"
+if [ "$INSTALL_CYPRESS" = true ]; then
+  echo "🧪 Pour lancer Cypress :"
+  echo "     cd frontend"
+  echo "     npm run cypress:open"
+else
+  echo "⚙️ Cypress non installé (choix utilisateur)"
+fi
 echo ""
 echo "✅ Installation terminée avec succès 🎉"
