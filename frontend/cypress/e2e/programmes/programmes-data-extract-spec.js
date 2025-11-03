@@ -43,7 +43,6 @@ describe('Programmes module - extraction des données', () => {
     .and('contain.text', 'Veuillez définir un filtre avant de lancer une extraction.');
 });
 
-
   //
   // 🧩 Cas 2 — Aucun programme sélectionné
   //
