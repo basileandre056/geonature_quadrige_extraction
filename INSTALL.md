@@ -75,6 +75,11 @@ Que fait `setup.sh` (résumé) :
 - Installe les dépendances Python depuis `requirements_backend.txt`
 - Installe les dépendances frontend dans `frontend/` (`npm install`)
 - Prépare les assets Angular si nécessaire
+- Installe les librairies de tests backend
+- Propose d'installer les librairies de tests frontend.
+
+Il vous sera proposé d'installer cypress ou non.
+Si vous ne comptez pas executer les tests frontend, il est fortement conseillé de renseigner "non" car l'installation peut planter en fonction des versions de Ubuntu, Debian, et WSL.
 
 Si l'exécution du script échoue, on peut suivre les étapes manuelles décrites ci‑dessous.
 
@@ -221,9 +226,3 @@ npm start
 
 ---
 
-## 💬 Support / contact
-
-Si un problème persiste :
-- Partagez les logs du terminal (backend et frontend)
-- Indiquez l'OS et les versions : `uname -a`, `python3 --version`, `node -v`, `npm -v`
-- Si vous le souhaitez, je peux préparer une branche et ouvrir une PR avec ce fichier mis à jour.

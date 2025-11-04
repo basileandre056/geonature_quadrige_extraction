@@ -1,4 +1,4 @@
-#!/home/basileandre/projets/geonature/geonature_quadrige_extraction/venv/bin/python3
+#!/home/baan/project/geonature/geonature_quadrige_extraction/venv/bin/python3
 import sys
 from flask.cli import main
 if __name__ == '__main__':
