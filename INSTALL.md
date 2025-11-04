@@ -79,7 +79,10 @@ Que fait `setup.sh` (résumé) :
 - Propose d'installer les librairies de tests frontend.
 
 Il vous sera proposé d'installer cypress ou non.
-Si vous ne comptez pas executer les tests frontend, il est fortement conseillé de renseigner "non" car l'installation peut planter en fonction des versions de Ubuntu, Debian, et WSL.
+Si vous ne comptez pas executer les tests frontend, il est fortement conseillé de renseigner "non" car l'installation peut planter en fonction des versions d'Ubuntu
+
+Pour l'instant, l'installation de cypress avec le script setup.sh ne marche que sur les versions d'Ubuntu 22.04 et 24.04
+
 
 Si l'exécution du script échoue, on peut suivre les étapes manuelles décrites ci‑dessous.
 

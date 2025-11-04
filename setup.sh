@@ -79,35 +79,70 @@ echo "------------------------------------------"
 sleep 1
 
 # -------------------------------------------------------------------
-# 🧩 DÉPENDANCES SYSTÈME POUR CYPRESS (Ubuntu 24.04)
+# 🧩 DÉPENDANCES SYSTÈME POUR CYPRESS (Ubuntu 22.04 vs 24.04)
 # -------------------------------------------------------------------
 if [ "$INSTALL_CYPRESS" = true ]; then
   echo "🧱 Installation des dépendances système nécessaires à Cypress..."
 
-  sudo apt update && sudo apt install -y \
-    libasound2t64 \
-    libatk1.0-0t64 \
-    libatk-bridge2.0-0t64 \
-    libcups2t64 \
-    libdrm2 \
-    libgtk-3-0t64 \
-    libnss3 \
-    libgbm1 \
-    libxss1 \
-    libx11-xcb1 \
-    libxcomposite1 \
-    libxdamage1 \
-    libxrandr2 \
-    libxtst6 \
-    libxkbcommon0 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libatspi2.0-0t64 \
-    libwayland-client0 \
-    libwayland-cursor0 \
-    libwayland-egl1 \
-    libxshmfence1 \
-    libglu1-mesa -y
+  # Détection Ubuntu
+  . /etc/os-release
+  UBUNTU_VER="${VERSION_ID}"
+
+  sudo apt update
+
+  if [ "$UBUNTU_VER" = "24.04" ]; then
+    # Noble (24.04) → paquets t64
+    sudo apt install -y \
+      libasound2t64 \
+      libatk1.0-0t64 \
+      libatk-bridge2.0-0t64 \
+      libcups2t64 \
+      libdrm2 \
+      libgtk-3-0t64 \
+      libnss3 \
+      libgbm1 \
+      libxss1 \
+      libx11-xcb1 \
+      libxcomposite1 \
+      libxdamage1 \
+      libxrandr2 \
+      libxtst6 \
+      libxkbcommon0 \
+      libpango-1.0-0 \
+      libpangocairo-1.0-0 \
+      libatspi2.0-0t64 \
+      libwayland-client0 \
+      libwayland-cursor0 \
+      libwayland-egl1 \
+      libxshmfence1 \
+      libglu1-mesa
+  else
+    # Jammy (22.04) → mêmes libs SANS suffixe t64
+    sudo apt install -y \
+      libasound2 \
+      libatk1.0-0 \
+      libatk-bridge2.0-0 \
+      libcups2 \
+      libdrm2 \
+      libgtk-3-0 \
+      libnss3 \
+      libgbm1 \
+      libxss1 \
+      libx11-xcb1 \
+      libxcomposite1 \
+      libxdamage1 \
+      libxrandr2 \
+      libxtst6 \
+      libxkbcommon0 \
+      libpango-1.0-0 \
+      libpangocairo-1.0-0 \
+      libatspi2.0-0 \
+      libwayland-client0 \
+      libwayland-cursor0 \
+      libwayland-egl1 \
+      libxshmfence1 \
+      libglu1-mesa
+  fi
 
   echo "✅ Librairies système installées pour Cypress"
   sleep 1
