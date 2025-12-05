@@ -202,20 +202,29 @@ npm install @angular/material@~20.2.9 \
 
 if [ "$INSTALL_CYPRESS" = true ]; then
   echo "🧪 Installation de Cypress pour les tests E2E..."
-  npm install --save-dev cypress
-  echo "✅ Cypress installé avec succès"
+  npm install --save-dev cypress --legacy-peer-deps
 
-  echo "🛠️ Mise à jour du fichier package.json avec les scripts Cypress..."
-  npx json -I -f package.json -e '
-  if (!this.scripts) this.scripts = {};
-  this.scripts["cypress:open"] = "cypress open";
-  this.scripts["e2e:ci"] = "cypress run";
-  this.scripts["e2e:coverage"] = "echo '\''Coverage not implemented yet'\''";
-  '
-  echo "✅ Scripts Cypress ajoutés à package.json"
+  if [ $? -ne 0 ]; then
+    echo "❌ Échec de l'installation Cypress (conflits Angular)"
+    echo "👉 Vous pourrez réessayer manuellement : npm install --save-dev cypress --legacy-peer-deps"
+    INSTALL_CYPRESS=false
+  else
+    echo "✅ Cypress installé avec succès"
+
+    echo "🛠️ Mise à jour du fichier package.json avec les scripts Cypress..."
+    npx json -I -f package.json -e '
+      if (!this.scripts) this.scripts = {};
+      this.scripts["cypress:open"] = "cypress open";
+      this.scripts["e2e:ci"] = "cypress run";
+      this.scripts["e2e:coverage"] = "echo '\''Coverage not implemented'\''";
+    '
+    echo "✅ Scripts Cypress ajoutés à package.json"
+  fi
+
 else
   echo "🚫 Installation de Cypress ignorée (choix utilisateur)"
 fi
+
 
 cd ..
 
