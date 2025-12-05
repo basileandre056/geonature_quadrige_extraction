@@ -37,115 +37,241 @@ Ce projet permet :
 
 ---
 
-# 🚀 Installation
+# ✅ Guide d’installation complet — Module GeoNature Quadrige Extraction
 
-## 📋 Prérequis
+Ce document récapitule **toutes les étapes nécessaires** pour installer correctement :
 
-| Outil | Version min. | Vérification |
-|-------|-------------:|-------------|
-| Python | **3.9+** | `python3 --version` |
-| Node.js | **18+** | `node -v` |
-| npm | **9+** | `npm -v` |
-| Angular CLI *(optionnel)* | **15+** | `ng version` |
+- le **backend Flask**
+- le **frontend Angular**
+- les **versions précises** de Python, Node, npm et Angular nécessaires
+- et les **commandes pour lancer** le projet
+
+Ce guide est adapté à ton environnement et à tous les problèmes que tu as réellement rencontrés.
 
 ---
 
-## 📥 Cloner le projet
+# 📦 1. Prérequis & versions obligatoires
+
+## 🔹 Python (Backend)
+Le backend nécessite **Python 3.9 minimum**.
+
+Vérifier :
+```bash
+python3 --version
+```
+
+Si Python 3.9 n’est pas installé, utiliser **pyenv** :
+```bash
+pyenv install 3.9.19
+pyenv local 3.9.19
+```
+
+---
+
+## 🔹 Node.js & npm (Frontend)
+⚠️ Ton frontend utilise Angular **20**, donc il nécessite absolument :
+
+| Outil | Version minimale |
+|-------|------------------|
+| **Node.js** | **20.19+** |
+| **npm** | 10+ |
+
+Vérifier :
+```bash
+node -v
+npm -v
+```
+
+Si Node est trop vieux :
+```bash
+nvm install 20
+nvm use 20
+```
+
+---
+
+# 📁 2. Récupération du projet
 
 ```bash
-git clone https://github.com/basileandre056/geonature_quadrige_extraction.git
+git clone <ton_repo>
 cd geonature_quadrige_extraction
 ```
 
 ---
 
-## ⚙️ Installation automatique (setup.sh)
+# 🐍 3. Installation du backend Flask
 
-```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-Ce script :
-
-- Vérifie Python / Node / npm  
-- Crée le venv  
-- Installe les dépendances backend  
-- Installe le frontend  
-- (Optionnel) installe Cypress  
-
-⚠️ Cypress fonctionne uniquement sur Ubuntu **22.04** et **24.04**.
-
----
-
-## 🐍 Installation manuelle
-
-### 1️⃣ Backend Flask
+Depuis la racine du projet :
 
 ```bash
 python3 -m venv venv
 source venv/bin/activate
-pip install -r requirements_backend.txt
-python backend/app_backend.py
 ```
 
-➡️ http://localhost:5000
+Mettre pip à jour :
+
+```bash
+python -m pip install --upgrade pip
+```
+
+Installer les dépendances backend :
+
+```bash
+pip install -r requirements_backend.txt
+```
+
+Si pip manque dans ton venv :
+
+```bash
+python -m ensurepip --upgrade
+python -m pip install --upgrade pip
+```
+
+✔ Backend prêt
 
 ---
 
-### 2️⃣ Frontend Angular
+# ▶️ 4. Lancer le backend
+
+```bash
+source venv/bin/activate
+python backend/app_backend.py
+```
+
+➡️ Le backend s’exécute sur :  
+**http://localhost:5000**
+
+---
+
+# 🅰️ 5. Installation du frontend Angular
+
+Aller dans le dossier frontend :
 
 ```bash
 cd frontend
-npm install
-npm start
 ```
 
-### 3. Installation des tests (facultatif)
+🧹 Nettoyer une éventuelle installation cassée :
 
 ```bash
-cd frontend
-
-```
-
-
-#### 🔧 A. Supprimer les éventuels restes (recommandé)
-
-
-```bash
-
 rm -rf node_modules package-lock.json
 npm cache clean --force
 ```
 
-puis réinstaller les dépendances
+Installer les dépendances :
 
 ```bash
-
 npm install
 ```
 
-#### 🧱 2. Installer Cypress avec la bonne option
+Installer Angular CLI **localement** (version compatible Angular 20) :
 
-C’est l’étape clé pour éviter les conflits Angular :
 ```bash
+npm install --save-dev @angular/cli@20
+```
 
+✔ Le frontend est maintenant correctement configuré.
+
+---
+
+# ▶️ 6. Lancer le frontend
+
+Toujours dans le dossier `frontend/` :
+
+```bash
+npx ng serve --poll=2000
+```
+
+➡️ Tu peux accéder à l’interface Angular :  
+**http://localhost:4200**
+
+---
+
+# 🧪 7. Installation et exécution des tests
+
+## 🔹 Backend : pytest
+
+```bash
+pytest -v backend/geonature/tests
+```
+
+## 🔹 Backend : benchmarks
+
+```bash
+pytest --benchmark-only backend/geonature/tests/benchmarks
+```
+
+## 🔹 Frontend : tests Angular
+
+```bash
+ng test
+```
+
+## 🔹 Cypress (optionnel)
+
+Seulement si Node 20 + Ubuntu 22.04/24.04 :
+
+```bash
 npm install --save-dev cypress --legacy-peer-deps
-```
-
-
-🧪 3. Vérifier l’installation
-```bash
-
-npx cypress verify
-```
-
-
-🚀 4. Ouvrir Cypress
-```bash
-
 npx cypress open
 ```
+
+---
+
+# 🛠️ 8. Dépannage courant
+
+## ❗ Problème : `pip` introuvable dans le venv
+```bash
+python -m ensurepip --upgrade
+python -m pip install --upgrade pip
+```
+
+## ❗ Problème : Angular refuse de démarrer (crypto.hash)
+Tu utilisais Node 18 → Mettre Node 20 via :
+
+```bash
+nvm install 20
+nvm use 20
+```
+
+## ❗ Problème : `ng` introuvable
+```bash
+npm install --save-dev @angular/cli@20
+npx ng serve
+```
+
+## ❗ Problème : dépendances cassées
+```bash
+rm -rf node_modules package-lock.json
+npm cache clean --force
+npm install
+```
+
+---
+
+# 🎯 9. Résumé ultra‑rapide
+
+```bash
+# Backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements_backend.txt
+python backend/app_backend.py
+
+# Frontend
+cd frontend
+nvm use 20
+npm install
+npm install --save-dev @angular/cli@20
+npx ng serve --poll=2000
+```
+
+---
+
+# ✨ Auteur
+Documentation générée pour **Basile André** — 2025  
+Optimisée pour ton environnement et les erreurs réellement rencontrées.
+
 
 ---
 
