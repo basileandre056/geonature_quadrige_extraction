@@ -8,7 +8,7 @@ from gql.transport.requests import RequestsHTTPTransport
 
 def extract_programs(filter_data: dict,
                     graphql_url="https://quadrige-core.ifremer.fr/graphql/public",
-                    access_token="2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:39EA9640A2DE33C8FD909F1850462A3DBE17F0B28C4C90E1D1813EEB5BF59FAA:1|KGHk/rHvlglDfKv8/E6DG+MLcAp0RpysnjW3lXMdg2vm4kwUXu+vIYfspTOLSAZVFX6IIj+jzgdDdcxwo16jBg==",
+                    access_token="2L7BiaziVfbd9iLhhhaq6MiWRKGwJrexUmR183GgiJx4:96A2A2AEDE6115BE9C462247461D26B317CD1602D73AE47408EDA70A04DCF21A:1|mhQMC3j5nad54G615G7NotJILcTeQv9KKbr8Fj+pn6Sk2T+pY3xIdNikUzIuJ3T43FeNKBYAlKnQNWpvhdKWBg==",
                     output_dir="output_programs"):
     """
     Lance une extraction de programmes et retourne l’URL CSV fournie par Ifremer.
