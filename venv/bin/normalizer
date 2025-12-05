@@ -1,4 +1,4 @@
-#!/home/baan/project/geonature/geonature_quadrige_extraction/venv/bin/python3
+#!/home/basileandre/test_versions/geonature_quadrige_extraction/venv/bin/python3
 import sys
 from charset_normalizer.cli import cli_detect
 if __name__ == '__main__':
